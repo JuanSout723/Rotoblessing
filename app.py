@@ -115,14 +115,45 @@ def enviar_mensaje():
     flash('Mensaje enviado al equipo.', 'success')
     return redirect(url_for('mensajes'))
 
-# BANDEJA DE MENSAJES
+# BANDEJA DE MENSAJES ESTILO WHATSAPP
 @app.route('/mensajes')
 def mensajes():
     if 'usuario_id' not in session:
-        flash('Por favor inicia sesión para ingresar al panel de mensajes.', 'warning')
+        flash('Por favor inicia sesión para ingresar.', 'warning')
         return redirect(url_for('index'))
 
     user = Usuario.query.get(session['usuario_id'])
+    cliente_seleccionado = None
+    conversacion = []
+    lista_clientes = []
+
+    if user.rol == 'Comprador':
+        # El comprador solo ve su chat con la empresa
+        conversacion = Mensaje.query.filter(
+            (Mensaje.remitente_id == user.id) | (Mensaje.destinatario_id == user.id)
+        ).order_by(Mensaje.fecha.asc()).all()
+    else:
+        # Vendedor / Dueño: Obtiene la lista de todos los compradores que han escrito
+        subquery = db.session.query(Mensaje.remitente_id).distinct()
+        lista_clientes = Usuario.query.filter(Usuario.id.in_(subquery), Usuario.rol == 'Comprador').all()
+
+        # Obtener el cliente seleccionado de la URL (ej: /mensajes?cliente_id=2)
+        cliente_id = request.args.get('cliente_id')
+        if cliente_id:
+            cliente_seleccionado = Usuario.query.get(cliente_id)
+            conversacion = Mensaje.query.filter(
+                ((Mensaje.remitente_id == cliente_id) & (Mensaje.destinatario_id == None)) |
+                ((Mensaje.remitente_id == cliente_id) & (Mensaje.destinatario_id == user.id)) |
+                ((Mensaje.remitente_id == user.id) & (Mensaje.destinatario_id == cliente_id))
+            ).order_by(Mensaje.fecha.asc()).all()
+
+    return render_template(
+        'mensajes.html', 
+        usuario=user, 
+        clientes=lista_clientes, 
+        conversacion=conversacion, 
+        cliente_actual=cliente_seleccionado
+    )
     
     # Comprador: Ve solo sus mensajes enviados y recibidos
     if user.rol == 'Comprador':
