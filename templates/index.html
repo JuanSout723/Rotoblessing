@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta name="google-site-verification" content="0stxOWg1TMKDkmqTsYg738xNMIYMd05xJVFwp4M6XB0" />
+    <meta name="google-site-verification" content="0stxOwg1TMKDkmqTsYg738xNMIYMd05xJVFwp4M6XB0" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo de Tanques de Agua</title>
+    <title>Rotoblessing - Catálogo de Tanques de Agua</title>
     <style>
         * {
             box-sizing: border-box;
@@ -14,134 +14,229 @@
         }
 
         body {
-            background-color: #f0f4f8;
+            background-color: #f4f7f6;
             color: #333;
-            padding: 40px 20px;
         }
 
-        header {
+        /* Sección de Bienvenida (Hero Section) */
+        .hero {
+            background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: white;
             text-align: center;
+            padding: 100px 20px;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            max-width: 600px;
+            opacity: 0.95;
+        }
+
+        .btn-hero {
+            background-color: #25d366;
+            color: white;
+            padding: 15px 35px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-decoration: none;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .btn-hero:hover {
+            background-color: #1eb857;
+            transform: translateY(-3px);
+        }
+
+        /* Sección del Catálogo */
+        .catalog-container {
+            max-width: 1100px;
+            margin: 60px auto;
+            padding: 0 20px;
+        }
+
+        .catalog-title {
+            text-align: center;
+            font-size: 2.2rem;
+            color: #0077b6;
             margin-bottom: 40px;
         }
 
-        header h1 {
-            color: #0077b6;
-            font-size: 2.2rem;
-            margin-bottom: 8px;
+        .grid-tanques {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
         }
 
-        header p {
-            color: #6c757d;
-            font-size: 1.1rem;
-        }
-
-        .contenedor-tanques {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 25px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .tarjeta {
-            background: #ffffff;
+        /* Tarjeta de Producto */
+        .card {
+            background: white;
             border-radius: 12px;
             overflow: hidden;
-            width: 320px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.3s;
             display: flex;
             flex-direction: column;
         }
 
-        .tarjeta:hover {
+        .card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
-        .tarjeta img {
+        .card img {
             width: 100%;
-            height: 220px;
+            height: 230px;
             object-fit: cover;
+            background-color: #eaeff2;
         }
 
-        .info {
+        .card-body {
             padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 12px;
             flex-grow: 1;
         }
 
-        .info h2 {
-            font-size: 1.3rem;
-            color: #023e8a;
+        .card-body h3 {
+            font-size: 1.4rem;
+            color: #111;
+            margin-bottom: 10px;
         }
 
-        .capacidad {
-            align-self: flex-start;
-            background-color: #e0f2fe;
-            color: #0369a1;
-            font-size: 0.85rem;
-            font-weight: bold;
-            padding: 4px 10px;
-            border-radius: 20px;
-        }
-
-        .info p {
-            color: #555;
+        .card-body p {
             font-size: 0.95rem;
+            color: #666;
+            margin-bottom: 15px;
             line-height: 1.4;
-            flex-grow: 1;
         }
 
-        /* Estilo del botón de WhatsApp */
+        .specs {
+            list-style: none;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: #444;
+        }
+
+        .specs li {
+            margin-bottom: 6px;
+        }
+
+        /* Botón de WhatsApp */
         .btn-whatsapp {
-            display: block;
-            text-align: center;
+            margin-top: auto;
             background-color: #25d366;
             color: white;
+            text-align: center;
+            padding: 12px;
+            border-radius: 8px;
             text-decoration: none;
             font-weight: bold;
-            padding: 10px;
-            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             transition: background-color 0.2s;
-            margin-top: 10px;
         }
 
         .btn-whatsapp:hover {
-            background-color: #1eb854;
+            background-color: #1eb857;
+        }
+
+        footer {
+            text-align: center;
+            padding: 30px;
+            background-color: #002b49;
+            color: white;
+            margin-top: 60px;
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>Catálogo de Tanques de Agua</h1>
-        <p>Soluciones de almacenamiento de alta calidad</p>
-    </header>
+    <!-- Pantalla de Bienvenida -->
+    <section class="hero">
+        <h1>Bienvenido a Rotoblessing</h1>
+        <p>Soluciones integrales en almacenamiento de agua. Encuentra el tanque ideal para tu hogar, comercio o industria.</p>
+        <a href="#catalogo" class="btn-hero">Catálogo</a>
+    </section>
 
-    <div class="contenedor-tanques">
-        
-        <!-- Tarjeta 1 -->
-        <div class="tarjeta">
-            <img src="/static/tanque1.jpg" alt="Tanque de agua">
-            <div class="info">
-                <span class="capacidad">1,000 Litros</span>
-                <h2>Tanque Cilíndrico Vertical</h2>
-                <p>Fabricado en polietileno de alta densidad. Ideal para residencias y espacios reducidos.</p>
-                
-                <!-- Botón de WhatsApp (Cambia el número de teléfono con tu código de país) -->
-                <a href="https://wa.me/584127321067?text=Hola,%20me%20interesa%20el%20Tanque%20Cilíndrico%20de%201000L" 
-                   target="_blank" 
-                   class="btn-whatsapp">
-                   Consultar por WhatsApp
-                </a>
+    <!-- Sección del Catálogo de Tanques -->
+    <section id="catalogo" class="catalog-container">
+        <h2 class="catalog-title">Nuestros Tanques de Agua</h2>
+
+        <div class="grid-tanques">
+
+            <!-- Tanque 1 -->
+            <div class="card">
+                <img src="/static/tanque1.jpg" alt="Tanque de Agua 500L">
+                <div class="card-body">
+                    <h3>Tanque Cilíndrico 500L</h3>
+                    <p>Ideal para espacios reducidos en apartamentos o casas pequeñas.</p>
+                    <ul class="specs">
+                        <li><strong>Capacidad:</strong> 500 Litros</li>
+                        <li><strong>Material:</strong> Polietileno de alta densidad</li>
+                        <li><strong>Garantía:</strong> 5 Años</li>
+                    </ul>
+                    <a href="https://wa.me/584243656322?text=Hola,%20quisiera%20consultar%20por%20el%20Tanque%20de%20500L" target="_blank" class="btn-whatsapp">
+                        Consultar WhatsApp
+                    </a>
+                </div>
             </div>
-        </div>
 
-    </div>
+            <!-- Tanque 2 -->
+            <div class="card">
+                <img src="/static/tanque2.jpg" alt="Tanque de Agua 1000L">
+                <div class="card-body">
+                    <h3>Tanque Vertical 1000L</h3>
+                    <p>La opción más popular para familias de 4 a 6 personas.</p>
+                    <ul class="specs">
+                        <li><strong>Capacidad:</strong> 1000 Litros</li>
+                        <li><strong>Material:</strong> Tri-capa antibacteriano</li>
+                        <li><strong>Garantía:</strong> 10 Años</li>
+                    </ul>
+                    <a href="https://wa.me/584120000000?text=Hola,%20quisiera%20consultar%20por%20el%20Tanque%20de%201000L" target="_blank" class="btn-whatsapp">
+                        Consultar WhatsApp
+                    </a>
+                </div>
+            </div>
+
+            <!-- Tanque 3 -->
+            <div class="card">
+                <img src="/static/tanque3.jpg" alt="Tanque de Agua 2000L">
+                <div class="card-body">
+                    <h3>Tanque Industrial 2000L</h3>
+                    <p>Gran almacenamiento diseñado para comercios, residencias y empresas.</p>
+                    <ul class="specs">
+                        <li><strong>Capacidad:</strong> 2000 Litros</li>
+                        <li><strong>Material:</strong> Reforzado con protección UV</li>
+                        <li><strong>Garantía:</strong> 10 Años</li>
+                    </ul>
+                    <a href="https://wa.me/584120000000?text=Hola,%20quisiera%20consultar%20por%20el%20Tanque%20de%202000L" target="_blank" class="btn-whatsapp">
+                        Consultar WhatsApp
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <footer>
+        &copy; 2026 Rotoblessing - Todos los derechos reservados.
+    </footer>
 
 </body>
 </html>
