@@ -130,11 +130,8 @@
                     {% endfor %}
                 </div>
 
-                <!-- Área de escribir mensaje -->
-                <form action="/enviar_mensaje" method="POST" class="input-area">
-                    {% if usuario.rol != 'Comprador' and cliente_actual %}
-                        <input type="hidden" name="destinatario_id" value="{{ cliente_actual.id }}">
-                    {% endif %}
+                <!-- Área de escribir mensaje corregida para apuntar a la ruta con el ID exacto -->
+                <form action="{{ url_for('enviar_mensaje', receptor_id=cliente_actual.id) }}" method="POST" class="input-area">
                     <input type="text" name="contenido" placeholder="Escribe un mensaje..." autocomplete="off" required>
                     <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
                 </form>
