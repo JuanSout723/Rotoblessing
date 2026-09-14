@@ -6,500 +6,210 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rotoblessing - Catálogo de Tanques de Agua</title>
     
-    <!-- Tipografías de Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,700;0,900;1,800&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-
-    <!-- Íconos Oficiales de Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: 'Poppins', sans-serif;
-            scroll-behavior: smooth;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; scroll-behavior: smooth; }
+        body { background-color: #f4f7f6; color: #333; }
 
-        body {
-            background-color: #f4f7f6;
-            color: #333;
-        }
-
-        /* Barra superior con Logo */
+        /* Barra de navegación */
         .navbar {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            padding: 20px 40px;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            z-index: 10;
+            position: absolute; top: 0; left: 0; width: 100%; padding: 20px 40px;
+            display: flex; align-items: center; justify-content: space-between; z-index: 10;
         }
 
-        .navbar-logo {
-            height: 65px;
-            width: auto;
-            object-fit: contain;
-            filter: drop-shadow(0px 2px 4px rgba(0, 0, 0, 0.2));
-        }
+        .navbar-logo { height: 60px; width: auto; object-fit: contain; }
 
-        /* Sección de Bienvenida (Hero Section) */
+        .auth-buttons { display: flex; gap: 10px; align-items: center; }
+
+        .btn-auth {
+            background-color: white; color: #0077b6; padding: 8px 18px;
+            border-radius: 20px; text-decoration: none; font-weight: 600; font-size: 0.9rem;
+            cursor: pointer; border: none; transition: background-color 0.2s;
+        }
+        .btn-auth:hover { background-color: #e0f7fa; }
+
+        /* Banner Hero */
         .hero {
-            position: relative;
-            background: linear-gradient(135deg, #0077b6, #00b4d8);
-            color: white;
-            text-align: center;
-            padding: 120px 20px 80px 20px;
-            min-height: 85vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            position: relative; background: linear-gradient(135deg, #0077b6, #00b4d8);
+            color: white; text-align: center; padding: 120px 20px 80px 20px;
+            min-height: 85vh; display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
 
-        /* Estilo Moderno para el Título */
         .hero h1 {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 3.5rem;
-            font-weight: 900;
-            letter-spacing: -1px;
-            text-transform: uppercase;
-            margin-bottom: 15px;
+            font-family: 'Montserrat', sans-serif; font-size: 3.5rem; font-weight: 900;
+            letter-spacing: -1px; text-transform: uppercase; margin-bottom: 15px;
             background: linear-gradient(180deg, #ffffff 30%, #e0f7fa 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             text-shadow: 0px 4px 20px rgba(0, 0, 0, 0.25);
         }
 
-        .hero p {
-            font-size: 1.25rem;
-            margin-bottom: 35px;
-            max-width: 650px;
-            opacity: 0.95;
-            font-weight: 400;
-        }
+        .hero p { font-size: 1.25rem; margin-bottom: 35px; max-width: 650px; opacity: 0.95; }
 
-        .hero-buttons {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
+        .hero-buttons { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
 
         .btn-hero {
-            background-color: #25d366;
-            color: white;
-            padding: 14px 32px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.2s, background-color 0.2s;
+            background-color: #25d366; color: white; padding: 14px 32px;
+            font-size: 1.1rem; font-weight: 600; text-decoration: none; border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); transition: transform 0.2s, background-color 0.2s;
         }
-
-        .btn-hero:hover {
-            background-color: #1eb857;
-            transform: translateY(-3px);
-        }
+        .btn-hero:hover { background-color: #1eb857; transform: translateY(-3px); }
 
         .btn-secondary {
-            background-color: transparent;
-            border: 2px solid white;
-            color: white;
-            padding: 14px 32px;
-            font-size: 1.1rem;
-            font-weight: 600;
-            text-decoration: none;
-            border-radius: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.2s, background-color 0.2s, color 0.2s;
+            background-color: transparent; border: 2px solid white; color: white;
+            padding: 14px 32px; font-size: 1.1rem; font-weight: 600; text-decoration: none;
+            border-radius: 30px; transition: transform 0.2s, background-color 0.2s, color 0.2s;
+        }
+        .btn-secondary:hover { background-color: white; color: #0077b6; transform: translateY(-3px); }
+
+        /* Modales Registro / Login */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal-overlay.active { display: flex; }
+
+        .modal-card {
+            background: white; padding: 30px; border-radius: 12px; width: 90%; max-width: 400px;
+            position: relative; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
 
-        .btn-secondary:hover {
-            background-color: white;
-            color: #0077b6;
-            transform: translateY(-3px);
+        .modal-card h3 { font-family: 'Montserrat', sans-serif; color: #0077b6; margin-bottom: 20px; text-align: center; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px; color: #555; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-size: 0.95rem;
         }
 
-        /* Sección Conócenos */
-        .about-container {
-            max-width: 1000px;
-            margin: 60px auto;
-            padding: 40px 20px;
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        .btn-submit {
+            width: 100%; background-color: #0077b6; color: white; padding: 12px;
+            border: none; border-radius: 6px; font-weight: 600; font-size: 1rem; cursor: pointer; margin-top: 10px;
+        }
+        .btn-submit:hover { background-color: #005b8e; }
+
+        .close-modal {
+            position: absolute; top: 12px; right: 15px; font-size: 1.3rem; cursor: pointer; color: #888;
         }
 
-        .about-title {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            text-align: center;
-            font-size: 2.2rem;
-            color: #0077b6;
-            margin-bottom: 25px;
+        /* Ventana Flotante de WhatsApp */
+        .wa-float-container { position: fixed; bottom: 25px; right: 25px; z-index: 999; }
+        .wa-main-btn {
+            width: 60px; height: 60px; background-color: #25d366; color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 32px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3); cursor: pointer; border: none; transition: transform 0.3s;
         }
+        .wa-main-btn:hover { transform: scale(1.08); }
+        .wa-menu {
+            display: none; position: absolute; bottom: 75px; right: 0; width: 280px;
+            background-color: white; border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.2); overflow: hidden;
+        }
+        .wa-menu.active { display: block; }
+        .wa-header { background-color: #075e54; color: white; padding: 15px; font-size: 0.95rem; font-weight: 600; text-align: center; }
+        .wa-item { display: flex; align-items: center; gap: 12px; padding: 12px 15px; text-decoration: none; color: #333; border-bottom: 1px solid #f0f0f0; }
+        .wa-item i { color: #25d366; font-size: 1.4rem; }
 
-        .about-text {
-            font-size: 1.05rem;
-            line-height: 1.7;
-            color: #555;
-            text-align: justify;
-            margin-bottom: 30px;
-        }
-
-        .about-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .about-box {
-            background-color: #f8fafc;
-            padding: 20px;
-            border-left: 4px solid #0077b6;
-            border-radius: 6px;
-        }
-
-        .about-box h4 {
-            font-family: 'Montserrat', sans-serif;
-            color: #0077b6;
-            font-size: 1.1rem;
-            margin-bottom: 8px;
-        }
-
-        .about-box p {
-            font-size: 0.95rem;
-            color: #666;
-            line-height: 1.4;
-        }
-
-        /* Sección del Catálogo */
-        .catalog-container {
-            max-width: 1100px;
-            margin: 60px auto;
-            padding: 0 20px;
-        }
-
-        .catalog-title {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            text-align: center;
-            font-size: 2.2rem;
-            color: #0077b6;
-            margin-bottom: 40px;
-        }
-
-        .grid-tanques {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 30px;
-        }
-
-        /* Tarjeta de Producto */
-        .card {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .card:hover {
-            transform: translateY(-5px);
-        }
-
-        .card img {
-            width: 100%;
-            height: 230px;
-            object-fit: cover;
-            background-color: #eaeff2;
-        }
-
-        .card-body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-
-        .card-body h3 {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            font-size: 1.3rem;
-            color: #111;
-            margin-bottom: 10px;
-        }
-
-        .card-body p {
-            font-size: 0.95rem;
-            color: #666;
-            margin-bottom: 15px;
-            line-height: 1.4;
-        }
-
-        .specs {
-            list-style: none;
-            margin-bottom: 20px;
-            font-size: 0.9rem;
-            color: #444;
-        }
-
-        .specs li {
-            margin-bottom: 6px;
-        }
-
-        /* Botón de WhatsApp */
-        .btn-whatsapp {
-            margin-top: auto;
-            background-color: #25d366;
-            color: white;
-            text-align: center;
-            padding: 12px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: background-color 0.2s;
-        }
-
-        .btn-whatsapp:hover {
-            background-color: #1eb857;
-        }
-
-        /* Sección Redes Sociales */
-        .social-section {
-            background-color: white;
-            max-width: 1000px;
-            margin: 60px auto 20px auto;
-            padding: 40px 20px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-        }
-
-        .social-title {
-            font-family: 'Montserrat', sans-serif;
-            font-weight: 700;
-            font-size: 2rem;
-            color: #0077b6;
-            margin-bottom: 10px;
-        }
-
-        .social-subtitle {
-            color: #666;
-            font-size: 1rem;
-            margin-bottom: 25px;
-        }
-
-        .social-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .btn-social {
-            padding: 12px 28px;
-            border-radius: 30px;
-            color: white;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            transition: transform 0.2s, opacity 0.2s;
-        }
-
-        .btn-social i {
-            font-size: 1.3rem;
-        }
-
-        .btn-social:hover {
-            transform: translateY(-3px);
-            opacity: 0.9;
-        }
-
-        .btn-instagram {
-            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
-        }
-
-        .btn-facebook {
-            background-color: #1877f2;
-        }
-
-        footer {
-            text-align: center;
-            padding: 30px;
-            background-color: #002b49;
-            color: white;
-            margin-top: 60px;
-            font-size: 0.9rem;
-        }
-
-        footer a {
-            color: #00b4d8;
-            text-decoration: none;
-            margin: 0 8px;
-        }
-
-        footer a:hover {
-            text-decoration: underline;
-        }
-
-        /* Responsive Móvil */
-        @media (max-width: 600px) {
-            .navbar {
-                justify-content: center;
-                padding: 15px;
-            }
-            .hero {
-                padding-top: 100px;
-            }
-            .hero h1 {
-                font-size: 2.2rem;
-            }
-            .navbar-logo {
-                height: 50px;
-            }
-        }
+        footer { text-align: center; padding: 30px; background-color: #002b49; color: white; margin-top: 60px; font-size: 0.9rem; }
+        footer a { color: #00b4d8; text-decoration: none; margin: 0 8px; }
     </style>
 </head>
 <body>
 
-    <!-- Pantalla de Bienvenida con Logo -->
+    <!-- Navegación y Sesión -->
     <section class="hero">
         <div class="navbar">
             <img src="/static/logo.png" alt="Logo Rotoblessing" class="navbar-logo">
+            <div class="auth-buttons">
+                {% if usuario %}
+                    <a href="/mensajes" class="btn-auth"><i class="fa-solid fa-comments"></i> Mensajes</a>
+                    <a href="/logout" class="btn-auth"><i class="fa-solid fa-right-from-bracket"></i> Salir ({{ usuario.nombre }})</a>
+                {% else %}
+                    <button class="btn-auth" onclick="openModal('loginModal')">Iniciar Sesión</button>
+                    <button class="btn-auth" onclick="openModal('registroModal')">Registrarse</button>
+                {% endif %}
+            </div>
         </div>
 
         <h1>Bienvenido a Rotoblessing</h1>
         <p>Soluciones integrales en almacenamiento de agua. Encuentra el tanque ideal para tu hogar, comercio o industria.</p>
         <div class="hero-buttons">
-            <a href="#catalogo" class="btn-hero">Catálogo</a>
+            <a href="/mensajes" class="btn-hero"><i class="fa-solid fa-envelope"></i> Consultar Disponibilidad</a>
             <a href="#conocenos" class="btn-secondary">Conócenos</a>
         </div>
     </section>
 
-    <!-- Sección Conócenos -->
-    <section id="conocenos" class="about-container">
-        <h2 class="about-title">Sobre Nosotros</h2>
-        <p class="about-text">
-            En <strong>Rotoblessing</strong> somos especialistas en la distribución y comercialización de tanques de agua de alta calidad. Nos dedicamos a ofrecer soluciones confiables para garantizar el almacenamiento seguro y eficiente del agua en hogares, residencias y empresas.
-        </p>
-
-        <div class="about-grid">
-            <div class="about-box">
-                <h4>Calidad Garantizada</h4>
-                <p>Nuestros tanques están fabricados con materiales de alta durabilidad, protección UV y tecnología antibacteriana.</p>
-            </div>
-            <div class="about-box">
-                <h4>Atención Personalizada</h4>
-                <p>Te asesoramos para elegir la capacidad y modelo ideal según tus necesidades de consumo y espacio.</p>
-            </div>
-            <div class="about-box">
-                <h4>Compromiso y Confianza</h4>
-                <p>Ofrecemos productos respaldados con garantía directa para tu mayor tranquilidad.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Sección del Catálogo de Tanques -->
-    <section id="catalogo" class="catalog-container">
-        <h2 class="catalog-title">Nuestros Tanques de Agua</h2>
-
-        <div class="grid-tanques">
-
-            <!-- Tanque 1 -->
-            <div class="card">
-                <img src="/static/tanque1.jpg" alt="Tanque de Agua 500L">
-                <div class="card-body">
-                    <h3>Tanque Cilíndrico 500L</h3>
-                    <p>Ideal para espacios reducidos en apartamentos o casas pequeñas.</p>
-                    <ul class="specs">
-                        <li><strong>Capacidad:</strong> 500 Litros</li>
-                        <li><strong>Material:</strong> Polietileno de alta densidad</li>
-                        <li><strong>Garantía:</strong> 5 Años</li>
-                    </ul>
-                    <a href="https://wa.me/584120000000?text=Hola,%20quisiera%20consultar%20por%20el%20Tanque%20de%20500L" target="_blank" class="btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
-                    </a>
+    <!-- Modal Registro con Selección de Rol -->
+    <div class="modal-overlay" id="registroModal">
+        <div class="modal-card">
+            <span class="close-modal" onclick="closeModal('registroModal')">&times;</span>
+            <h3>Crear Cuenta</h3>
+            <form action="/registro" method="POST">
+                <div class="form-group">
+                    <label>Nombre Completo</label>
+                    <input type="text" name="nombre" required placeholder="Ej. Juan Pérez">
                 </div>
-            </div>
-
-            <!-- Tanque 2 -->
-            <div class="card">
-                <img src="/static/tanque2.jpg" alt="Tanque de Agua 1000L">
-                <div class="card-body">
-                    <h3>Tanque Vertical 1000L</h3>
-                    <p>La opción más popular para familias de 4 a 6 personas.</p>
-                    <ul class="specs">
-                        <li><strong>Capacidad:</strong> 1000 Litros</li>
-                        <li><strong>Material:</strong> Tri-capa antibacteriano</li>
-                        <li><strong>Garantía:</strong> 10 Años</li>
-                    </ul>
-                    <a href="https://wa.me/584120000000?text=Hola,%20quisiera%20consultar%20por%20el%20Tanque%20de%201000L" target="_blank" class="btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
-                    </a>
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email" required placeholder="correo@ejemplo.com">
                 </div>
-            </div>
-
-            <!-- Tanque 3 -->
-            <div class="card">
-                <img src="/static/tanque3.jpg" alt="Tanque de Agua 2000L">
-                <div class="card-body">
-                    <h3>Tanque Industrial 2000L</h3>
-                    <p>Gran almacenamiento diseñado para comercios, residencias y empresas.</p>
-                    <ul class="specs">
-                        <li><strong>Capacidad:</strong> 2000 Litros</li>
-                        <li><strong>Material:</strong> Reforzado con protección UV</li>
-                        <li><strong>Garantía:</strong> 10 Años</li>
-                    </ul>
-                    <a href="https://wa.me/584120000000?text=Hola,%20quisiera%20consultar%20por%20el%20Tanque%20de%202000L" target="_blank" class="btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
-                    </a>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="password" required>
                 </div>
-            </div>
-
+                <div class="form-group">
+                    <label>¿Cuál es tu rol?</label>
+                    <select name="rol" required>
+                        <option value="Comprador">Comprador (Cliente)</option>
+                        <option value="Vendedor">Vendedor de la Empresa</option>
+                        <option value="Dueno">Dueño de la Empresa</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-submit">Registrarme</button>
+            </form>
         </div>
-    </section>
+    </div>
 
-    <!-- Sección de Redes Sociales -->
-    <section class="social-section">
-        <h2 class="social-title">Síguenos en Redes Sociales</h2>
-        <p class="social-subtitle">Mantente al tanto de nuestras ofertas, modelos y novedades.</p>
-        <div class="social-buttons">
-            <a href="https://instagram.com/tu_usuario_instagram" target="_blank" class="btn-social btn-instagram">
-                <i class="fa-brands fa-instagram"></i> Instagram
-            </a>
-            <a href="https://www.facebook.com/profile.php?id=61593420586061" target="_blank" class="btn-social btn-facebook">
-                <i class="fa-brands fa-facebook-f"></i> Facebook
-            </a>
+    <!-- Modal Iniciar Sesión -->
+    <div class="modal-overlay" id="loginModal">
+        <div class="modal-card">
+            <span class="close-modal" onclick="closeModal('loginModal')">&times;</span>
+            <h3>Iniciar Sesión</h3>
+            <form action="/login" method="POST">
+                <div class="form-group">
+                    <label>Correo Electrónico</label>
+                    <input type="email" name="email" required placeholder="correo@ejemplo.com">
+                </div>
+                <div class="form-group">
+                    <label>Contraseña</label>
+                    <input type="password" name="password" required>
+                </div>
+                <button type="submit" class="btn-submit">Ingresar</button>
+            </form>
         </div>
-    </section>
+    </div>
+
+    <!-- WhatsApp Flotante -->
+    <div class="wa-float-container">
+        <button class="wa-main-btn" onclick="toggleWaMenu()"><i class="fa-brands fa-whatsapp"></i></button>
+        <div class="wa-menu" id="waMenu">
+            <div class="wa-header">Atención Directa</div>
+            <a href="https://wa.me/584120000001" target="_blank" class="wa-item"><i class="fa-brands fa-whatsapp"></i> Ventas</a>
+            <a href="https://wa.me/584120000002" target="_blank" class="wa-item"><i class="fa-brands fa-whatsapp"></i> Soporte</a>
+            <a href="https://wa.me/584120000003" target="_blank" class="wa-item"><i class="fa-brands fa-whatsapp"></i> Entregas</a>
+        </div>
+    </div>
 
     <footer>
         <p>&copy; 2026 Rotoblessing - Todos los derechos reservados.</p>
-        <p style="margin-top: 10px;">
-            Síguenos en: 
-            <a href="https://instagram.com/tu_usuario_instagram" target="_blank"><i class="fa-brands fa-instagram"></i> Instagram</a> | 
-            <a href="https://www.facebook.com/profile.php?id=61593420586061" target="_blank"><i class="fa-brands fa-facebook"></i> Facebook</a>
-        </p>
     </footer>
 
+    <script>
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+        function toggleWaMenu() { document.getElementById('waMenu').classList.toggle('active'); }
+    </script>
 </body>
 </html>
