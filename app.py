@@ -58,21 +58,18 @@ def registro():
         flash('Por favor completa todos los campos.', 'danger')
         return redirect(url_for('index'))
 
-    # Limpieza de correo (convertir a minúsculas y quitar espacios)
     email = email.strip().lower()
 
     if Usuario.query.filter_by(email=email).first():
         flash('El correo ya está registrado.', 'danger')
         return redirect(url_for('index'))
 
-    # Cifrado seguro de contraseña
     hashed_pw = generate_password_hash(password, method='scrypt')
     nuevo_usuario = Usuario(nombre=nombre, email=email, password=hashed_pw, rol=rol)
     
     db.session.add(nuevo_usuario)
     db.session.commit()
 
-    # Iniciar sesión automáticamente tras registrarse
     session.permanent = True
     session['usuario_id'] = nuevo_usuario.id
 
@@ -118,19 +115,22 @@ def enviar_mensaje():
     contenido = request.form.get('mensaje')
     destinatario_id = request.form.get('destinatario_id')
 
-    if not contenido:
+    if not contenido or not contenido.strip():
         return redirect(url_for('mensajes'))
 
+    # Si es enviado por vendedor, destinatario_id tendrá un valor. 
+    # Si es enviado por comprador, destinatario_id es None (mensaje enviado a la empresa).
     nuevo_msg = Mensaje(
         remitente_id=session['usuario_id'],
         destinatario_id=int(destinatario_id) if destinatario_id else None,
-        contenido=contenido
+        contenido=contenido.strip()
     )
     db.session.add(nuevo_msg)
     db.session.commit()
 
     if destinatario_id:
         return redirect(url_for('mensajes', cliente_id=destinatario_id))
+    
     return redirect(url_for('mensajes'))
 
 # BANDEJA DE MENSAJES ESTILO WHATSAPP
@@ -150,23 +150,27 @@ def mensajes():
     lista_clientes = []
 
     if user.rol == 'Comprador':
-        # El comprador ve su chat con la empresa
+        # Muestra tanto los mensajes enviados por el comprador como los recibidos por él
         conversacion = Mensaje.query.filter(
             (Mensaje.remitente_id == user.id) | (Mensaje.destinatario_id == user.id)
         ).order_by(Mensaje.fecha.asc()).all()
     else:
-        # Vendedor / Dueño: Obtiene la lista de todos los compradores
-        subquery = db.session.query(Mensaje.remitente_id).distinct()
-        lista_clientes = Usuario.query.filter(Usuario.id.in_(subquery), Usuario.rol == 'Comprador').all()
+        # Vendedor / Dueño: Encuentra todos los usuarios Compradores que hayan enviado mensajes o recibido alguno
+        subquery_remitentes = db.session.query(Mensaje.remitente_id).distinct()
+        subquery_destinatarios = db.session.query(Mensaje.destinatario_id).filter(Mensaje.destinatario_id.isnot(None)).distinct()
+        
+        ids_compradores = set([r[0] for r in subquery_remitentes] + [d[0] for d in subquery_destinatarios])
+        lista_clientes = Usuario.query.filter(Usuario.id.in_(ids_compradores), Usuario.rol == 'Comprador').all()
 
         cliente_id = request.args.get('cliente_id')
         if cliente_id:
             cliente_seleccionado = Usuario.query.get(cliente_id)
-            conversacion = Mensaje.query.filter(
-                ((Mensaje.remitente_id == cliente_id) & (Mensaje.destinatario_id == None)) |
-                ((Mensaje.remitente_id == cliente_id) & (Mensaje.destinatario_id == user.id)) |
-                ((Mensaje.remitente_id == user.id) & (Mensaje.destinatario_id == cliente_id))
-            ).order_by(Mensaje.fecha.asc()).all()
+            if cliente_seleccionado:
+                conversacion = Mensaje.query.filter(
+                    ((Mensaje.remitente_id == cliente_id) & (Mensaje.destinatario_id.is_(None))) |
+                    ((Mensaje.remitente_id == cliente_id) & (Mensaje.destinatario_id == user.id)) |
+                    ((Mensaje.destinatario_id == cliente_id))
+                ).order_by(Mensaje.fecha.asc()).all()
 
     return render_template(
         'mensajes.html', 
