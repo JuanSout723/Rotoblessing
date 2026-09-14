@@ -31,6 +31,9 @@ class Mensaje(db.Model):
     receptor_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     contenido = db.Column(db.Text, nullable=False)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relación para que el HTML pueda leer {{ msg.remitente.nombre }} sin errores
+    remitente = db.relationship('Usuario', foreign_keys=[emisor_id])
 
 # Crear las tablas automáticamente si no existen
 with app.app_context():
