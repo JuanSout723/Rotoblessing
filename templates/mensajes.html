@@ -8,12 +8,14 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        body { background-color: #e5ddd5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* Ajuste clave para móviles: usamos 100dvh (Dynamic Viewport Height) para evitar que las barras del sistema tapen el contenido */
+        body { background-color: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
-        header { background-color: #0077b6; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
+        header { background-color: #0077b6; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         header a { color: white; text-decoration: none; font-weight: 600; }
 
-        .chat-container { display: flex; flex: 1; overflow: hidden; background: white; margin: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .chat-container { display: flex; flex: 1; overflow: hidden; background: white; margin: 8px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); min-height: 0; }
 
         .sidebar { width: 320px; background-color: #f8f9fa; border-right: 1px solid #ddd; display: flex; flex-direction: column; flex-shrink: 0; }
         .sidebar-header { padding: 15px; background: #eee; font-weight: 600; border-bottom: 1px solid #ddd; color: #0077b6; }
@@ -22,39 +24,39 @@
         .chat-item:hover, .chat-item.active { background: #e2f0fb; }
         .chat-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #0077b6; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
 
-        .main-chat { flex: 1; display: flex; flex-direction: column; background-color: #efeae2; height: 100%; overflow: hidden; }
+        /* Contenedor principal del chat estructurado en columnas flexibles */
+        .main-chat { flex: 1; display: flex; flex-direction: column; background-color: #efeae2; height: 100%; min-height: 0; overflow: hidden; }
         .full-width { width: 100%; }
 
-        .chat-header { padding: 15px; background-color: #f0f2f5; border-bottom: 1px solid #ddd; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .chat-header { padding: 12px 15px; background-color: #f0f2f5; border-bottom: 1px solid #ddd; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
         .btn-volver-movil { display: none; color: #0077b6; font-size: 1.1rem; text-decoration: none; margin-right: 5px; }
 
-        .messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .msg-bubble { max-width: 70%; padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; position: relative; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        /* Área de mensajes con scroll fluido y flex correcto */
+        .messages-area { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+        .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; position: relative; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .msg-enviado { background-color: #dcf8c6; align-self: flex-end; border-top-right-radius: 0; }
         .msg-recibido { background-color: #ffffff; align-self: flex-start; border-top-left-radius: 0; }
         .msg-info { font-size: 0.75rem; color: #888; text-align: right; margin-top: 4px; display: block; }
 
-        .input-area { padding: 12px; background-color: #f0f2f5; display: flex; gap: 10px; align-items: center; border-top: 1px solid #ddd; flex-shrink: 0; }
-        .input-area input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 20px; outline: none; font-size: 0.95rem; background: #fff; }
-        .input-area button { background-color: #0077b6; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+        /* Barra inferior fija que no se oculta */
+        .input-area { padding: 10px 15px; background-color: #f0f2f5; display: flex; gap: 10px; align-items: center; border-top: 1px solid #ddd; flex-shrink: 0; }
+        .input-area input { flex: 1; padding: 10px 14px; border: 1px solid #ccc; border-radius: 20px; outline: none; font-size: 0.95rem; background: #fff; }
+        .input-area button { background-color: #0077b6; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 
         /* ==========================================================
-           ADAPTACIÓN MÓVIL (ANDROID)
-           ========================================================== */
+            ADAPTACIÓN MÓVIL (ANDROID)
+            ========================================================== */
         @media (max-width: 768px) {
-            .chat-container { margin: 0; border-radius: 0; height: calc(100vh - 55px); }
+            .chat-container { margin: 0; border-radius: 0; height: calc(100dvh - 50px); }
 
             {% if usuario.rol == 'Comprador' %}
-                /* Si es comprador, el chat va a pantalla completa */
                 .main-chat { display: flex; width: 100%; }
             {% else %}
                 {% if cliente_actual %}
-                    /* Si es vendedor y seleccionó un cliente, ocultamos barra lateral y mostramos el chat */
                     .sidebar { display: none; }
                     .main-chat { display: flex; width: 100%; }
                     .btn-volver-movil { display: inline-flex; align-items: center; }
                 {% else %}
-                    /* Si es vendedor y NO ha seleccionado cliente, mostramos solo la lista de contactos */
                     .sidebar { width: 100%; border-right: none; }
                     .main-chat { display: none; }
                 {% endif %}
@@ -117,12 +119,12 @@
                     {% endif %}
                 </div>
 
-                <!-- Historial de Conversación -->
+                <!-- Historial de Conversación con scroll interno fluido -->
                 <div class="messages-area" id="msgBox">
                     {% for msg in conversacion %}
-                        <div class="msg-bubble {% if msg.remitente_id == usuario.id %}msg-enviado{% else %}msg-recibido{% endif %}">
+                        <div class="msg-bubble {% if msg.emisor_id == usuario.id %}msg-enviado{% else %}msg-recibido{% endif %}">
                             <strong style="font-size: 0.8rem; color: #555;">
-                                {% if msg.remitente_id == usuario.id %}Tú{% else %}{{ msg.remitente.nombre }}{% endif %}
+                                {% if msg.emisor_id == usuario.id %}Tú{% else %}{{ msg.remitente.nombre }}{% endif %}
                             </strong>
                             <p>{{ msg.contenido }}</p>
                             <div class="msg-info">{{ msg.fecha.strftime('%H:%M') }}</div>
@@ -130,8 +132,11 @@
                     {% endfor %}
                 </div>
 
-                <!-- Área de escribir mensaje corregida para apuntar a la ruta con el ID exacto -->
-                <form action="{{ url_for('enviar_mensaje', receptor_id=cliente_actual.id) }}" method="POST" class="input-area">
+                <!-- Área de escribir mensaje fija abajo -->
+                <form action="{{ url_for('enviar_mensaje') }}" method="POST" class="input-area">
+                    {% if usuario.rol != 'Comprador' and cliente_actual %}
+                        <input type="hidden" name="destinatario_id" value="{{ cliente_actual.id }}">
+                    {% endif %}
                     <input type="text" name="contenido" placeholder="Escribe un mensaje..." autocomplete="off" required>
                     <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
                 </form>
