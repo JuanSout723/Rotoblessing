@@ -103,34 +103,46 @@ def logout():
 # --- RUTAS DE MENSAJERÍA Y CHAT ---
 
 @app.route('/mensajes')
-@app.route('/mensajes/<int:contacto_id>')
-def centro_mensajes(contacto_id=None):
+def centro_mensajes():
     if 'usuario_id' not in session:
         flash('Debes iniciar sesión para acceder al centro de mensajes.', 'warning')
         return redirect(url_for('index'))
 
     usuario_actual = Usuario.query.get(session['usuario_id'])
-    contactos = Usuario.query.filter(Usuario.id != usuario_actual.id).all()
+    
+    clientes = []
+    cliente_actual = None
+    conversacion = []
 
-    contacto_seleccionado = None
-    mensajes_chat = []
-
-    if contacto_id:
-        contacto_seleccionado = Usuario.query.get(contacto_id)
-        if contacto_seleccionado:
-            mensajes_chat = Mensaje.query.filter(
-                ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == contacto_id)) |
-                ((Mensaje.emisor_id == contacto_id) & (Mensaje.receptor_id == usuario_actual.id))
+    if usuario_actual.rol == 'Comprador':
+        # SI ES COMPRADOR: Le asignamos automáticamente el primer vendedor/dueño disponible para que el chat funcione
+        vendedor_principal = Usuario.query.filter(Usuario.rol != 'Comprador').first()
+        if vendedor_principal:
+            cliente_actual = vendedor_principal
+            conversacion = Mensaje.query.filter(
+                ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == vendedor_principal.id)) |
+                ((Mensaje.emisor_id == vendedor_principal.id) & (Mensaje.receptor_id == usuario_actual.id))
             ).order_by(Mensaje.fecha.asc()).all()
+    else:
+        # SI ES VENDEDOR O DUEÑO: Muestra la lista de los demás usuarios y el chat del cliente seleccionado
+        clientes = Usuario.query.filter(Usuario.id != usuario_actual.id).all()
+        
+        cliente_id = request.args.get('cliente_id')
+        if cliente_id:
+            cliente_actual = Usuario.query.get(cliente_id)
+            if cliente_actual:
+                conversacion = Mensaje.query.filter(
+                    ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == cliente_id)) |
+                    ((Mensaje.emisor_id == cliente_id) & (Mensaje.receptor_id == usuario_actual.id))
+                ).order_by(Mensaje.fecha.asc()).all()
 
     return render_template(
         'mensajes.html',
         usuario=usuario_actual,
-        contactos=contactos,
-        contacto_seleccionado=contacto_seleccionado,
-        mensajes_chat=mensajes_chat
+        clientes=clientes,
+        cliente_actual=cliente_actual,
+        conversacion=conversacion
     )
-
 @app.route('/enviar_mensaje/<int:receptor_id>', methods=['POST'])
 def enviar_mensaje(receptor_id):
     if 'usuario_id' not in session:
