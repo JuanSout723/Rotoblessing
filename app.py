@@ -146,7 +146,8 @@ def enviar_mensaje(receptor_id):
         db.session.add(nuevo_mensaje)
         db.session.commit()
 
-    return redirect(url_for('centro_mensajes', contacto_id=receptor_id))
+    # Redirige de vuelta al chat del cliente usando el parámetro que lee el HTML
+    return redirect(url_for('centro_mensajes', cliente_id=receptor_id))
 
 if __name__ == '__main__':
     app.run(debug=True)
