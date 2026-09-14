@@ -115,7 +115,7 @@ def centro_mensajes():
     conversacion = []
 
     if usuario_actual.rol == 'Comprador':
-        # SI ES COMPRADOR: Le asignamos automáticamente el primer vendedor/dueño disponible para que el chat funcione
+        # SI ES COMPRADOR: Le asignamos automáticamente el primer vendedor/dueño disponible
         vendedor_principal = Usuario.query.filter(Usuario.rol != 'Comprador').first()
         if vendedor_principal:
             cliente_actual = vendedor_principal
@@ -143,18 +143,31 @@ def centro_mensajes():
         cliente_actual=cliente_actual,
         conversacion=conversacion
     )
-@app.route('/enviar_mensaje/<int:receptor_id>', methods=['POST'])
-def enviar_mensaje(receptor_id):
+
+@app.route('/enviar_mensaje', methods=['POST'])
+def enviar_mensaje():
     if 'usuario_id' not in session:
         return redirect(url_for('index'))
 
+    usuario_actual = Usuario.query.get(session['usuario_id'])
     contenido = request.form.get('contenido', '').strip()
     
-    if contenido:
+    destinatario_id = None
+
+    if usuario_actual.rol == 'Comprador':
+        # Si es comprador, el destinatario por defecto es el primer vendedor/dueño disponible
+        vendedor_principal = Usuario.query.filter(Usuario.rol != 'Comprador').first()
+        if vendedor_principal:
+            destinatario_id = vendedor_principal.id
+    else:
+        # Si es vendedor/dueño, lee el input oculto del formulario HTML
+        destinatario_id = request.form.get('destinatario_id')
+
+    if contenido and destinatario_id:
         try:
             nuevo_mensaje = Mensaje(
-                emisor_id=session['usuario_id'],
-                receptor_id=receptor_id,
+                emisor_id=usuario_actual.id,
+                receptor_id=destinatario_id,
                 contenido=contenido
             )
             db.session.add(nuevo_mensaje)
@@ -164,12 +177,11 @@ def enviar_mensaje(receptor_id):
             print(f"Error al guardar el mensaje: {e}")
             flash("Hubo un error al enviar el mensaje.", "danger")
 
-    usuario_actual = Usuario.query.get(session['usuario_id'])
-    
-    # Si es comprador, redirigimos limpio a /mensajes. Si es vendedor, regresamos al chat de ese cliente.
+    # Redirección inteligente adaptada al rol
     if usuario_actual.rol == 'Comprador':
         return redirect(url_for('centro_mensajes'))
     else:
-        return redirect(url_for('centro_mensajes', cliente_id=receptor_id))
+        return redirect(url_for('centro_mensajes', cliente_id=destinatario_id))
+
 if __name__ == '__main__':
     app.run(debug=True)
