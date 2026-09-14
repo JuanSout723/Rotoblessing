@@ -1,36 +1,29 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = 'rotoblessing_clave_secreta_super_segura_2026'
+app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
 
-# --- CONFIGURACIÓN DE BASE DE DATOS ---
-# Detecta automáticamente la variable de entorno DATABASE_URL de Render (PostgreSQL)
-# O utiliza SQLite como respaldo para pruebas locales si no está definida
-db_url = os.environ.get('DATABASE_URL', 'sqlite:///rotoblessing.db')
+# Configuración de la base de datos (Compatible con PostgreSQL en Render y SQLite local)
+database_url = os.environ.get('DATABASE_URL')
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-if db_url.startswith("postgres://"):
-    db_url = db_url.replace("postgres://", "postgresql://", 1)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///rotoblessing.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# --- CLAVES SECRETAS DE VERIFICACIÓN PARA ROLES RESTRINGIDOS ---
-CLAVE_VENDEDOR = "ROTO2026_VENDEDOR"
-CLAVE_DUENO = "ROTO2026_DUENO"
+# --- MODELOS DE LA BASE DE DATOS ---
 
-# --- MODELOS DE BASE DE DATOS ---
 class Usuario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-    rol = db.Column(db.String(20), nullable=False, default='Comprador') # Roles: Comprador, Vendedor, Dueno
+    rol = db.Column(db.String(50), nullable=False, default='Comprador')
 
 class Mensaje(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,13 +32,17 @@ class Mensaje(db.Model):
     contenido = db.Column(db.Text, nullable=False)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
 
-    emisor = db.relationship('Usuario', foreign_keys=[emisor_id], backref='mensajes_enviados')
-    receptor = db.relationship('Usuario', foreign_keys=[receptor_id], backref='mensajes_recibidos')
-
+# Crear las tablas automáticamente si no existen
 with app.app_context():
     db.create_all()
 
-# --- RUTAS PRINCIPALES Y AUTENTICACIÓN ---
+# --- RUTAS DE NAVEGACIÓN Y AUTENTICACIÓN ---
+
+@app.route('/')
+def index():
+    usuario_id = session.get('usuario_id')
+    usuario = Usuario.query.get(usuario_id) if usuario_id else None
+    return render_template('index.html', usuario=usuario)
 
 @app.route('/registro', methods=['POST'])
 def registro():
@@ -55,67 +52,47 @@ def registro():
     rol = request.form.get('rol')
     codigo = request.form.get('codigo_verificacion', '').strip()
 
-    # Definir las claves secretas
-    CLAVE_VENDEDOR = "VENDEDOR2026"  # Cambia esta clave por la que prefieras
-    CLAVE_DUENO = "ADMIN2026"        # Cambia esta clave por la que prefieras
+    # --- CLAVES SECRETAS DE VERIFICACIÓN ---
+    CLAVE_VENDEDOR = "VENDEDOR2026"
+    CLAVE_DUENO = "ADMIN2026"
 
-    # Validación backend para Vendedor
+    # Validación estricta en el servidor para Vendedor
     if rol == 'Vendedor' and codigo != CLAVE_VENDEDOR:
         flash('Código de verificación incorrecto para el rol de Vendedor.', 'danger')
-        return redirect('/')
+        return redirect(url_for('index'))
 
-    # Validación backend para Dueño
+    # Validación estricta en el servidor para Dueño / Administrador
     if rol == 'Dueno' and codigo != CLAVE_DUENO:
         flash('Código de verificación incorrecto para el rol de Dueño/Administrador.', 'danger')
-        return redirect('/')
-
-    # Si pasa las validaciones, procede a guardar el usuario en la base de datos
-    # ... (tu código para guardar el usuario) ...
-
-    flash('¡Registro exitoso! Ya puedes iniciar sesión.', 'success')
-    return redirect('/')
-    email = email.strip().lower()
-
-    # Validar código de seguridad según el rol seleccionado
-    if rol == 'Vendedor' and codigo_verificacion != CLAVE_VENDEDOR:
-        flash('El código de verificación para Vendedor es incorrecto.', 'danger')
         return redirect(url_for('index'))
 
-    if rol == 'Dueno' and codigo_verificacion != CLAVE_DUENO:
-        flash('El código de verificación para Dueño / Administrador es incorrecto.', 'danger')
+    # Verificar si el correo ya existe
+    usuario_existente = Usuario.query.filter_by(email=email).first()
+    if usuario_existente:
+        flash('El correo electrónico ya está registrado.', 'danger')
         return redirect(url_for('index'))
 
-    if Usuario.query.filter_by(email=email).first():
-        flash('El correo electrónico ya se encuentra registrado.', 'danger')
-        return redirect(url_for('index'))
-
-    hashed_pw = generate_password_hash(password, method='scrypt')
-    nuevo_usuario = Usuario(nombre=nombre, email=email, password=hashed_pw, rol=rol)
-    
+    nuevo_usuario = Usuario(nombre=nombre, email=email, password=password, rol=rol)
     db.session.add(nuevo_usuario)
     db.session.commit()
 
-    session.permanent = True
-    session['usuario_id'] = nuevo_usuario.id
-
-    flash(f'¡Cuenta creada exitosamente! Bienvenido, {nombre}.', 'success')
+    flash('¡Registro exitoso! Ya puedes iniciar sesión.', 'success')
     return redirect(url_for('index'))
 
 @app.route('/login', methods=['POST'])
 def login():
-    email = request.form.get('email', '').strip().lower()
-    password = request.form.get('password', '')
+    email = request.form.get('email')
+    password = request.form.get('password')
 
-    usuario = Usuario.query.filter_by(email=email).first()
+    usuario = Usuario.query.filter_by(email=email, password=password).first()
 
-    if usuario and check_password_hash(usuario.password, password):
-        session.permanent = True
+    if usuario:
         session['usuario_id'] = usuario.id
-        flash(f'Sesión iniciada correctamente. ¡Hola de nuevo, {usuario.nombre}!', 'success')
-        return redirect(url_for('index'))
+        flash(f'¡Bienvenido de nuevo, {usuario.nombre}!', 'success')
     else:
-        flash('Correo electrónico o contraseña incorrectos.', 'danger')
-        return redirect(url_for('index'))
+        flash('Correo o contraseña incorrectos.', 'danger')
+
+    return redirect(url_for('index'))
 
 @app.route('/logout')
 def logout():
@@ -134,7 +111,7 @@ def centro_mensajes(contacto_id=None):
 
     usuario_actual = Usuario.query.get(session['usuario_id'])
     contactos = Usuario.query.filter(Usuario.id != usuario_actual.id).all()
-    
+
     contacto_seleccionado = None
     mensajes_chat = []
 
