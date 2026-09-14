@@ -63,7 +63,7 @@
         .product-card p { font-size: 0.85rem; color: #6c757d; margin-bottom: 15px; line-height: 1.4; }
         .product-card .price { font-size: 1.2rem; font-weight: 700; color: #28a745; margin-bottom: 15px; }
 
-        .about-card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); line-height: 1.7; color: #495057; margin-bottom: 40px; }
+        .about-card { background: white; padding: 35px; border-radius: 12px; shadow: 0 4px 15px rgba(0,0,0,0.05); line-height: 1.7; color: #495057; margin-bottom: 40px; }
         .about-card p { margin-bottom: 15px; }
 
         /* Botón Flotante de WhatsApp */
@@ -127,7 +127,7 @@
         </div>
 
         {% if not usuario %}
-            <!-- Formularios de Iniciar Sesión y Registro (Solo visible para invitados) -->
+            <!-- Formularios de Iniciar Sesión y Registro -->
             <div class="forms-grid">
 
                 <!-- Iniciar Sesión -->
@@ -165,7 +165,7 @@
                         <div class="form-group">
                             <label>Tipo de Usuario (Rol)</label>
                             <select name="rol" id="rolSelect" onchange="evaluarRol()" required>
-                                <option value="Comprador">Comprador</option>
+                                <option value="Comprador" selected>Comprador</option>
                                 <option value="Vendedor">Vendedor</option>
                                 <option value="Dueno">Dueño / Administrador</option>
                             </select>
@@ -174,7 +174,7 @@
                         <!-- Código de Verificación Especial -->
                         <div class="form-group" id="codigoGroup" style="display: none;">
                             <label style="color: #0077b6;"><i class="fa-solid fa-key"></i> Código de Verificación Especial</label>
-                            <input type="password" name="codigo_verificacion" placeholder="Ingresa la clave de autorización">
+                            <input type="password" name="codigo_verificacion" id="inputCodigo" placeholder="Ingresa la clave de autorización">
                         </div>
 
                         <button type="submit" class="btn btn-success"><i class="fa-solid fa-check"></i> Registrarse</button>
@@ -239,14 +239,27 @@
 
     <script>
         function evaluarRol() {
-            var rol = document.getElementById('rolSelect').value;
+            var rolSelect = document.getElementById('rolSelect');
+            if (!rolSelect) return;
+            
+            var rol = rolSelect.value;
             var campoCodigo = document.getElementById('codigoGroup');
+            var inputCodigo = document.getElementById('inputCodigo');
+            
             if (rol === 'Vendedor' || rol === 'Dueno') {
                 campoCodigo.style.display = 'block';
+                inputCodigo.setAttribute('required', 'required');
             } else {
                 campoCodigo.style.display = 'none';
+                inputCodigo.removeAttribute('required');
+                inputCodigo.value = '';
             }
         }
+
+        // Ejecutar inmediatamente al cargar la página para reflejar el estado actual
+        document.addEventListener("DOMContentLoaded", function() {
+            evaluarRol();
+        });
     </script>
 
 </body>
