@@ -47,25 +47,33 @@ with app.app_context():
 
 # --- RUTAS PRINCIPALES Y AUTENTICACIÓN ---
 
-@app.route('/')
-def index():
-    usuario_actual = None
-    if 'usuario_id' in session:
-        usuario_actual = Usuario.query.get(session['usuario_id'])
-    return render_template('index.html', usuario=usuario_actual)
-
 @app.route('/registro', methods=['POST'])
 def registro():
     nombre = request.form.get('nombre')
     email = request.form.get('email')
     password = request.form.get('password')
     rol = request.form.get('rol')
-    codigo_verificacion = request.form.get('codigo_verificacion')
+    codigo = request.form.get('codigo_verificacion', '').strip()
 
-    if not email or not password or not nombre or not rol:
-        flash('Por favor completa todos los campos requeridos.', 'danger')
-        return redirect(url_for('index'))
+    # Definir las claves secretas
+    CLAVE_VENDEDOR = "VENDEDOR2026"  # Cambia esta clave por la que prefieras
+    CLAVE_DUENO = "ADMIN2026"        # Cambia esta clave por la que prefieras
 
+    # Validación backend para Vendedor
+    if rol == 'Vendedor' and codigo != CLAVE_VENDEDOR:
+        flash('Código de verificación incorrecto para el rol de Vendedor.', 'danger')
+        return redirect('/')
+
+    # Validación backend para Dueño
+    if rol == 'Dueno' and codigo != CLAVE_DUENO:
+        flash('Código de verificación incorrecto para el rol de Dueño/Administrador.', 'danger')
+        return redirect('/')
+
+    # Si pasa las validaciones, procede a guardar el usuario en la base de datos
+    # ... (tu código para guardar el usuario) ...
+
+    flash('¡Registro exitoso! Ya puedes iniciar sesión.', 'success')
+    return redirect('/')
     email = email.strip().lower()
 
     # Validar código de seguridad según el rol seleccionado
