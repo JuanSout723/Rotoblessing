@@ -55,13 +55,20 @@
         .section-title { text-align: center; color: #0077b6; font-size: 1.6rem; font-weight: 700; margin: 40px 0 20px 0; position: relative; }
         .section-title::after { content: ''; display: block; width: 60px; height: 3px; background-color: #0077b6; margin: 8px auto 0 auto; border-radius: 2px; }
 
-        .catalog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 25px; margin-bottom: 40px; }
-        .product-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.2s; }
+        .catalog-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 25px; margin-bottom: 40px; }
+        .product-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); transition: transform 0.2s; display: flex; flex-direction: column; justify-content: space-between; }
         .product-card:hover { transform: translateY(-5px); }
         .product-card img { width: 100%; height: 180px; object-fit: contain; border-radius: 8px; margin-bottom: 15px; }
         .product-card h3 { font-size: 1.1rem; color: #333; margin-bottom: 8px; }
         .product-card p { font-size: 0.85rem; color: #6c757d; margin-bottom: 15px; line-height: 1.4; }
         .product-card .price { font-size: 1.2rem; font-weight: 700; color: #28a745; margin-bottom: 15px; }
+
+        /* Botones dobles de consulta en el catálogo */
+        .product-actions { display: flex; gap: 8px; margin-top: auto; }
+        .btn-consultar { flex: 1; padding: 10px 8px; font-size: 0.85rem; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 5px; color: white; transition: opacity 0.2s; }
+        .btn-consultar:hover { opacity: 0.9; }
+        .btn-platform { background-color: #0077b6; }
+        .btn-wa { background-color: #25d366; }
 
         .about-card { background: white; padding: 35px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); line-height: 1.7; color: #495057; margin-bottom: 40px; }
         .about-card p { margin-bottom: 15px; }
@@ -188,29 +195,49 @@
         <!-- Sección: Catálogo de Productos -->
         <h2 class="section-title" id="catalogo">Nuestro Catálogo</h2>
         <div class="catalog-grid">
+            
+            <!-- Producto 1 -->
             <div class="product-card">
-                <img src="{{ url_for('static', filename='tanque1.jpg') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+1'">
-                <h3>Tanque Residencial 500L</h3>
-                <p>Ideal para departamentos o casas pequeñas. Fabricado con polietileno tricapa de alta durabilidad.</p>
-                <div class="price">$120.00</div>
-                <a href="/mensajes" class="btn"><i class="fa-solid fa-paper-plane"></i> Consultar Vendedor</a>
+                <div>
+                    <img src="{{ url_for('static', filename='tanque1.jpg') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+1'">
+                    <h3>Tanque Residencial 500L</h3>
+                    <p>Ideal para departamentos o casas pequeñas. Fabricado con polietileno tricapa de alta durabilidad.</p>
+                    <div class="price">$120.00</div>
+                </div>
+                <div class="product-actions">
+                    <a href="/mensajes" class="btn-consultar btn-platform"><i class="fa-solid fa-comments"></i> Consultar</a>
+                    <a href="https://wa.me/580000000000?text=Hola,%20estoy%20interesado%20en%20el%20Tanque%20Residencial%20500L%20($120.00)" target="_blank" class="btn-consultar btn-wa"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                </div>
             </div>
 
+            <!-- Producto 2 -->
             <div class="product-card">
-                <img src="{{ url_for('static', filename='tanque2.jpg') }}" alt="Tanque 1000L" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+2'">
-                <h3>Tanque Vertical 1000L</h3>
-                <p>Capacidad óptima para familias promedio. Incluye filtro antibacteriano y tapa hermética.</p>
-                <div class="price">$210.00</div>
-                <a href="/mensajes" class="btn"><i class="fa-solid fa-paper-plane"></i> Consultar Vendedor</a>
+                <div>
+                    <img src="{{ url_for('static', filename='tanque2.jpg') }}" alt="Tanque 1000L" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+2'">
+                    <h3>Tanque Vertical 1000L</h3>
+                    <p>Capacidad óptima para familias promedio. Incluye filtro antibacteriano y tapa hermética.</p>
+                    <div class="price">$210.00</div>
+                </div>
+                <div class="product-actions">
+                    <a href="/mensajes" class="btn-consultar btn-platform"><i class="fa-solid fa-comments"></i> Consultar</a>
+                    <a href="https://wa.me/580000000000?text=Hola,%20estoy%20interesado%20en%20el%20Tanque%20Vertical%201000L%20($210.00)" target="_blank" class="btn-consultar btn-wa"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                </div>
             </div>
 
+            <!-- Producto 3 -->
             <div class="product-card">
-                <img src="{{ url_for('static', filename='tanque3.jpg') }}" alt="Tanque Industrial" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+3'">
-                <h3>Tanque Industrial 2500L</h3>
-                <p>Diseñado para almacenamiento masivo en comercios e industrias. Ultra resistente a rayos UV.</p>
-                <div class="price">$450.00</div>
-                <a href="/mensajes" class="btn"><i class="fa-solid fa-paper-plane"></i> Consultar Vendedor</a>
+                <div>
+                    <img src="{{ url_for('static', filename='tanque3.jpg') }}" alt="Tanque Industrial" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+3'">
+                    <h3>Tanque Industrial 2500L</h3>
+                    <p>Diseñado para almacenamiento masivo en comercios e industrias. Ultra resistente a rayos UV.</p>
+                    <div class="price">$450.00</div>
+                </div>
+                <div class="product-actions">
+                    <a href="/mensajes" class="btn-consultar btn-platform"><i class="fa-solid fa-comments"></i> Consultar</a>
+                    <a href="https://wa.me/580000000000?text=Hola,%20estoy%20interesado%20en%20el%20Tanque%20Industrial%202500L%20($450.00)" target="_blank" class="btn-consultar btn-wa"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
+                </div>
             </div>
+
         </div>
 
         <!-- Sección: Conócenos -->
@@ -222,8 +249,8 @@
 
     </div>
 
-    <!-- Botón Flotante de WhatsApp -->
-    <a href="https://wa.me/580000000000?text=Hola%2C%20quisiera%20recibir%20informaci%C3%B3n%20sobre%20los%20tanques%20Rotoblessing" class="whatsapp-btn" target="_blank" title="Contactar por WhatsApp">
+    <!-- Botón Flotante General de WhatsApp -->
+    <a href="https://wa.me/580000000000?text=Hola%2C%20quisiera%20recibir%20informaci%C3%B3n%20general%20sobre%20los%20tanques%20Rotoblessing" class="whatsapp-btn" target="_blank" title="Contactar por WhatsApp">
         <i class="fa-brands fa-whatsapp"></i>
     </a>
 
