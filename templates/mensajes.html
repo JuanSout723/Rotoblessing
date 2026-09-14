@@ -4,63 +4,83 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Centro de Mensajes - Rotoblessing</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        body { background-color: #e5ddd5; height: 100vh; display: flex; flex-direction: column; }
+        body { background-color: #e5ddd5; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Encabezado */
-        header { background-color: #0077b6; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header { background-color: #0077b6; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
         header a { color: white; text-decoration: none; font-weight: 600; }
 
-        /* Contenedor Principal del Chat */
         .chat-container { display: flex; flex: 1; overflow: hidden; background: white; margin: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
-        /* Panel Izquierdo: Lista de Chats (Vendedores / Dueños) */
-        .sidebar { width: 30%; background-color: #f8f9fa; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; background: #eee; font-weight: 600; border-bottom: 1px solid #ddd; }
+        .sidebar { width: 320px; background-color: #f8f9fa; border-right: 1px solid #ddd; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar-header { padding: 15px; background: #eee; font-weight: 600; border-bottom: 1px solid #ddd; color: #0077b6; }
         .chat-list { overflow-y: auto; flex: 1; }
         .chat-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #eee; text-decoration: none; color: #333; transition: background 0.2s; }
-        .chat-item:hover, .chat-item.active { background-color: #e0f7fa; }
-        .chat-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #0077b6; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; }
+        .chat-item:hover, .chat-item.active { background: #e2f0fb; }
+        .chat-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #0077b6; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; flex-shrink: 0; }
 
-        /* Panel Derecho: Ventana de Conversación */
-        .main-chat { width: 70%; display: flex; flex-direction: column; background-color: #efeae2; }
+        .main-chat { flex: 1; display: flex; flex-direction: column; background-color: #efeae2; height: 100%; overflow: hidden; }
         .full-width { width: 100%; }
-        
-        .chat-header { padding: 15px; background-color: #f0f2f5; border-bottom: 1px solid #ddd; font-weight: 600; }
+
+        .chat-header { padding: 15px; background-color: #f0f2f5; border-bottom: 1px solid #ddd; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+        .btn-volver-movil { display: none; color: #0077b6; font-size: 1.1rem; text-decoration: none; margin-right: 5px; }
+
         .messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-
-        /* Burbujas de Mensaje */
-        .msg-bubble { max-width: 60%; padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; position: relative; word-wrap: break-word; }
+        .msg-bubble { max-width: 70%; padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; position: relative; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
         .msg-enviado { background-color: #dcf8c6; align-self: flex-end; border-top-right-radius: 0; }
-        .msg-recibido { background-color: #ffffff; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
-        .msg-info { font-size: 0.75rem; color: #888; text-align: right; margin-top: 4px; }
+        .msg-recibido { background-color: #ffffff; align-self: flex-start; border-top-left-radius: 0; }
+        .msg-info { font-size: 0.75rem; color: #888; text-align: right; margin-top: 4px; display: block; }
 
-        /* Área de escribir mensaje */
-        .input-area { padding: 12px; background-color: #f0f2f5; display: flex; gap: 10px; }
-        .input-area input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 20px; outline: none; font-size: 0.95rem; }
-        .input-area button { background-color: #0077b6; color: white; border: none; padding: 10px 20px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; }
-        .input-area button:hover { background-color: #005b8e; }
-        
-        .no-chat-selected { display: flex; flex: 1; align-items: center; justify-content: center; color: #777; text-align: center; }
+        .input-area { padding: 12px; background-color: #f0f2f5; display: flex; gap: 10px; align-items: center; border-top: 1px solid #ddd; flex-shrink: 0; }
+        .input-area input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 20px; outline: none; font-size: 0.95rem; background: #fff; }
+        .input-area button { background-color: #0077b6; color: white; border: none; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
+
+        /* ==========================================================
+           ADAPTACIÓN MÓVIL (ANDROID)
+           ========================================================== */
+        @media (max-width: 768px) {
+            .chat-container { margin: 0; border-radius: 0; height: calc(100vh - 55px); }
+
+            {% if usuario.rol == 'Comprador' %}
+                /* Si es comprador, el chat va a pantalla completa */
+                .main-chat { display: flex; width: 100%; }
+            {% else %}
+                {% if cliente_actual %}
+                    /* Si es vendedor y seleccionó un cliente, ocultamos barra lateral y mostramos el chat */
+                    .sidebar { display: none; }
+                    .main-chat { display: flex; width: 100%; }
+                    .btn-volver-movil { display: inline-flex; align-items: center; }
+                {% else %}
+                    /* Si es vendedor y NO ha seleccionado cliente, mostramos solo la lista de contactos */
+                    .sidebar { width: 100%; border-right: none; }
+                    .main-chat { display: none; }
+                {% endif %}
+            {% endif %}
+        }
     </style>
 </head>
 <body>
 
     <header>
-        <h2><i class="fa-solid fa-comments"></i> Mensajes - Rotoblessing</h2>
-        <a href="/"><i class="fa-solid fa-house"></i> Volver al Inicio</a>
+        <h1><i class="fa-solid fa-comments"></i> Centro de Mensajes</h1>
+        <div>
+            <a href="{{ url_for('index') }}"><i class="fa-solid fa-store"></i> Catálogo</a>
+            <span style="margin: 0 8px; color: #90e0ef;">|</span>
+            <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
+        </div>
     </header>
 
     <div class="chat-container">
 
         <!-- SI ES VENDEDOR O DUEÑO: Muestra la lista de clientes a la izquierda -->
         {% if usuario.rol != 'Comprador' %}
-            <div class="sidebar">
-                <div class="sidebar-header">Conversaciones con Clientes</div>
-                <div class="chat-list">
+        <div class="sidebar">
+            <div class="sidebar-header"><i class="fa-solid fa-address-book"></i> Conversaciones con Clientes</div>
+            <div class="chat-list">
+                {% if clientes %}
                     {% for cliente in clientes %}
                         <a href="/mensajes?cliente_id={{ cliente.id }}" class="chat-item {% if cliente_actual and cliente_actual.id == cliente.id %}active{% endif %}">
                             <div class="chat-avatar">{{ cliente.nombre[0].upper() }}</div>
@@ -69,22 +89,31 @@
                                 <br><small style="color: #666;">{{ cliente.email }}</small>
                             </div>
                         </a>
-                    {% else %}
-                        <p style="padding: 15px; color: #777; font-size: 0.9rem;">No hay mensajes de compradores aún.</p>
                     {% endfor %}
-                </div>
+                {% else %}
+                    <p style="padding: 15px; color: #777; font-size: 0.9rem;">No hay mensajes de compradores aún.</p>
+                {% endif %}
             </div>
+        </div>
         {% endif %}
 
         <!-- ÁREA DE CHAT DERECHA -->
         <div class="main-chat {% if usuario.rol == 'Comprador' %}full-width{% endif %}">
-            
+
             {% if usuario.rol == 'Comprador' or cliente_actual %}
                 <div class="chat-header">
+                    <!-- Botón para regresar a la lista en móviles -->
+                    <a href="{{ url_for('centro_mensajes') }}" class="btn-volver-movil" title="Volver a lista">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </a>
+
                     {% if usuario.rol == 'Comprador' %}
-                        <i class="fa-solid fa-headset"></i> Atención al Cliente - Rotoblessing
+                        <i class="fa-solid fa-headset" style="color: #0077b6;"></i> Atención al Cliente - Rotoblessing
                     {% else %}
-                        <i class="fa-solid fa-user"></i> Chat con {{ cliente_actual.nombre }}
+                        <div class="chat-avatar" style="width: 32px; height: 32px; font-size: 0.8rem; margin-right: 0;">
+                            {{ cliente_actual.nombre[0].upper() }}
+                        </div>
+                        <span>Chat con {{ cliente_actual.nombre }}</span>
                     {% endif %}
                 </div>
 
@@ -98,24 +127,22 @@
                             <p>{{ msg.contenido }}</p>
                             <div class="msg-info">{{ msg.fecha.strftime('%H:%M') }}</div>
                         </div>
-                    {% else %}
-                        <p style="text-align: center; color: #888; margin-top: 20px;">Aún no hay mensajes en este chat.</p>
                     {% endfor %}
                 </div>
 
-                <!-- Formulario de envío de mensajes -->
+                <!-- Área de escribir mensaje -->
                 <form action="/enviar_mensaje" method="POST" class="input-area">
                     {% if usuario.rol != 'Comprador' and cliente_actual %}
-                        <!-- Envía el ID del comprador seleccionado como destinatario -->
                         <input type="hidden" name="destinatario_id" value="{{ cliente_actual.id }}">
                     {% endif %}
-                    <input type="text" name="mensaje" placeholder="Escribe un mensaje..." required autocomplete="off">
+                    <input type="text" name="contenido" placeholder="Escribe un mensaje..." autocomplete="off" required>
                     <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
                 </form>
-
             {% else %}
-                <div class="no-chat-selected">
-                    <p><i class="fa-regular fa-comments fa-2x"></i><br><br>Selecciona un comprador de la lista para iniciar el chat.</p>
+                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #666; text-align: center; padding: 20px;">
+                    <i class="fa-regular fa-comments" style="font-size: 3.5rem; margin-bottom: 15px; color: #0077b6;"></i>
+                    <h3 style="font-size: 1.1rem; color: #333; margin-bottom: 5px;">Centro de Mensajes</h3>
+                    <p style="font-size: 0.9rem;">Selecciona un cliente de la lista de la izquierda para ver la conversación.</p>
                 </div>
             {% endif %}
 
@@ -124,9 +151,12 @@
     </div>
 
     <script>
-        // Mantiene el scroll automático en el último mensaje enviado o recibido
-        var box = document.getElementById('msgBox');
-        if(box){ box.scrollTop = box.scrollHeight; }
+        document.addEventListener("DOMContentLoaded", function() {
+            var msgBox = document.getElementById("msgBox");
+            if (msgBox) {
+                msgBox.scrollTop = msgBox.scrollHeight;
+            }
+        });
     </script>
 </body>
 </html>
