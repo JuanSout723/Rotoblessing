@@ -4,7 +4,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 
 app = Flask(__name__)
-app.secret_key = 'rotoblessing_clave_secreta_super_segura'
+
+# Clave secreta fija para mantener la sesión iniciada correctamente
+app.secret_key = 'rotoblessing_clave_secreta_super_segura_2026'
 
 # Configuración de base de datos SQLite integrada
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -44,13 +46,20 @@ def index():
         usuario_actual = Usuario.query.get(session['usuario_id'])
     return render_template('index.html', usuario=usuario_actual)
 
-# REGISTRO DE USUARIOS (Guarda si es Comprador, Vendedor o Dueño)
+# REGISTRO DE USUARIOS
 @app.route('/registro', methods=['POST'])
 def registro():
     nombre = request.form.get('nombre')
     email = request.form.get('email')
     password = request.form.get('password')
     rol = request.form.get('rol') # Comprador, Vendedor o Dueno
+
+    if not email or not password or not nombre:
+        flash('Por favor completa todos los campos.', 'danger')
+        return redirect(url_for('index'))
+
+    # Limpieza de correo (convertir a minúsculas y quitar espacios)
+    email = email.strip().lower()
 
     if Usuario.query.filter_by(email=email).first():
         flash('El correo ya está registrado.', 'danger')
@@ -64,9 +73,8 @@ def registro():
     db.session.commit()
 
     # Iniciar sesión automáticamente tras registrarse
+    session.permanent = True
     session['usuario_id'] = nuevo_usuario.id
-    session['usuario_nombre'] = nuevo_usuario.nombre
-    session['usuario_rol'] = nuevo_usuario.rol
 
     flash(f'¡Bienvenido {nombre}! Cuenta creada con éxito.', 'success')
     return redirect(url_for('index'))
@@ -77,12 +85,16 @@ def login():
     email = request.form.get('email')
     password = request.form.get('password')
 
+    if not email or not password:
+        flash('Ingresa tu correo y contraseña.', 'danger')
+        return redirect(url_for('index'))
+
+    email = email.strip().lower()
     user = Usuario.query.filter_by(email=email).first()
 
     if user and check_password_hash(user.password, password):
+        session.permanent = True
         session['usuario_id'] = user.id
-        session['usuario_nombre'] = user.nombre
-        session['usuario_rol'] = user.rol
         flash(f'Hola de nuevo, {user.nombre}.', 'success')
     else:
         flash('Correo o contraseña incorrectos.', 'danger')
@@ -96,7 +108,7 @@ def logout():
     flash('Sesión cerrada correctamente.', 'info')
     return redirect(url_for('index'))
 
-# ENVIAR MENSAJE
+# ENVIAR MENSAJE / RESPONDER
 @app.route('/enviar_mensaje', methods=['POST'])
 def enviar_mensaje():
     if 'usuario_id' not in session:
@@ -104,15 +116,21 @@ def enviar_mensaje():
         return redirect(url_for('index'))
 
     contenido = request.form.get('mensaje')
+    destinatario_id = request.form.get('destinatario_id')
+
+    if not contenido:
+        return redirect(url_for('mensajes'))
 
     nuevo_msg = Mensaje(
         remitente_id=session['usuario_id'],
+        destinatario_id=int(destinatario_id) if destinatario_id else None,
         contenido=contenido
     )
     db.session.add(nuevo_msg)
     db.session.commit()
 
-    flash('Mensaje enviado al equipo.', 'success')
+    if destinatario_id:
+        return redirect(url_for('mensajes', cliente_id=destinatario_id))
     return redirect(url_for('mensajes'))
 
 # BANDEJA DE MENSAJES ESTILO WHATSAPP
@@ -123,21 +141,24 @@ def mensajes():
         return redirect(url_for('index'))
 
     user = Usuario.query.get(session['usuario_id'])
+    if not user:
+        session.clear()
+        return redirect(url_for('index'))
+
     cliente_seleccionado = None
     conversacion = []
     lista_clientes = []
 
     if user.rol == 'Comprador':
-        # El comprador solo ve su chat con la empresa
+        # El comprador ve su chat con la empresa
         conversacion = Mensaje.query.filter(
             (Mensaje.remitente_id == user.id) | (Mensaje.destinatario_id == user.id)
         ).order_by(Mensaje.fecha.asc()).all()
     else:
-        # Vendedor / Dueño: Obtiene la lista de todos los compradores que han escrito
+        # Vendedor / Dueño: Obtiene la lista de todos los compradores
         subquery = db.session.query(Mensaje.remitente_id).distinct()
         lista_clientes = Usuario.query.filter(Usuario.id.in_(subquery), Usuario.rol == 'Comprador').all()
 
-        # Obtener el cliente seleccionado de la URL (ej: /mensajes?cliente_id=2)
         cliente_id = request.args.get('cliente_id')
         if cliente_id:
             cliente_seleccionado = Usuario.query.get(cliente_id)
@@ -154,17 +175,6 @@ def mensajes():
         conversacion=conversacion, 
         cliente_actual=cliente_seleccionado
     )
-    
-    # Comprador: Ve solo sus mensajes enviados y recibidos
-    if user.rol == 'Comprador':
-        lista_mensajes = Mensaje.query.filter(
-            (Mensaje.remitente_id == user.id) | (Mensaje.destinatario_id == user.id)
-        ).order_by(Mensaje.fecha.asc()).all()
-    else:
-        # Vendedores / Dueños: Ven todos los mensajes recibidos de los clientes
-        lista_mensajes = Mensaje.query.order_by(Mensaje.fecha.asc()).all()
-
-    return render_template('mensajes.html', usuario=user, mensajes=lista_mensajes)
 
 if __name__ == '__main__':
     app.run(debug=True)
