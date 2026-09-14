@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Mensajes - Rotoblessing</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
+        .chat-container { max-width: 800px; margin: 30px auto; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .chat-header { border-bottom: 2px solid #eef2f5; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .chat-box { height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px; background: #fafafa; }
+        .message-card { margin-bottom: 15px; padding: 12px 15px; border-radius: 8px; background: #fff; border-left: 4px solid #0077b6; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .message-card.owner { border-left-color: #25d366; background: #f0fdf4; }
+        .message-meta { font-size: 0.8rem; color: #888; margin-bottom: 5px; display: flex; justify-content: space-between; }
+        .form-send { display: flex; gap: 10px; }
+        .form-send input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 6px; }
+        .btn-send { background: #0077b6; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+        .btn-back { color: #0077b6; text-decoration: none; font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="chat-container">
+        <div class="chat-header">
+            <div>
+                <h2>Atención y Disponibilidad</h2>
+                <small>Conectado como: <strong>{{ usuario.nombre }}</strong> ({{ usuario.rol }})</small>
+            </div>
+            <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Volver al Inicio</a>
+        </div>
+
+        <div class="chat-box">
+            {% if mensajes %}
+                {% for msg in mensajes %}
+                    <div class="message-card {% if msg.remitente.rol in ['Dueno', 'Vendedor'] %}owner{% endif %}">
+                        <div class="message-meta">
+                            <span><strong>{{ msg.remitente.nombre }}</strong> ({{ msg.remitente.rol }})</span>
+                            <span>{{ msg.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
+                        </div>
+                        <p>{{ msg.contenido }}</p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p style="text-align: center; color: #888;">No hay mensajes registrados aún. ¡Escribe tu consulta!</p>
+            {% endif %}
+        </div>
+
+        <form action="/enviar_mensaje" method="POST" class="form-send">
+            <input type="text" name="mensaje" placeholder="Consulta sobre disponibilidad de tanques..." required>
+            <button type="submit" class="btn-send"><i class="fa-solid fa-paper-plane"></i> Enviar</button>
+        </form>
+    </div>
+
+</body>
+</html>
