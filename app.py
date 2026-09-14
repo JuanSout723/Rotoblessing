@@ -149,17 +149,27 @@ def enviar_mensaje(receptor_id):
         return redirect(url_for('index'))
 
     contenido = request.form.get('contenido', '').strip()
+    
     if contenido:
-        nuevo_mensaje = Mensaje(
-            emisor_id=session['usuario_id'],
-            receptor_id=receptor_id,
-            contenido=contenido
-        )
-        db.session.add(nuevo_mensaje)
-        db.session.commit()
+        try:
+            nuevo_mensaje = Mensaje(
+                emisor_id=session['usuario_id'],
+                receptor_id=receptor_id,
+                contenido=contenido
+            )
+            db.session.add(nuevo_mensaje)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Error al guardar el mensaje: {e}")
+            flash("Hubo un error al enviar el mensaje.", "danger")
 
-    # Redirige de vuelta al chat del cliente usando el parámetro que lee el HTML
-    return redirect(url_for('centro_mensajes', cliente_id=receptor_id))
-
+    usuario_actual = Usuario.query.get(session['usuario_id'])
+    
+    # Si es comprador, redirigimos limpio a /mensajes. Si es vendedor, regresamos al chat de ese cliente.
+    if usuario_actual.rol == 'Comprador':
+        return redirect(url_for('centro_mensajes'))
+    else:
+        return redirect(url_for('centro_mensajes', cliente_id=receptor_id))
 if __name__ == '__main__':
     app.run(debug=True)
