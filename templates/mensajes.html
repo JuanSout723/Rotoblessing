@@ -3,55 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Mensajes - Rotoblessing</title>
+    <title>Centro de Mensajes - Rotoblessing</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        body { font-family: 'Poppins', sans-serif; background-color: #f4f7f6; margin: 0; padding: 20px; }
-        .chat-container { max-width: 800px; margin: 30px auto; background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .chat-header { border-bottom: 2px solid #eef2f5; padding-bottom: 15px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .chat-box { height: 350px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; margin-bottom: 20px; background: #fafafa; }
-        .message-card { margin-bottom: 15px; padding: 12px 15px; border-radius: 8px; background: #fff; border-left: 4px solid #0077b6; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .message-card.owner { border-left-color: #25d366; background: #f0fdf4; }
-        .message-meta { font-size: 0.8rem; color: #888; margin-bottom: 5px; display: flex; justify-content: space-between; }
-        .form-send { display: flex; gap: 10px; }
-        .form-send input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 6px; }
-        .btn-send { background: #0077b6; color: white; border: none; padding: 12px 25px; border-radius: 6px; font-weight: 600; cursor: pointer; }
-        .btn-back { color: #0077b6; text-decoration: none; font-weight: 600; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        body { background-color: #e5ddd5; height: 100vh; display: flex; flex-direction: column; }
+
+        /* Encabezado */
+        header { background-color: #0077b6; color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
+        header a { color: white; text-decoration: none; font-weight: 600; }
+
+        /* Contenedor Principal del Chat */
+        .chat-container { display: flex; flex: 1; overflow: hidden; background: white; margin: 10px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+
+        /* Panel Izquierdo: Lista de Chats (Vendedores / Dueños) */
+        .sidebar { width: 30%; background-color: #f8f9fa; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 15px; background: #eee; font-weight: 600; border-bottom: 1px solid #ddd; }
+        .chat-list { overflow-y: auto; flex: 1; }
+        .chat-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #eee; text-decoration: none; color: #333; transition: background 0.2s; }
+        .chat-item:hover, .chat-item.active { background-color: #e0f7fa; }
+        .chat-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #0077b6; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-right: 12px; }
+
+        /* Panel Derecho: Ventana de Conversación */
+        .main-chat { width: 70%; display: flex; flex-direction: column; background-color: #efeae2; }
+        .full-width { width: 100%; }
+        
+        .chat-header { padding: 15px; background-color: #f0f2f5; border-bottom: 1px solid #ddd; font-weight: 600; }
+        .messages-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+
+        /* Burbujas de Mensaje */
+        .msg-bubble { max-width: 60%; padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; position: relative; word-wrap: break-word; }
+        .msg-enviado { background-color: #dcf8c6; align-self: flex-end; border-top-right-radius: 0; }
+        .msg-recibido { background-color: #ffffff; align-self: flex-start; border-top-left-radius: 0; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .msg-info { font-size: 0.75rem; color: #888; text-align: right; margin-top: 4px; }
+
+        /* Área de escribir mensaje */
+        .input-area { padding: 12px; background-color: #f0f2f5; display: flex; gap: 10px; }
+        .input-area input { flex: 1; padding: 12px; border: 1px solid #ccc; border-radius: 20px; outline: none; font-size: 0.95rem; }
+        .input-area button { background-color: #0077b6; color: white; border: none; padding: 10px 20px; border-radius: 50%; cursor: pointer; font-size: 1.1rem; }
+        .input-area button:hover { background-color: #005b8e; }
+        
+        .no-chat-selected { display: flex; flex: 1; align-items: center; justify-content: center; color: #777; text-align: center; }
     </style>
 </head>
 <body>
 
+    <header>
+        <h2><i class="fa-solid fa-comments"></i> Mensajes - Rotoblessing</h2>
+        <a href="/"><i class="fa-solid fa-house"></i> Volver al Inicio</a>
+    </header>
+
     <div class="chat-container">
-        <div class="chat-header">
-            <div>
-                <h2>Atención y Disponibilidad</h2>
-                <small>Conectado como: <strong>{{ usuario.nombre }}</strong> ({{ usuario.rol }})</small>
+
+        <!-- SI ES VENDEDOR O DUEÑO: Muestra la lista de clientes a la izquierda -->
+        {% if usuario.rol != 'Comprador' %}
+            <div class="sidebar">
+                <div class="sidebar-header">Conversaciones con Clientes</div>
+                <div class="chat-list">
+                    {% for cliente in clientes %}
+                        <a href="/mensajes?cliente_id={{ cliente.id }}" class="chat-item {% if cliente_actual and cliente_actual.id == cliente.id %}active{% endif %}">
+                            <div class="chat-avatar">{{ cliente.nombre[0].upper() }}</div>
+                            <div>
+                                <strong>{{ cliente.nombre }}</strong>
+                                <br><small style="color: #666;">{{ cliente.email }}</small>
+                            </div>
+                        </a>
+                    {% else %}
+                        <p style="padding: 15px; color: #777; font-size: 0.9rem;">No hay mensajes de compradores aún.</p>
+                    {% endfor %}
+                </div>
             </div>
-            <a href="/" class="btn-back"><i class="fa-solid fa-arrow-left"></i> Volver al Inicio</a>
-        </div>
+        {% endif %}
 
-        <div class="chat-box">
-            {% if mensajes %}
-                {% for msg in mensajes %}
-                    <div class="message-card {% if msg.remitente.rol in ['Dueno', 'Vendedor'] %}owner{% endif %}">
-                        <div class="message-meta">
-                            <span><strong>{{ msg.remitente.nombre }}</strong> ({{ msg.remitente.rol }})</span>
-                            <span>{{ msg.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
+        <!-- ÁREA DE CHAT DERECHA -->
+        <div class="main-chat {% if usuario.rol == 'Comprador' %}full-width{% endif %}">
+            
+            {% if usuario.rol == 'Comprador' or cliente_actual %}
+                <div class="chat-header">
+                    {% if usuario.rol == 'Comprador' %}
+                        <i class="fa-solid fa-headset"></i> Atención al Cliente - Rotoblessing
+                    {% else %}
+                        <i class="fa-solid fa-user"></i> Chat con {{ cliente_actual.nombre }}
+                    {% endif %}
+                </div>
+
+                <!-- Historial de Conversación -->
+                <div class="messages-area" id="msgBox">
+                    {% for msg in conversacion %}
+                        <div class="msg-bubble {% if msg.remitente_id == usuario.id %}msg-enviado{% else %}msg-recibido{% endif %}">
+                            <strong style="font-size: 0.8rem; color: #555;">
+                                {% if msg.remitente_id == usuario.id %}Tú{% else %}{{ msg.remitente.nombre }}{% endif %}
+                            </strong>
+                            <p>{{ msg.contenido }}</p>
+                            <div class="msg-info">{{ msg.fecha.strftime('%H:%M') }}</div>
                         </div>
-                        <p>{{ msg.contenido }}</p>
-                    </div>
-                {% endfor %}
+                    {% else %}
+                        <p style="text-align: center; color: #888; margin-top: 20px;">Aún no hay mensajes en este chat.</p>
+                    {% endfor %}
+                </div>
+
+                <!-- Formulario de envío de mensajes -->
+                <form action="/enviar_mensaje" method="POST" class="input-area">
+                    {% if usuario.rol != 'Comprador' and cliente_actual %}
+                        <!-- Envía el ID del comprador seleccionado como destinatario -->
+                        <input type="hidden" name="destinatario_id" value="{{ cliente_actual.id }}">
+                    {% endif %}
+                    <input type="text" name="mensaje" placeholder="Escribe un mensaje..." required autocomplete="off">
+                    <button type="submit"><i class="fa-solid fa-paper-plane"></i></button>
+                </form>
+
             {% else %}
-                <p style="text-align: center; color: #888;">No hay mensajes registrados aún. ¡Escribe tu consulta!</p>
+                <div class="no-chat-selected">
+                    <p><i class="fa-regular fa-comments fa-2x"></i><br><br>Selecciona un comprador de la lista para iniciar el chat.</p>
+                </div>
             {% endif %}
+
         </div>
 
-        <form action="/enviar_mensaje" method="POST" class="form-send">
-            <input type="text" name="mensaje" placeholder="Consulta sobre disponibilidad de tanques..." required>
-            <button type="submit" class="btn-send"><i class="fa-solid fa-paper-plane"></i> Enviar</button>
-        </form>
     </div>
 
+    <script>
+        // Mantiene el scroll automático en el último mensaje enviado o recibido
+        var box = document.getElementById('msgBox');
+        if(box){ box.scrollTop = box.scrollHeight; }
+    </script>
 </body>
 </html>
