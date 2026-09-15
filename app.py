@@ -276,5 +276,59 @@ def comentar():
 
     return redirect(url_for('index') + '#seccion-comentarios')
 
+
+@app.route('/comentario/editar/<int:id>', methods=['POST'])
+def editar_comentario(id):
+    if 'usuario_id' not in session:
+        flash('Debes iniciar sesión.', 'danger')
+        return redirect(url_for('index'))
+        
+    comentario = Comentario.query.get_or_404(id)
+    usuario_actual = Usuario.query.get(session['usuario_id'])
+
+    # Solo el autor del comentario puede editarlo
+    if comentario.usuario_id == usuario_actual.id:
+        nuevo_contenido = request.form.get('contenido', '').strip()
+        if nuevo_contenido:
+            comentario.contenido = nuevo_contenido
+            db.session.commit()
+            flash('Comentario actualizado correctamente.', 'success')
+        else:
+            flash('El contenido del comentario no puede estar vacío.', 'danger')
+    else:
+        flash('No tienes permiso para editar este comentario.', 'danger')
+        
+    return redirect(url_for('index') + '#seccion-comentarios')
+
+
+@app.route('/comentario/eliminar/<int:id>', methods=['POST'])
+def eliminar_comentario(id):
+    if 'usuario_id' not in session:
+        flash('Debes iniciar sesión para realizar esta acción.', 'danger')
+        return redirect(url_for('index'))
+    
+    comentario = Comentario.query.get_or_404(id)
+    usuario_actual = Usuario.query.get(session['usuario_id'])
+
+    # Permitir borrar si es el autor del comentario o si es el Administrador (Dueño)
+    if comentario.usuario_id == usuario_actual.id or usuario_actual.rol == 'Dueno':
+        # Borrar la foto física del servidor si la tiene adjunta
+        if comentario.foto:
+            ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], comentario.foto)
+            if os.path.exists(ruta_foto):
+                try:
+                    os.remove(ruta_foto)
+                except Exception as e:
+                    print(f"Error al eliminar archivo de foto: {e}")
+                
+        db.session.delete(comentario)
+        db.session.commit()
+        flash('Comentario eliminado exitosamente.', 'success')
+    else:
+        flash('No tienes permisos para eliminar este comentario.', 'danger')
+        
+    return redirect(url_for('index') + '#seccion-comentarios')
+
+
 if __name__ == '__main__':
     app.run(debug=True)
