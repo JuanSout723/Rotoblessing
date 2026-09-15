@@ -104,7 +104,7 @@
         .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #6c757d; }
 
         /* Footer y Redes Sociales */
-        footer { padding: 15px 0; }
+        footer { padding: 15px 0; text-align: center; color: #6c757d; font-size: 0.85rem; }
         .social-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 8px; }
 
         /* Media Queries adaptadas específicamente para móviles */
@@ -116,7 +116,6 @@
                 gap: 8px;
             }
             
-            /* Primera línea del header: Logo y Título alineados a la izquierda o centro */
             header h1 {
                 font-size: 1.15rem;
                 justify-content: center;
@@ -124,7 +123,6 @@
                 border-bottom: 1px solid rgba(255, 255, 255, 0.15);
             }
 
-            /* Segunda línea del header: Enlaces organizados en formato de pastillas/botones espaciados */
             .nav-links {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
@@ -145,7 +143,6 @@
                 text-overflow: ellipsis;
             }
 
-            /* Si hay usuario activo, el botón de menú se acomoda al lado o en su propia fila de forma limpia */
             .dropdown {
                 grid-column: 1 / -1;
                 width: 100%;
@@ -274,7 +271,7 @@
                         </div>
                         <div class="form-group">
                             <label>Tipo de Usuario (Rol)</label>
-                            <select name="rol" id="rolSelect" required>
+                            <select name="rol" id="rolSelect" required onchange="toggleCodigoVerificacion()">
                                 <option value="" disabled selected>-- Selecciona un Rol --</option>
                                 <option value="Comprador">Comprador</option>
                                 <option value="Vendedor">Vendedor</option>
@@ -496,17 +493,21 @@
                 </div>
                 <button type="submit" class="btn" style="margin-bottom: 12px;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
             </form>
-
-            <hr style="margin: 15px 0; border: none; border-top: 1px solid #eee;">
-            
-            <form action="/perfil/eliminar" method="POST" onsubmit="return confirm('¿Estás COMPLETAMENTE SEGURO de eliminar tu cuenta de forma permanente? Esta acción no se puede deshacer.');">
-                <button type="submit" class="btn" style="background-color: #dc3545;"><i class="fa-solid fa-user-xmark"></i> Eliminar mi cuenta permanentemente</button>
-            </form>
         </div>
     </div>
     {% endif %}
 
-    <!-- Scripts para el manejo de modales -->
+    <!-- Footer -->
+    <footer>
+        <div class="social-icons">
+            <a href="#" style="color: #0077b6;"><i class="fa-brands fa-facebook fa-lg"></i></a>
+            <a href="#" style="color: #0077b6;"><i class="fa-brands fa-instagram fa-lg"></i></a>
+            <a href="#" style="color: #0077b6;"><i class="fa-brands fa-whatsapp fa-lg"></i></a>
+        </div>
+        <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
+    </footer>
+
+    <!-- Scripts de Control de Modales y Formularios -->
     <script>
         function abrirModalVendedores() {
             document.getElementById('modalVendedores').style.display = 'flex';
@@ -514,25 +515,38 @@
         function cerrarModalVendedores() {
             document.getElementById('modalVendedores').style.display = 'none';
         }
+
         function abrirModalPerfil(event) {
             event.preventDefault();
-            document.getElementById('modalPerfil').style.display = 'flex';
+            const modal = document.getElementById('modalPerfil');
+            if (modal) modal.style.display = 'flex';
         }
         function cerrarModalPerfil() {
-            document.getElementById('modalPerfil').style.display = 'none';
+            const modal = document.getElementById('modalPerfil');
+            if (modal) modal.style.display = 'none';
         }
 
-        const rolSelect = document.getElementById('rolSelect');
-        if_rolSelect = document.getElementById('rolSelect');
-        if (rolSelect) {
-            rolSelect.addEventListener('change', function() {
-                const codigoGrupo = document.getElementById('codigoGrupo');
-                if (this.value === 'Vendedor' || this.value === 'Dueno') {
-                    codigoGrupo.style.display = 'block';
-                } else {
-                    codigoGrupo.style.display = 'none';
-                }
-            });
+        function toggleCodigoVerificacion() {
+            const rolSelect = document.getElementById('rolSelect');
+            const codigoGrupo = document.getElementById('codigoGrupo');
+            const labelCodigo = document.getElementById('labelCodigo');
+            if (!rolSelect) return;
+
+            const valor = rolSelect.value;
+            if (valor === 'Vendedor' || valor === 'Dueno') {
+                codigoGrupo.style.display = 'block';
+                labelCodigo.textContent = valor === 'Dueno' ? 'Código de Acceso de Dueño' : 'Código de Acceso de Vendedor';
+            } else {
+                codigoGrupo.style.display = 'none';
+            }
+        }
+
+        // Cerrar modales haciendo clic fuera del contenido
+        window.onclick = function(event) {
+            const modalV = document.getElementById('modalVendedores');
+            const modalP = document.getElementById('modalPerfil');
+            if (event.target === modalV) modalV.style.display = 'none';
+            if (event.target === modalP) modalP.style.display = 'none';
         }
     </script>
 </body>
