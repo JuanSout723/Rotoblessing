@@ -254,7 +254,7 @@ def admin_eliminar_usuario(id):
     flash(f'El miembro del equipo {usuario_a_eliminar.nombre} ha sido eliminado exitosamente.', 'success')
     return redirect(url_for('index'))
 
-# --- RUTAS DE MENSAJERÍA Y CHAT (CORREGIDAS) ---
+# --- RUTAS DE MENSAJERÍA Y CHAT ---
 
 @app.route('/mensajes')
 def centro_mensajes():
@@ -396,6 +396,7 @@ def api_mensajes(otro_usuario_id):
     for m in mensajes:
         lista_mensajes.append({
             'emisor_id': m.emisor_id,
+            'nombre_emisor': m.remitente.nombre if m.remitente else 'Desconocido',
             'contenido': m.contenido,
             'fecha': m.fecha.strftime('%d/%m/%Y %H:%M')
         })
