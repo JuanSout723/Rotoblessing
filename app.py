@@ -2,15 +2,22 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-import base64
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
+
+# Carpeta donde se guardarán las fotos de forma segura
+UPLOAD_FOLDER = os.path.join('static', 'uploads')
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 
 def archivo_permitido(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Asegurar que la carpeta de subidas exista
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 # Configuración de la base de datos (Compatible con PostgreSQL en Render y SQLite local)
 database_url = os.environ.get('DATABASE_URL')
@@ -39,8 +46,8 @@ class Usuario(db.Model):
     instagram = db.Column(db.String(150), nullable=True)
     biografia = db.Column(db.Text, nullable=True)
     
-    # Almacena la imagen en texto Base64 para que no se borre en Render
-    foto_perfil = db.Column(db.Text, nullable=True)
+    # Almacena el nombre del archivo de la foto
+    foto_perfil = db.Column(db.String(200), nullable=True)
 
     comentarios = db.relationship('Comentario', backref='autor_ref', cascade='all, delete-orphan', passive_deletes=True)
 
@@ -50,8 +57,8 @@ class Comentario(db.Model):
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='CASCADE'), nullable=False)
     contenido = db.Column(db.Text, nullable=False)
     
-    # Almacena la imagen del comentario en texto Base64
-    foto = db.Column(db.Text, nullable=True)
+    # Almacena el nombre del archivo de la foto del comentario
+    foto = db.Column(db.String(200), nullable=True)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
     
     autor = db.relationship('Usuario', foreign_keys=[usuario_id])
@@ -59,15 +66,15 @@ class Comentario(db.Model):
 with app.app_context():
     try:
         db.create_all()
-        # Asegurar columnas de tipo TEXT para soportar las imágenes en Base64
+        # Sincronizar columnas por si la base de datos ya existía
         with db.engine.connect() as connection:
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS telefono VARCHAR(30);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(30);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS facebook VARCHAR(150);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS instagram VARCHAR(150);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS biografia TEXT;"))
-            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS foto_perfil TEXT;"))
-            connection.execute(db.text("ALTER TABLE comentario ADD COLUMN IF NOT EXISTS foto TEXT;"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS foto_perfil VARCHAR(200);"))
+            connection.execute(db.text("ALTER TABLE comentario ADD COLUMN IF NOT EXISTS foto VARCHAR(200);"))
             connection.commit()
         print("Tablas y columnas sincronizadas correctamente.")
     except Exception as e:
@@ -166,10 +173,11 @@ def editar_perfil():
     foto_archivo = request.files.get('foto_perfil')
     if foto_archivo and foto_archivo.filename != '':
         if archivo_permitido(foto_archivo.filename):
-            image_data = foto_archivo.read()
-            encoded_string = base64.b64encode(image_data).decode('utf-8')
-            mime_type = foto_archivo.mimetype or 'image/jpeg'
-            usuario.foto_perfil = f"data:{mime_type};base64,{encoded_string}"
+            filename = secure_filename(foto_archivo.filename)
+            nombre_unico = f"user_{usuario.id}_{int(datetime.utcnow().timestamp())}_{filename}"
+            foto_path = os.path.join(app.config['UPLOAD_FOLDER'], nombre_unico)
+            foto_archivo.save(foto_path)
+            usuario.foto_perfil = nombre_unico
         else:
             flash('Formato de imagen de perfil no permitido. Usa JPG, PNG o WEBP.', 'danger')
             return redirect(url_for('index'))
@@ -231,14 +239,14 @@ def comentar():
     usuario_actual = Usuario.query.get(session['usuario_id'])
     contenido = request.form.get('contenido', '').strip()
     foto_archivo = request.files.get('foto')
-    base64_foto = None
+    nombre_foto = None
 
     if foto_archivo and foto_archivo.filename != '':
         if archivo_permitido(foto_archivo.filename):
-            image_data = foto_archivo.read()
-            encoded_string = base64.b64encode(image_data).decode('utf-8')
-            mime_type = foto_archivo.mimetype or 'image/jpeg'
-            base64_foto = f"data:{mime_type};base64,{encoded_string}"
+            filename = secure_filename(foto_archivo.filename)
+            nombre_foto = f"comentario_{usuario_actual.id}_{int(datetime.utcnow().timestamp())}_{filename}"
+            foto_path = os.path.join(app.config['UPLOAD_FOLDER'], nombre_foto)
+            foto_archivo.save(foto_path)
         else:
             flash('Formato de imagen no permitido. Usa JPG, PNG o WEBP.', 'danger')
             return redirect(url_for('index'))
@@ -247,7 +255,7 @@ def comentar():
         nuevo_comentario = Comentario(
             usuario_id=usuario_actual.id,
             contenido=contenido,
-            foto=base64_foto
+            foto=nombre_foto
         )
         db.session.add(nuevo_comentario)
         db.session.commit()
