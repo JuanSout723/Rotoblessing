@@ -270,6 +270,27 @@
                     <h3>{{ v.nombre }}</h3>
                     <span class="badge" style="margin-bottom: 8px; font-size: 0.7rem;">{{ 'Dueño' if v.rol == 'Dueno' else v.rol }}</span>
                     <p>{{ v.biografia or 'Asesor oficial y verificado de Rotoblessing.' }}</p>
+
+                    <!-- Botones de Redes Sociales del Asesor -->
+                    <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: auto;">
+                        {% if v.whatsapp %}
+                            <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20interesado%20en%20los%20tanques%20de%20Rotoblessing." target="_blank" class="btn-consultar btn-whatsapp" style="width: 100%; border-radius: 6px; padding: 8px; font-size: 0.8rem;">
+                                <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                            </a>
+                        {% endif %}
+
+                        {% if v.instagram %}
+                            <a href="{{ v.instagram }}" target="_blank" class="btn-consultar" style="width: 100%; background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white; border-radius: 6px; padding: 8px; font-size: 0.8rem; text-decoration: none;">
+                                <i class="fa-brands fa-instagram"></i> Instagram
+                            </a>
+                        {% endif %}
+
+                        {% if v.facebook %}
+                            <a href="{{ v.facebook }}" target="_blank" class="btn-consultar" style="width: 100%; background-color: #1877f2; color: white; border-radius: 6px; padding: 8px; font-size: 0.8rem; text-decoration: none;">
+                                <i class="fa-brands fa-facebook-f"></i> Facebook
+                            </a>
+                        {% endif %}
+                    </div>
                 </div>
                 {% endfor %}
             {% else %}
