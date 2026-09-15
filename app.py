@@ -174,7 +174,6 @@ def editar_perfil():
         flash('Usuario no encontrado.', 'danger')
         return redirect(url_for('index'))
 
-    # Si por alguna razón entra por GET, lo devolvemos al inicio (o a su vista)
     if request.method == 'GET':
         return redirect(url_for('index'))
     
@@ -184,7 +183,6 @@ def editar_perfil():
     usuario.instagram = request.form.get('instagram', '').strip()
     usuario.biografia = request.form.get('biografia', '').strip()
     
-    # Manejo de la foto de perfil personalizada
     foto_archivo = request.files.get('foto_perfil')
     if foto_archivo and foto_archivo.filename != '':
         if archivo_permitido(foto_archivo.filename):
@@ -225,7 +223,6 @@ def eliminar_cuenta():
         
     return redirect(url_for('index'))
 
-# --- RUTA PARA QUE EL DUEÑO ELIMINE A CUALQUIER USUARIO DEL EQUIPO ---
 @app.route('/admin/eliminar_usuario/<int:id>', methods=['POST'])
 def admin_eliminar_usuario(id):
     if 'usuario_id' not in session:
@@ -241,7 +238,7 @@ def admin_eliminar_usuario(id):
     usuario_a_eliminar = Usuario.query.get_or_404(id)
     
     if usuario_a_eliminar.id == usuario_actual.id:
-        flash('No puedes eliminar tu propia cuenta desde el panel de control. Usa la opción de eliminar cuenta personal abajo.', 'warning')
+        flash('No puedes eliminar tu propia cuenta desde el panel de control.', 'warning')
         return redirect(url_for('index'))
     
     if usuario_a_eliminar.foto_perfil:
@@ -257,7 +254,7 @@ def admin_eliminar_usuario(id):
     flash(f'El miembro del equipo {usuario_a_eliminar.nombre} ha sido eliminado exitosamente.', 'success')
     return redirect(url_for('index'))
 
-# --- RUTAS DE MENSAJERÍA Y CHAT ---
+# --- RUTAS DE MENSAJERÍA Y CHAT (CORREGIDAS) ---
 
 @app.route('/mensajes')
 def centro_mensajes():
@@ -270,33 +267,44 @@ def centro_mensajes():
     cliente_actual = None
     conversacion = []
 
+    # Obtenemos todos los usuarios con rol Vendedor o Dueño disponibles para chatear
+    vendedores_disponibles = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
+
     if usuario_actual.rol == 'Comprador':
-        vendedor_principal = Usuario.query.filter(Usuario.rol != 'Comprador').first()
-        if vendedor_principal:
-            cliente_actual = vendedor_principal
+        # Permitir al comprador elegir un asesor específico mediante parámetro o tomar el primero por defecto
+        destinatario_id = request.args.get('destinatario_id')
+        if destinatario_id:
+            cliente_actual = Usuario.query.get(destinatario_id)
+        
+        if not cliente_actual and vendedores_disponibles:
+            cliente_actual = vendedores_disponibles[0]
+
+        if cliente_actual:
             conversacion = Mensaje.query.filter(
-                ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == vendedor_principal.id)) |
-                ((Mensaje.emisor_id == vendedor_principal.id) & (Mensaje.receptor_id == usuario_actual.id))
+                ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == cliente_actual.id)) |
+                ((Mensaje.emisor_id == cliente_actual.id) & (Mensaje.receptor_id == usuario_actual.id))
             ).order_by(Mensaje.fecha.asc()).all()
     else:
+        # Lógica para Vendedores/Dueños: listar con quién tienen chats activos o permitir listar compradores
         mensajes_enviados = db.session.query(Mensaje.receptor_id).filter(Mensaje.emisor_id == usuario_actual.id)
         mensajes_recibidos = db.session.query(Mensaje.emisor_id).filter(Mensaje.receptor_id == usuario_actual.id)
         ids_con_chat = mensajes_enviados.union(mensajes_recibidos).subquery()
         clientes = Usuario.query.filter(Usuario.id.in_(ids_con_chat)).all()
         
-        cliente_id = request.args.get('cliente_id')
+        cliente_id = request.args.get('cliente_id') or request.args.get('destinatario_id')
         if cliente_id:
             cliente_actual = Usuario.query.get(cliente_id)
             if cliente_actual:
                 conversacion = Mensaje.query.filter(
-                    ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == cliente_id)) |
-                    ((Mensaje.emisor_id == cliente_id) & (Mensaje.receptor_id == usuario_actual.id))
+                    ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == int(cliente_id))) |
+                    ((Mensaje.emisor_id == int(cliente_id)) & (Mensaje.receptor_id == usuario_actual.id))
                 ).order_by(Mensaje.fecha.asc()).all()
 
     return render_template(
         'mensajes.html',
         usuario=usuario_actual,
         clientes=clientes,
+        vendedores_disponibles=vendedores_disponibles,
         cliente_actual=cliente_actual,
         conversacion=conversacion,
         vapid_public_key=VAPID_PUBLIC_KEY
@@ -309,20 +317,19 @@ def enviar_mensaje():
 
     usuario_actual = Usuario.query.get(session['usuario_id'])
     contenido = request.form.get('contenido', '').strip()
-    destinatario_id = None
+    destinatario_id = request.form.get('destinatario_id')
 
-    if usuario_actual.rol == 'Comprador':
-        vendedor_principal = Usuario.query.filter(Usuario.rol != 'Comprador').first()
+    # Si es comprador y no vino un destinatario explícito, asignar el primer vendedor disponible
+    if usuario_actual.rol == 'Comprador' and not destinatario_id:
+        vendedor_principal = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).first()
         if vendedor_principal:
             destinatario_id = vendedor_principal.id
-    else:
-        destinatario_id = request.form.get('destinatario_id')
 
     if contenido and destinatario_id:
         try:
             nuevo_mensaje = Mensaje(
                 emisor_id=usuario_actual.id,
-                receptor_id=destinatario_id,
+                receptor_id=int(destinatario_id),
                 contenido=contenido
             )
             db.session.add(nuevo_mensaje)
@@ -353,8 +360,9 @@ def enviar_mensaje():
             print(f"Error al guardar el mensaje: {e}")
             flash("Hubo un error al enviar el mensaje.", "danger")
 
+    # Redirección correcta según el rol para mantener la conversación activa en pantalla
     if usuario_actual.rol == 'Comprador':
-        return redirect(url_for('centro_mensajes'))
+        return redirect(url_for('centro_mensajes', destinatario_id=destinatario_id))
     else:
         return redirect(url_for('centro_mensajes', cliente_id=destinatario_id))
 
@@ -394,7 +402,6 @@ def api_mensajes(otro_usuario_id):
 
     return jsonify(lista_mensajes)
 
-# --- RUTA API PARA GUARDAR SUSCRIPCIÓN PUSH ---
 @app.route('/api/guardar_suscripcion', methods=['POST'])
 def guardar_suscripcion():
     if 'usuario_id' not in session:
@@ -496,6 +503,3 @@ def eliminar_comentario(id):
         flash('No tienes permisos para eliminar este comentario.', 'danger')
         
     return redirect(url_for('index') + '#seccion-comentarios')
-
-if __name__ == '__main__':
-    app.run(debug=True)
