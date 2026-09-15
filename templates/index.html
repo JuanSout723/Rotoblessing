@@ -287,11 +287,54 @@
                 <button type="submit" class="btn" style="max-width: 250px;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
             </form>
 
+            <!-- ========================================================== -->
+            <!-- PANEL DE GESTIÓN DE PERSONAL (EXCLUSIVO PARA DUEÑOS)       -->
+            <!-- ========================================================== -->
+            {% if usuario.rol == 'Dueno' %}
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 2px dashed #0077b6;">
+                <h4 style="color: #0077b6; font-size: 1.1rem; margin-bottom: 10px;"><i class="fa-solid fa-users-gear"></i> Gestión del Personal (Dueños y Vendedores)</h4>
+                <p style="font-size: 0.82rem; color: #6c757d; margin-bottom: 15px;">Como Administrador, puedes dar de baja a cualquier miembro del equipo registrado en la plataforma.</p>
+                
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+                        <thead>
+                            <tr style="background-color: #f8f9fa; border-bottom: 2px solid #dee2e6;">
+                                <th style="padding: 10px;">Nombre</th>
+                                <th style="padding: 10px;">Correo</th>
+                                <th style="padding: 10px;">Rol</th>
+                                <th style="padding: 10px; text-align: center;">Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for emp in vendedores %}
+                                <tr style="border-bottom: 1px solid #e9ecef;">
+                                    <td style="padding: 10px; font-weight: 600;">{{ emp.nombre }}</td>
+                                    <td style="padding: 10px; color: #6c757d;">{{ emp.email }}</td>
+                                    <td style="padding: 10px;"><span class="badge" style="font-size: 0.65rem; margin: 0;">{{ emp.rol }}</span></td>
+                                    <td style="padding: 10px; text-align: center;">
+                                        {% if emp.id != usuario.id %}
+                                            <form action="/admin/eliminar_usuario/{{ emp.id }}" method="POST" style="display: inline;" onsubmit="return confirm('¿Estás seguro de eliminar al usuario {{ emp.nombre }}?');">
+                                                <button type="submit" class="btn-action-mini btn-delete" style="padding: 5px 10px; font-size: 0.75rem;">
+                                                    <i class="fa-solid fa-user-slash"></i> Eliminar
+                                                </button>
+                                            </form>
+                                        {% else %}
+                                            <span style="font-size: 0.75rem; color: #28a745; font-weight: 600;">(Tú)</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
             <hr style="margin: 25px 0; border: none; border-top: 1px solid #e9ecef;">
 
-            <!-- Zona de Peligro: Eliminar Cuenta -->
+            <!-- Zona de Peligro: Eliminar Cuenta Propia -->
             <div>
-                <h4 style="color: #dc3545; font-size: 1rem; margin-bottom: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Peligro (Eliminar Cuenta)</h4>
+                <h4 style="color: #dc3545; font-size: 1rem; margin-bottom: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Peligro (Eliminar mi cuenta)</h4>
                 <p style="font-size: 0.82rem; color: #6c757d; margin-bottom: 12px;">Si ya no formas parte del personal de la empresa, puedes eliminar tu cuenta permanentemente.</p>
                 <form action="/perfil/eliminar" method="POST" onsubmit="return confirm('¿Estás 100% seguro de que deseas eliminar tu cuenta permanentemente? Esta acción no se puede deshacer.');">
                     <button type="submit" class="btn btn-danger" style="max-width: 220px; padding: 10px; font-size: 0.85rem;"><i class="fa-solid fa-user-xmark"></i> Eliminar mi cuenta</button>
