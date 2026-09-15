@@ -186,5 +186,23 @@ def enviar_mensaje():
     else:
         return redirect(url_for('centro_mensajes', cliente_id=destinatario_id))
 
+@app.route('/eliminar_chat/<int:cliente_id>', methods=['POST'])
+def eliminar_chat(cliente_id):
+    if 'usuario_id' not in session:
+        return redirect(url_for('index'))
+
+    usuario_actual = Usuario.query.get(session['usuario_id'])
+
+    # Borra todos los mensajes cruzados entre el usuario actual y el cliente seleccionado
+    Mensaje.query.filter(
+        ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == cliente_id)) |
+        ((Mensaje.emisor_id == cliente_id) & (Mensaje.receptor_id == usuario_actual.id))
+    ).delete()
+    
+    db.session.commit()
+    flash('La conversación ha sido eliminada correctamente.', 'info')
+
+    return redirect(url_for('centro_mensajes'))
+
 if __name__ == '__main__':
     app.run(debug=True)
