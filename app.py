@@ -9,7 +9,7 @@ from pywebpush import webpush, WebPushException
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
 
-# Configuración de carpeta para guardar las fotos de los comentarios
+# Configuración de carpeta para guardar las fotos (perfiles y comentarios)
 UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -47,6 +47,14 @@ class Usuario(db.Model):
     # Campo para almacenar la suscripción Web Push del navegador
     push_subscription = db.Column(db.Text, nullable=True)
 
+    # --- NUEVOS CAMPOS DE PERFIL Y CONFIANZA ---
+    telefono = db.Column(db.String(30), nullable=True)
+    whatsapp = db.Column(db.String(30), nullable=True)  # <-- NUEVO CAMPO DE WHATSAPP
+    facebook = db.Column(db.String(150), nullable=True)
+    instagram = db.Column(db.String(150), nullable=True)
+    biografia = db.Column(db.Text, nullable=True)
+    foto_perfil = db.Column(db.String(200), nullable=True)
+
 class Mensaje(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     emisor_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
@@ -68,9 +76,15 @@ class Comentario(db.Model):
 with app.app_context():
     try:
         db.create_all()
-        # Forzar la creación de la columna en PostgreSQL si la tabla ya existía previamente
+        # Forzar la creación de columnas nuevas en PostgreSQL si la tabla ya existía previamente
         with db.engine.connect() as connection:
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS push_subscription TEXT;"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS telefono VARCHAR(30);"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(30);"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS facebook VARCHAR(150);"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS instagram VARCHAR(150);"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS biografia TEXT;"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS foto_perfil VARCHAR(200);"))
             connection.commit()
         print("Tablas y columnas sincronizadas correctamente.")
     except Exception as e:
@@ -83,7 +97,17 @@ def index():
     usuario_id = session.get('usuario_id')
     usuario = Usuario.query.get(usuario_id) if usuario_id else None
     comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
-    return render_template('index.html', usuario=usuario, comentarios=comentarios, vapid_public_key=VAPID_PUBLIC_KEY)
+    
+    # Obtener lista de asesores/vendedores para mostrarlos en la vitrina de confianza
+    vendedores = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
+    
+    return render_template(
+        'index.html', 
+        usuario=usuario, 
+        comentarios=comentarios, 
+        vendedores=vendedores,
+        vapid_public_key=VAPID_PUBLIC_KEY
+    )
 
 @app.route('/registro', methods=['POST'])
 def registro():
@@ -135,6 +159,67 @@ def login():
 def logout():
     session.pop('usuario_id', None)
     flash('Has cerrado sesión correctamente.', 'info')
+    return redirect(url_for('index'))
+
+# --- RUTAS DE GESTIÓN DE PERFIL PROFESIONAL Y ELIMINACIÓN DE CUENTA ---
+
+@app.route('/perfil/editar', methods=['POST'])
+def editar_perfil():
+    if 'usuario_id' not in session:
+        flash('Debes iniciar sesión.', 'danger')
+        return redirect(url_for('index'))
+        
+    usuario = Usuario.query.get(session['usuario_id'])
+    if not usuario:
+        flash('Usuario no encontrado.', 'danger')
+        return redirect(url_for('index'))
+    
+    usuario.telefono = request.form.get('telefono', '').strip()
+    usuario.whatsapp = request.form.get('whatsapp', '').strip() # <-- Capturar WhatsApp
+    usuario.facebook = request.form.get('facebook', '').strip()
+    usuario.instagram = request.form.get('instagram', '').strip()
+    usuario.biografia = request.form.get('biografia', '').strip()
+    
+    # Manejo de la foto de perfil personalizada
+    foto_archivo = request.files.get('foto_perfil')
+    if foto_archivo and foto_archivo.filename != '':
+        if archivo_permitido(foto_archivo.filename):
+            filename = secure_filename(f"perfil_{usuario.id}_{datetime.utcnow().timestamp()}_{foto_archivo.filename}")
+            foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            foto_archivo.save(foto_path)
+            usuario.foto_perfil = filename
+        else:
+            flash('Formato de imagen de perfil no permitido. Usa JPG, PNG o WEBP.', 'danger')
+            return redirect(url_for('index'))
+
+    db.session.commit()
+    flash('¡Tu perfil profesional ha sido actualizado con éxito!', 'success')
+    return redirect(url_for('index'))
+
+@app.route('/perfil/eliminar', methods=['POST'])
+def eliminar_cuenta():
+    if 'usuario_id' not in session:
+        flash('Debes iniciar sesión.', 'danger')
+        return redirect(url_for('index'))
+        
+    usuario_id = session['usuario_id']
+    usuario = Usuario.query.get(usuario_id)
+    
+    if usuario:
+        # Eliminar archivo de foto de perfil si existía en disco
+        if usuario.foto_perfil:
+            ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], usuario.foto_perfil)
+            if os.path.exists(ruta_foto):
+                try:
+                    os.remove(ruta_foto)
+                except Exception as e:
+                    print(f"Error al eliminar foto de perfil: {e}")
+
+        db.session.delete(usuario)
+        db.session.commit()
+        session.clear()
+        flash('La cuenta ha sido eliminada permanentemente del sistema.', 'info')
+        
     return redirect(url_for('index'))
 
 # --- RUTAS DE MENSAJERÍA Y CHAT ---
