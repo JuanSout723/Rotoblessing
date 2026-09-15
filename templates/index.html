@@ -46,7 +46,7 @@
         .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
         .actions a { width: 100%; max-width: 250px; padding: 12px 20px; }
 
-        /* Cuadrícula de Formularios */
+        /* Cuadrícula de Formularios (Login / Registro) */
         .forms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 30px; }
         .card { background: white; padding: 25px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); width: 100%; }
         .card h2 { margin-bottom: 18px; color: #0077b6; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
@@ -60,8 +60,6 @@
         .btn:hover { background-color: #005b8e; }
         .btn-success { background-color: #28a745; }
         .btn-success:hover { background-color: #218838; }
-        .btn-danger { background-color: #dc3545; }
-        .btn-danger:hover { background-color: #c82333; }
 
         /* Títulos de Secciones */
         .section-title { text-align: center; color: #0077b6; font-size: 1.4rem; font-weight: 700; margin: 30px 0 15px 0; position: relative; }
@@ -78,7 +76,8 @@
         .product-actions { display: flex; gap: 6px; margin-top: auto; }
         .btn-consultar { flex: 1; padding: 10px 4px; font-size: 0.78rem; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px; color: white; white-space: nowrap; }
         .btn-platform { background-color: #0077b6; }
-        .btn-wa { background-color: #25d366; }
+        .btn-whatsapp { background-color: #25d366; }
+        .btn-whatsapp:hover { background-color: #1ebe5d; }
 
         /* Tarjetas de Asesores */
         .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
@@ -86,32 +85,19 @@
         .team-avatar { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #0077b6; margin-bottom: 15px; background: #e9ecef; }
         .team-card h3 { font-size: 1.1rem; color: #333; margin-bottom: 4px; }
         .team-card p { font-size: 0.85rem; color: #6c757d; margin-bottom: 15px; line-height: 1.4; flex: 1; }
-        .team-links { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; width: 100%; }
-        .btn-social { padding: 6px 12px; font-size: 0.78rem; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; color: white; }
-        .btn-social-whatsapp { background-color: #25d366; }
-        .btn-social-facebook { background-color: #1877f2; }
-        .btn-social-instagram { background-color: #e4405f; }
 
-        /* Panel de Configuración de Perfil */
-        .profile-config-card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; border-left: 5px solid #0077b6; }
-        .profile-config-card h3 { color: #0077b6; font-size: 1.2rem; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+        /* Sección de Comentarios */
+        .comments-section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .comment-item { padding: 12px 0; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 4px; }
+        .comment-item:last-child { border-bottom: none; }
+        .comment-author { font-weight: 600; font-size: 0.9rem; color: #0077b6; }
+        .comment-text { font-size: 0.88rem; color: #495057; }
 
-        /* Comentarios y Experiencias */
-        .comments-section { background: white; padding: 30px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .comment-form-box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e9ecef; }
-        .comments-list { display: flex; flex-direction: column; gap: 15px; }
-        .comment-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
-        .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 5px; }
-        .comment-author { font-weight: 600; color: #0077b6; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
-        .comment-date { font-size: 0.75rem; color: #6c757d; }
-        .comment-body { font-size: 0.9rem; color: #495057; line-height: 1.5; margin-bottom: 12px; white-space: pre-line; word-break: break-word; }
-        .comment-img { max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; border: 1px solid #ced4da; }
-
-        /* Footer */
-        footer { background-color: #0b2545; color: white; text-align: center; padding: 25px 20px; margin-top: auto; }
-        .social-links { display: flex; justify-content: center; gap: 15px; margin-bottom: 12px; }
-        .social-links a { color: white; font-size: 1.2rem; transition: opacity 0.2s; }
-        .social-links a:hover { opacity: 0.8; }
+        /* Footer y Redes Sociales */
+        footer { background-color: #0b2545; color: white; text-align: center; padding: 30px 20px; margin-top: auto; }
+        .social-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
+        .social-icons a { color: white; background: rgba(255,255,255,0.1); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: background 0.2s; }
+        .social-icons a:hover { background: #0077b6; }
         footer p { font-size: 0.85rem; color: #adb5bd; }
 
         @media (max-width: 768px) {
@@ -135,7 +121,6 @@
         <div class="nav-links">
             <a href="#catalogo"><i class="fa-solid fa-store"></i> Catálogo</a>
             <a href="#equipo"><i class="fa-solid fa-users"></i> Asesores</a>
-            <a href="#conocenos"><i class="fa-solid fa-circle-info"></i> Conócenos</a>
             <a href="#seccion-comentarios"><i class="fa-solid fa-comments"></i> Experiencias</a>
             
             {% if usuario %}
@@ -148,9 +133,8 @@
                         <span style="padding: 10px 16px; font-size: 0.75rem; color: #6c757d; border-bottom: 1px solid #f1f5f9; display: block;">Rol: <strong>{{ usuario.rol }}</strong></span>
                         <a href="/mensajes"><i class="fa-solid fa-comments"></i> Centro de Mensajes</a>
                         
-                        <!-- Enlace directo al panel de personalización de perfil para Vendedores y Dueños -->
                         {% if usuario.rol != 'Comprador' %}
-                            <a href="#perfil-config-card"><i class="fa-solid fa-id-card"></i> Personalizar mi Perfil</a>
+                            <a href="#" onclick="alert('Aquí puedes habilitar tu ventana de edición o perfil.'); return false;"><i class="fa-solid fa-id-card"></i> Personalizar mi Perfil</a>
                         {% endif %}
                         
                         <a href="/logout" style="color: #dc3545 !important;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
@@ -182,9 +166,6 @@
                 <p>Hola <strong>{{ usuario.nombre }}</strong>, tu sesión está activa y protegida de forma segura en la plataforma.</p>
                 <div class="actions">
                     <a href="/mensajes" class="btn"><i class="fa-solid fa-comments"></i> Centro de Mensajes</a>
-                    {% if usuario.rol != 'Comprador' %}
-                        <a href="#perfil-config-card" class="btn" style="background-color: #17a2b8;"><i class="fa-solid fa-id-card"></i> Editar Perfil</a>
-                    {% endif %}
                     <a href="/logout" class="btn" style="background-color: #dc3545;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
                 </div>
             {% else %}
@@ -240,46 +221,22 @@
             </div>
         {% endif %}
 
-        <!-- PANEL DE CONFIGURACIÓN DE PERFIL (Solo para Vendedores/Dueños) -->
-        {% if usuario and usuario.rol != 'Comprador' %}
-        <div class="profile-config-card" id="perfil-config-card">
-            <h3><i class="fa-solid fa-id-card"></i> Personalizar mi Perfil Profesional y de Confianza</h3>
-            <p style="font-size: 0.85rem; color: #6c757d; margin-bottom: 20px;">Actualiza tus datos para que los compradores puedan conocerte y contactarte con total seguridad.</p>
-            
-            <form action="/perfil/editar" method="POST" enctype="multipart/form-data">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
-                    <div class="form-group">
-                        <label>Teléfono de Llamada</label>
-                        <input type="text" name="telefono" value="{{ usuario.telefono or '' }}" placeholder="Ej. 04121234567">
-                    </div>
-                    <div class="form-group">
-                        <label>WhatsApp (con código de país)</label>
-                        <input type="text" name="whatsapp" value="{{ usuario.whatsapp or '' }}" placeholder="Ej. 584121234567">
-                    </div>
-                    <div class="form-group">
-                        <label>Enlace de Facebook</label>
-                        <input type="text" name="facebook" value="{{ usuario.facebook or '' }}" placeholder="https://facebook.com/tuusuario">
-                    </div>
-                    <div class="form-group">
-                        <label>Enlace de Instagram</label>
-                        <input type="text" name="instagram" value="{{ usuario.instagram or '' }}" placeholder="https://instagram.com/tuusuario">
-                    </div>
+        <!-- SECCIÓN: CATÁLOGO -->
+        <h2 class="section-title" id="catalogo">Nuestro Catálogo</h2>
+        <div class="catalog-grid">
+            <div class="product-card">
+                <div>
+                    <img src="{{ url_for('static', filename='tanque1.jpg') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+1'">
+                    <h3>Tanque Residencial 500L</h3>
+                    <p>Ideal para departamentos o casas pequeñas.</p>
+                    <div class="price">$120.00</div>
                 </div>
-
-                <div class="form-group">
-                    <label>Biografía / Presentación Corta</label>
-                    <textarea name="biografia" rows="2" placeholder="Cuéntale a los clientes sobre tu experiencia en Rotoblessing...">{{ usuario.biografia or '' }}</textarea>
+                <div class="product-actions">
+                    <a href="/mensajes" class="btn-consultar btn-platform"><i class="fa-solid fa-comments"></i> Consultar</a>
+                    <a href="https://wa.me/58000000000?text=Hola,%20estoy%20interesado%20en%20el%20Tanque%20Residencial%20500L" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
                 </div>
-
-                <div class="form-group">
-                    <label><i class="fa-solid fa-image"></i> Foto de Perfil Profesional</label>
-                    <input type="file" name="foto_perfil" accept="image/png, image/jpeg, image/jpg, image/webp" style="padding: 6px; font-size: 0.85rem;">
-                </div>
-
-                <button type="submit" class="btn" style="max-width: 250px;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
-            </form>
+            </div>
         </div>
-        {% endif %}
 
         <!-- SECCIÓN: ASESORES -->
         <h2 class="section-title" id="equipo">Nuestro Equipo Autorizado</h2>
@@ -302,25 +259,47 @@
             {% endif %}
         </div>
 
-        <!-- SECCIÓN: CATÁLOGO -->
-        <h2 class="section-title" id="catalogo">Nuestro Catálogo</h2>
-        <div class="catalog-grid">
-            <div class="product-card">
-                <div>
-                    <img src="{{ url_for('static', filename='tanque1.jpg') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+1'">
-                    <h3>Tanque Residencial 500L</h3>
-                    <p>Ideal para departamentos o casas pequeñas.</p>
-                    <div class="price">$120.00</div>
-                </div>
-                <div class="product-actions">
-                    <a href="/mensajes" class="btn-consultar btn-platform"><i class="fa-solid fa-comments"></i> Consultar</a>
-                </div>
+        <!-- SECCIÓN: COMENTARIOS Y EXPERIENCIAS -->
+        <h2 class="section-title" id="seccion-comentarios">Experiencias de Nuestros Clientes</h2>
+        <div class="comments-section">
+            {% if usuario %}
+                <form action="/comentar" method="POST" style="margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label>Deja tu comentario o consulta pública</label>
+                        <textarea name="comentario" rows="3" required placeholder="Escribe tu experiencia aquí..."></textarea>
+                    </div>
+                    <button type="submit" class="btn" style="max-width: 200px;"><i class="fa-solid fa-paper-plane"></i> Publicar</button>
+                </form>
+            {% else %}
+                <p style="text-align: center; color: #6c757d; margin-bottom: 20px; font-size: 0.9rem;">
+                    <a href="#catalogo" style="color: #0077b6; font-weight: 600;">Inicia sesión</a> para dejar tu comentario o experiencia.
+                </p>
+            {% endif %}
+
+            <div style="margin-top: 15px;">
+                {% if comentarios %}
+                    {% for c in comentarios %}
+                    <div class="comment-item">
+                        <span class="comment-author"><i class="fa-solid fa-user-circle"></i> {{ c.nombre_usuario }}</span>
+                        <span class="comment-text">{{ c.texto }}</span>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #6c757d; font-size: 0.9rem;">Aún no hay comentarios. ¡Sé el primero en opinar!</p>
+                {% endif %}
             </div>
         </div>
 
     </div>
 
+    <!-- Footer con Redes Sociales -->
     <footer>
+        <div class="social-icons">
+            <a href="https://instagram.com" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://facebook.com" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <a href="https://wa.me/58000000000" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="mailto:contacto@rotoblessing.com" title="Correo"><i class="fa-solid fa-envelope"></i></a>
+        </div>
         <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
     </footer>
 
