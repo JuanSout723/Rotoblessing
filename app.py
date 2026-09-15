@@ -187,6 +187,7 @@ def eliminar_cuenta():
     usuario = Usuario.query.get(usuario_id)
     
     if usuario:
+        # Eliminar foto de perfil si existe
         if usuario.foto_perfil:
             ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], usuario.foto_perfil)
             if os.path.exists(ruta_foto):
@@ -194,6 +195,18 @@ def eliminar_cuenta():
                     os.remove(ruta_foto)
                 except Exception as e:
                     print(f"Error al eliminar foto de perfil: {e}")
+
+        # NUEVO: Eliminar comentarios asociados para evitar conflicto de llave foránea
+        comentarios_usuario = Comentario.query.filter_by(usuario_id=usuario.id).all()
+        for com in comentarios_usuario:
+            if com.foto:
+                ruta_foto_com = os.path.join(app.config['UPLOAD_FOLDER'], com.foto)
+                if os.path.exists(ruta_foto_com):
+                    try:
+                        os.remove(ruta_foto_com)
+                    except Exception:
+                        pass
+            db.session.delete(com)
 
         db.session.delete(usuario)
         db.session.commit()
@@ -227,6 +240,18 @@ def admin_eliminar_usuario(id):
                 os.remove(ruta_foto)
             except Exception as e:
                 print(f"Error al eliminar foto de perfil: {e}")
+
+    # NUEVO: Eliminar los comentarios y las fotos asociadas a los comentarios del usuario antes de borrarlo
+    comentarios_usuario = Comentario.query.filter_by(usuario_id=usuario_a_eliminar.id).all()
+    for com in comentarios_usuario:
+        if com.foto:
+            ruta_foto_com = os.path.join(app.config['UPLOAD_FOLDER'], com.foto)
+            if os.path.exists(ruta_foto_com):
+                try:
+                    os.remove(ruta_foto_com)
+                except Exception:
+                    pass
+        db.session.delete(com)
 
     db.session.delete(usuario_a_eliminar)
     db.session.commit()
