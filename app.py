@@ -163,7 +163,7 @@ def logout():
 
 # --- RUTAS DE GESTIÓN DE PERFIL PROFESIONAL Y ELIMINACIÓN DE CUENTA ---
 
-@app.route('/perfil/editar', methods=['POST'])
+@app.route('/perfil/editar', methods=['GET', 'POST'])
 def editar_perfil():
     if 'usuario_id' not in session:
         flash('Debes iniciar sesión.', 'danger')
@@ -172,6 +172,10 @@ def editar_perfil():
     usuario = Usuario.query.get(session['usuario_id'])
     if not usuario:
         flash('Usuario no encontrado.', 'danger')
+        return redirect(url_for('index'))
+
+    # Si por alguna razón entra por GET, lo devolvemos al inicio (o a su vista)
+    if request.method == 'GET':
         return redirect(url_for('index'))
     
     usuario.telefono = request.form.get('telefono', '').strip()
@@ -231,7 +235,7 @@ def admin_eliminar_usuario(id):
     usuario_actual = Usuario.query.get(session['usuario_id'])
     
     if not usuario_actual or usuario_actual.rol != 'Dueno':
-        flash('No tienes permisos de Administrador para realizar esta acción.', 'danger')
+        flash('No tienes permisos de Administrador/Dueño para realizar esta acción.', 'danger')
         return redirect(url_for('index'))
         
     usuario_a_eliminar = Usuario.query.get_or_404(id)
@@ -250,7 +254,7 @@ def admin_eliminar_usuario(id):
 
     db.session.delete(usuario_a_eliminar)
     db.session.commit()
-    flash(f'El usuario {usuario_a_eliminar.nombre} ha sido eliminado del sistema exitosamente.', 'success')
+    flash(f'El miembro del equipo {usuario_a_eliminar.nombre} ha sido eliminado exitosamente.', 'success')
     return redirect(url_for('index'))
 
 # --- RUTAS DE MENSAJERÍA Y CHAT ---
