@@ -73,18 +73,6 @@ with app.app_context():
     except Exception as e:
         print(f"Nota al sincronizar base de datos: {e}")
 
-# --- RUTA TEMPORAL PARA BORRAR EL USUARIO DE PRUEBA ---
-@app.route('/borrar-usuario-prueba')
-def borrar_usuario_prueba():
-    correo = "jp@gmail.com"
-    usuario = Usuario.query.filter_by(email=correo).first()
-    
-    if usuario:
-        db.session.delete(usuario)
-        db.session.commit()
-        return f"¡Listo! El usuario {correo} y sus datos asociados fueron eliminados correctamente de la base de datos."
-    return f"El usuario {correo} no fue encontrado o ya había sido borrado."
-
 # --- RUTAS DE NAVEGACIÓN Y AUTENTICACIÓN ---
 
 @app.route('/')
