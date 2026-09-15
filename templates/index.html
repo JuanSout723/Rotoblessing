@@ -75,7 +75,7 @@
 
         /* ==========================================================
             ESTILOS PARA SECCIÓN DE COMENTARIOS Y EXPERIENCIAS
-           ========================================================== */
+            ========================================================== */
         .comments-section { background: white; padding: 30px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
         .comment-form-box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e9ecef; }
         .comments-list { display: flex; flex-direction: column; gap: 15px; }
@@ -88,14 +88,27 @@
         .comment-img { max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; border: 1px solid #ced4da; cursor: pointer; transition: transform 0.2s; }
         .comment-img:hover { transform: scale(1.02); }
 
+        /* Acciones de Edición/Eliminación en Comentarios */
+        .comment-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; border-top: 1px solid #f1f5f9; padding-top: 10px; }
+        .btn-action-mini { padding: 5px 10px; font-size: 0.75rem; border-radius: 5px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; color: white; border: none; cursor: pointer; }
+        .btn-edit { background-color: #ffc107; color: #212529; }
+        .btn-edit:hover { background-color: #e0a800; }
+        .btn-delete { background-color: #dc3545; }
+        .btn-delete:hover { background-color: #c82333; }
+
         /* Botón Flotante de WhatsApp */
         .whatsapp-btn { position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 2px 4px 12px rgba(0,0,0,0.3); z-index: 2000; text-decoration: none; }
 
         /* Footer */
-        footer { background-color: #0077b6; color: white; text-align: center; padding: 25px 15px; margin-top: auto; }
-        footer p { margin-bottom: 12px; font-size: 0.85rem; }
-        .social-links { display: flex; justify-content: center; gap: 18px; margin-bottom: 12px; }
-        .social-links a { color: white; font-size: 1.3rem; }
+        <footer>
+            <div class="social-links">
+                <a href="https://facebook.com" target="_blank" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+                <a href="https://instagram.com" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://wa.me/" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="mailto:contacto@rotoblessing.com" title="Correo Electrónico"><i class="fa-solid fa-envelope"></i></a>
+            </div>
+            <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
+        </footer>
 
         /* ==========================================================
             AJUSTES ESPECIALES PARA TELÉFONOS (Pantallas menores a 768px)
@@ -105,14 +118,9 @@
             header h1 { font-size: 1.2rem; }
             .nav-links { gap: 12px; font-size: 0.85rem; flex-wrap: wrap; justify-content: center; }
             
-            /* Forzar a que los formularios de login y registro se apilen uno debajo del otro */
             .forms-grid { grid-template-columns: 1fr; gap: 20px; }
-            
-            /* Ocultar el logo de la esquina en bienvenida para ganar espacio móvil */
             .welcome-panel .logo-corner { display: none; }
             .welcome-panel { padding: 25px 15px; }
-            
-            /* Ajustar tarjetas del catálogo para que no se compriman mal */
             .catalog-grid { grid-template-columns: 1fr; }
             .product-card { max-width: 100%; }
         }
@@ -213,7 +221,7 @@
                             </select>
                         </div>
 
-                        <!-- Código de Verificación Especial (Oculto por defecto) -->
+                        <!-- Código de Verificación Especial -->
                         <div class="form-group" id="codigoGroup" style="display: none;">
                             <label style="color: #0077b6;"><i class="fa-solid fa-key"></i> Código de Verificación Especial</label>
                             <input type="password" name="codigo_verificacion" id="inputCodigo" placeholder="Ingresa la clave de autorización">
@@ -275,7 +283,7 @@
         </div>
 
         <!-- ========================================================== -->
-        <!-- SECCIÓN DE EXPERIENCIAS Y COMENTARIOS DE CLIENTES         -->
+        <!-- SECCIÓN DE EXPERIencias Y COMENTARIOS DE CLIENTES          -->
         <!-- ========================================================== -->
         <div class="comments-section" id="seccion-comentarios">
             <h2 class="section-title" style="margin-top: 0;">Experiencias con nuestros Tanques</h2>
@@ -319,6 +327,18 @@
                                 <div class="comment-img-container">
                                     <a href="{{ url_for('static', filename='uploads/' + c.foto) }}" target="_blank">
                                         <img src="{{ url_for('static', filename='uploads/' + c.foto) }}" alt="Foto del comentario" class="comment-img">
+                                    </a>
+                                </div>
+                            {% endif %}
+
+                            <!-- BOTONES DE EDITAR Y ELIMINAR (Visibles solo para el autor o si es Dueño/Vendedor) -->
+                            {% if usuario and (session.get('usuario_id') == c.autor_id or usuario.rol in ['Dueno', 'Vendedor']) %}
+                                <div class="comment-actions">
+                                    <a href="/comentario/editar/{{ c.id }}" class="btn-action-mini btn-edit">
+                                        <i class="fa-solid fa-pen"></i> Editar
+                                    </a>
+                                    <a href="/comentario/eliminar/{{ c.id }}" class="btn-action-mini btn-delete" onclick="return confirm('¿Estás seguro de que deseas eliminar este comentario?');">
+                                        <i class="fa-solid fa-trash"></i> Eliminar
                                     </a>
                                 </div>
                             {% endif %}
