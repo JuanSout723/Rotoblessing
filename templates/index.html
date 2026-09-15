@@ -61,6 +61,8 @@
         .btn:hover { background-color: #005b8e; }
         .btn-success { background-color: #28a745; }
         .btn-success:hover { background-color: #218838; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-danger:hover { background-color: #c82333; }
 
         /* Títulos de Secciones */
         .section-title { text-align: center; color: #0077b6; font-size: 1.35rem; font-weight: 700; margin: 30px 0 12px 0; position: relative; }
@@ -197,9 +199,7 @@
                     <div class="dropdown-menu">
                         <span style="padding: 10px 14px; font-size: 0.75rem; color: #6c757d; border-bottom: 1px solid #f1f5f9; display: block;">Rol: <strong>{{ usuario.rol }}</strong></span>
                         
-                        {% if usuario.rol != 'Comprador' %}
-                            <a onclick="abrirModalPerfil(event)"><i class="fa-solid fa-id-card"></i> Personalizar mi Perfil</a>
-                        {% endif %}
+                        <a onclick="abrirModalPerfil(event)"><i class="fa-solid fa-id-card"></i> Personalizar mi Perfil</a>
                         
                         <a href="/logout" style="color: #dc3545 !important;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
                     </div>
@@ -304,7 +304,6 @@
                         </form>
                     {% endif %}
 
-                    <!-- FOTO DE PERFIL DESDE BASE DE DATOS (BASE64) -->
                     {% if v.foto_perfil %}
                         <img src="{{ v.foto_perfil }}" alt="{{ v.nombre }}" class="team-avatar">
                     {% else %}
@@ -312,232 +311,214 @@
                     {% endif %}
 
                     <h3>{{ v.nombre }}</h3>
-                    <span class="badge" style="margin-bottom: 8px; font-size: 0.7rem;">{{ 'Dueño' if v.rol == 'Dueno' else v.rol }}</span>
-                    <p>{{ v.biografia or 'Asesor oficial y verificado de Rotoblessing.' }}</p>
+                    <span class="badge" style="font-size: 0.7rem; padding: 3px 8px; margin-bottom: 8px;">{{ v.rol }}</span>
+                    <p>{{ v.biografia if v.biografia else 'Asesor autorizado listo para brindarte la mejor atención y asesoría con nuestros tanques.' }}</p>
 
-                    <!-- Botones de Redes Sociales del Asesor -->
                     <div class="team-social-buttons">
                         {% if v.whatsapp %}
-                            <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20interesado%20en%20los%20tanques%20de%20Rotoblessing." target="_blank" class="btn-consultar btn-whatsapp">
+                            <a href="https://wa.me/{{ v.whatsapp }}" target="_blank" class="btn-consultar btn-whatsapp">
                                 <i class="fa-brands fa-whatsapp"></i> WhatsApp
                             </a>
                         {% endif %}
-
-                        {% if v.instagram %}
-                            <a href="{{ v.instagram }}" target="_blank" class="btn-consultar" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white;">
-                                <i class="fa-brands fa-instagram"></i> Instagram
-                            </a>
-                        {% endif %}
-
-                        {% if v.facebook %}
-                            <a href="{{ v.facebook }}" target="_blank" class="btn-consultar" style="background-color: #1877f2; color: white;">
-                                <i class="fa-brands fa-facebook-f"></i> Facebook
-                            </a>
-                        {% endif %}
+                        <button class="btn-consultar btn-platform" onclick="verPerfilCompleto('{{ v.nombre }}', '{{ v.rol }}', '{{ v.telefono }}', '{{ v.whatsapp }}', '{{ v.facebook }}', '{{ v.instagram }}', '{{ v.biografia }}', '{{ v.foto_perfil }}')">
+                            <i class="fa-solid id-card"></i> Ver Contacto
+                        </button>
                     </div>
                 </div>
                 {% endfor %}
             {% else %}
-                <p style="text-align: center; color: #6c757d; grid-column: 1 / -1;">Pronto se mostrará el listado oficial del equipo de ventas.</p>
+                <p style="text-align: center; color: #6c757d; grid-column: 1 / -1;">No hay vendedores registrados aún.</p>
             {% endif %}
         </div>
 
-        <!-- SECCIÓN: CATÁLOGO -->
-        <h2 class="section-title" id="catalogo">Nuestro Catálogo</h2>
+        <!-- SECCIÓN: CATÁLOGO DE PRODUCTOS -->
+        <h2 class="section-title" id="catalogo">Nuestros Tanques y Productos</h2>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 20px; font-size: 0.88rem;">Soluciones de almacenamiento fabricadas con máxima calidad, durabilidad y resistencia.</p>
+
         <div class="catalog-grid">
             <div class="product-card">
-                <div>
-                    <img src="{{ url_for('static', filename='tanque1.jpg') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+1'">
-                    <h3>Tanque Residencial 500L</h3>
-                    <p>Ideal para departamentos o casas pequeñas.</p>
-                    <div class="price">$120.00</div>
-                </div>
+                <img src="{{ url_for('static', filename='uploads/tanque500.png') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x160?text=Tanque+500L'">
+                <h3>Tanque Bicapa 500 Litros</h3>
+                <p>Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada.</p>
+                <div class="price">Consutar Precio</div>
                 <div class="product-actions">
-                    <button type="button" class="btn-consultar btn-platform" onclick="abrirModalVendedores()">
-                        <i class="fa-solid fa-comments"></i> Consultar a...
-                    </button>
+                    <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%20500%20litros" target="_blank" class="btn-consultar btn-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i> Consultar
+                    </a>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="{{ url_for('static', filename='uploads/tanque1000.png') }}" alt="Tanque 1000L" onerror="this.src='https://via.placeholder.com/250x160?text=Tanque+1000L'">
+                <h3>Tanque Bicapa 1.000 Litros</h3>
+                <p>El estándar más buscado por las familias para garantizar reserva óptima de agua potable.</p>
+                <div class="price">Consultar Precio</div>
+                <div class="product-actions">
+                    <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%201000%20litros" target="_blank" class="btn-consultar btn-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i> Consultar
+                    </a>
+                </div>
+            </div>
+
+            <div class="product-card">
+                <img src="{{ url_for('static', filename='uploads/tanque1500.png') }}" alt="Tanque 1500L" onerror="this.src='https://via.placeholder.com/250x160?text=Tanque+1500L'">
+                <h3>Tanque Tricapa 1.500 Litros</h3>
+                <p>Mayor capacidad estructural con capa antibacteriana interna. Máxima seguridad y calidad.</p>
+                <div class="price">Consultar Precio</div>
+                <div class="product-actions">
+                    <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%201500%20litros" target="_blank" class="btn-consultar btn-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i> Consultar
+                    </a>
                 </div>
             </div>
         </div>
 
-        <!-- SECCIÓN: COMENTARIOS Y EXPERIENCIAS -->
-        <h2 class="section-title" id="seccion-comentarios">Experiencias de Nuestros Clientes</h2>
+        <!-- SECCIÓN DE COMENTARIOS Y EXPERIENCIAS -->
+        <h2 class="section-title" id="seccion-comentarios">Opiniones y Experiencias</h2>
+        
         <div class="comments-section">
             {% if usuario %}
                 <form action="/comentar" method="POST" enctype="multipart/form-data" style="margin-bottom: 20px;">
                     <div class="form-group">
-                        <label>Deja tu comentario o consulta pública</label>
-                        <textarea name="contenido" rows="3" required placeholder="Escribe tu experiencia aquí..."></textarea>
+                        <label>Comparte tu experiencia con nuestros tanques o servicio:</label>
+                        <textarea name="contenido" rows="3" required placeholder="Escribe tu opinión aquí..."></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Foto (Opcional)</label>
-                        <input type="file" name="foto" accept="image/*">
+                        <label>Adjuntar foto o evidencia (Opcional):</label>
+                        <input type="file" name="foto" accept=".jpg, .jpeg, .png, .webp">
                     </div>
-                    <button type="submit" class="btn" style="max-width: 200px;"><i class="fa-solid fa-paper-plane"></i> Publicar</button>
+                    <button type="submit" class="btn"><i class="fa-solid fa-paper-plane"></i> Publicar Opinión</button>
                 </form>
             {% else %}
-                <p style="text-align: center; color: #6c757d; margin-bottom: 15px; font-size: 0.88rem;">
-                    <a href="#catalogo" style="color: #0077b6; font-weight: 600;">Inicia sesión</a> para dejar tu comentario o experiencia.
+                <p style="text-align: center; color: #6c757d; margin-bottom: 20px; font-size: 0.88rem;">
+                    <a href="#" onclick="document.querySelector('input[name=email]').focus(); return false;" style="color: #0077b6; font-weight: 600;">Inicia sesión</a> para dejar tu opinión o experiencia con nosotros.
                 </p>
             {% endif %}
 
-            <div style="margin-top: 15px;">
+            <div style="margin-top: 20px;">
                 {% if comentarios %}
                     {% for c in comentarios %}
-                    <div class="comment-item">
-                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
-                            <span class="comment-author"><i class="fa-solid fa-user-circle"></i> {{ c.autor.nombre if c.autor else 'Usuario' }}</span>
-                            <span style="font-size: 0.72rem; color: #adb5bd;">{{ c.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
-                        </div>
-                        <span class="comment-text">{{ c.contenido }}</span>
-                        
-                        <!-- FOTO DEL COMENTARIO DESDE BASE DE DATOS (BASE64) -->
-                        {% if c.foto %}
-                            <div style="margin-top: 8px;">
-                                <img src="{{ c.foto }}" alt="Foto comentario" style="max-width: 150px; border-radius: 6px;">
+                        <div class="comment-item">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span class="comment-author"><i class="fa-solid fa-user-circle"></i> {{ c.autor.nombre }} <span style="font-size: 0.7rem; color: #6c757d; font-weight: normal;">({{ c.autor.rol }})</span></span>
+                                <span style="font-size: 0.75rem; color: #adb5bd;">{{ c.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
                             </div>
-                        {% endif %}
-                        
-                        {% if usuario and (c.usuario_id == usuario.id or usuario.rol == 'Dueno') %}
-                            <form action="{{ url_for('eliminar_comentario', id=c.id) }}" method="POST" style="margin-top: 6px;" onsubmit="return confirm('¿Eliminar este comentario?');">
-                                <button type="submit" style="background: none; border: none; color: #dc3545; font-size: 0.75rem; cursor: pointer; display: flex; align-items: center; gap: 4px;">
-                                    <i class="fa-solid fa-trash"></i> Eliminar
-                                </button>
-                            </form>
-                        {% endif %}
-                    </div>
+                            <div class="comment-text">{{ c.contenido }}</div>
+                            
+                            {% if c.foto %}
+                                <div style="margin-top: 8px;">
+                                    <img src="{{ c.foto }}" alt="Evidencia" style="max-width: 150px; max-height: 150px; border-radius: 8px; object-fit: cover;">
+                                </div>
+                            {% endif %}
+
+                            {% if usuario and (c.usuario_id == usuario.id or usuario.rol == 'Dueno') %}
+                                <div style="display: flex; gap: 10px; margin-top: 6px;">
+                                    <form action="{{ url_for('eliminar_comentario', id=c.id) }}" method="POST" onsubmit="return confirm('¿Deseas eliminar este comentario?');">
+                                        <button type="submit" style="background: none; border: none; color: #dc3545; font-size: 0.78rem; cursor: pointer; font-weight: 600;">
+                                            <i class="fa-solid fa-trash"></i> Eliminar
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
                     {% endfor %}
                 {% else %}
-                    <p style="text-align: center; color: #6c757d; font-size: 0.88rem;">Aún no hay comentarios. ¡Sé el primero en opinar!</p>
+                    <p style="text-align: center; color: #6c757d; font-size: 0.88rem;">Aún no hay opiniones registradas. ¡Sé el primero en comentar!</p>
                 {% endif %}
             </div>
         </div>
 
     </div>
 
-    <!-- VENTANA EMERGENTE (MODAL) PARA SELECCIONAR VENDEDOR AL CONSULTAR -->
-    <div id="modalVendedores" class="modal-overlay">
-        <div class="modal-content">
-            <button class="modal-close" onclick="cerrarModalVendedores()">&times;</button>
-            <h2 style="color: #0077b6; margin-bottom: 10px; font-size: 1.15rem; text-align: center;">
-                <i class="fa-solid fa-users"></i> Nuestro Equipo de Ventas
-            </h2>
-            <p style="text-align: center; color: #6c757d; font-size: 0.82rem; margin-bottom: 15px;">
-                Selecciona a cualquiera de nuestros asesores para comunicarte de forma directa y recibir atención personalizada.
-            </p>
-            <div style="display: flex; flex-direction: column; gap: 12px; max-height: 60vh; overflow-y: auto;">
-                {% if vendedores %}
-                    {% for v in vendedores %}
-                    <div style="display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef; flex-wrap: wrap;">
-                        
-                        <!-- FOTO EN MODAL DESDE BASE DE DATOS (BASE64) -->
-                        {% if v.foto_perfil %}
-                            <img src="{{ v.foto_perfil }}" alt="{{ v.nombre }}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0077b6;">
-                        {% else %}
-                            <img src="https://via.placeholder.com/45?text=Avatar" alt="Sin foto" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0077b6;">
-                        {% endif %}
-
-                        <div style="flex: 1; min-width: 110px;">
-                            <h4 style="font-size: 0.9rem; color: #333; margin-bottom: 2px;">{{ v.nombre }}</h4>
-                            <span style="font-size: 0.72rem; color: #0077b6; font-weight: 600;">{{ 'Dueño' if v.rol == 'Dueno' else v.rol }}</span>
-                        </div>
-                        <div style="display: flex; gap: 5px; width: 100%; justify-content: flex-end; margin-top: 4px;">
-                            {% if v.whatsapp %}
-                                <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20consultando%20sobre%20los%20productos%20de%20Rotoblessing." target="_blank" class="btn-consultar btn-whatsapp" style="padding: 7px 10px; font-size: 0.78rem; width: auto;" title="Contactar por WhatsApp">
-                                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
-                                </a>
-                            {% endif %}
-                            {% if v.instagram %}
-                                <a href="{{ v.instagram }}" target="_blank" class="btn-consultar" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white; padding: 7px 10px; font-size: 0.78rem; width: auto;" title="Instagram">
-                                    <i class="fa-brands fa-instagram"></i>
-                                </a>
-                            {% endif %}
-                            {% if v.facebook %}
-                                <a href="{{ v.facebook }}" target="_blank" class="btn-consultar" style="background-color: #1877f2; color: white; padding: 7px 10px; font-size: 0.78rem; width: auto;" title="Facebook">
-                                    <i class="fa-brands fa-facebook-f"></i>
-                                </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <p style="text-align: center; color: #6c757d; font-size: 0.82rem;">No hay asesores disponibles en este momento.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL DE EDITAR PERFIL -->
-    {% if usuario and usuario.rol != 'Comprador' %}
-    <div id="modalPerfil" class="modal-overlay">
+    <!-- MODAL DE PERSONALIZACIÓN DE PERFIL Y ELIMINACIÓN DE CUENTA -->
+    {% if usuario %}
+    <div class="modal-overlay" id="modalPerfil">
         <div class="modal-content">
             <button class="modal-close" onclick="cerrarModalPerfil()">&times;</button>
-            <h2 style="color: #0077b6; margin-bottom: 15px; font-size: 1.15rem;"><i class="fa-solid fa-id-card"></i> Personalizar mi Perfil Profesional</h2>
+            <h2 style="color: #0077b6; margin-bottom: 15px; font-size: 1.15rem;"><i class="fa-solid fa-id-card"></i> Personaliza tu Perfil Profesional</h2>
+            
             <form action="/perfil/editar" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label>Teléfono</label>
-                    <input type="text" name="telefono" value="{{ usuario.telefono or '' }}" placeholder="+58 412...">
+                    <label>Teléfono de Contacto</label>
+                    <input type="text" name="telefono" value="{{ usuario.telefono or '' }}" placeholder="Ej. 0412-1234567">
                 </div>
                 <div class="form-group">
-                    <label>WhatsApp</label>
-                    <input type="text" name="whatsapp" value="{{ usuario.whatsapp or '' }}" placeholder="+58 412...">
+                    <label>Número de WhatsApp (Sin símbolos, ej: 58412...)</label>
+                    <input type="text" name="whatsapp" value="{{ usuario.whatsapp or '' }}" placeholder="Ej. 584121234567">
                 </div>
                 <div class="form-group">
-                    <label>Facebook (URL)</label>
+                    <label>Enlace de Facebook</label>
                     <input type="text" name="facebook" value="{{ usuario.facebook or '' }}" placeholder="https://facebook.com/tu-perfil">
                 </div>
                 <div class="form-group">
-                    <label>Instagram (URL)</label>
-                    <input type="text" name="instagram" value="{{ usuario.instagram or '' }}" placeholder="https://instagram.com/tu-perfil">
+                    <label>Enlace de Instagram</label>
+                    <input type="text" name="instagram" value="{{ usuario.instagram or '' }}" placeholder="https://instagram.com/tu-usuario">
                 </div>
                 <div class="form-group">
-                    <label>Biografía / Presentación</label>
-                    <textarea name="biografia" rows="3" placeholder="Cuéntanos brevemente sobre ti o tu rol...">{{ usuario.biografia or '' }}</textarea>
+                    <label>Breve Biografía o Mensaje Comercial</label>
+                    <textarea name="biografia" rows="3" placeholder="Escribe algo sobre ti o tu experiencia como asesor...">{{ usuario.biografia or '' }}</textarea>
                 </div>
                 <div class="form-group">
-                    <label>Foto de Perfil (Avatar)</label>
-                    <input type="file" name="foto_perfil" accept="image/*">
+                    <label>Foto de Perfil o Avatar</label>
+                    <input type="file" name="foto_perfil" accept=".jpg, .jpeg, .png, .webp">
                 </div>
-                <button type="submit" class="btn" style="margin-bottom: 12px;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
+                <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
             </form>
+
+            <hr style="margin: 20px 0; border: none; border-top: 1px solid #e9ecef;">
+
+            <!-- Sección de Eliminación de Cuenta -->
+            <div style="background: #fff5f5; padding: 15px; border-radius: 8px; border: 1px solid #fed7d7;">
+                <h3 style="color: #c53030; font-size: 0.95rem; margin-bottom: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Peligro</h3>
+                <p style="font-size: 0.8rem; color: #718096; margin-bottom: 12px;">Una vez que elimines tu cuenta, todos tus datos y comentarios asociados se borrarán permanentemente del sistema.</p>
+                <form action="/perfil/eliminar" method="POST" onsubmit="return confirm('¿Estás COMPLETAMENTE seguro de eliminar tu cuenta de forma permanente? Esta acción no se puede deshacer.');">
+                    <button type="submit" class="btn btn-danger" style="font-size: 0.85rem; padding: 8px;"><i class="fa-solid fa-user-xmark"></i> Eliminar mi cuenta permanentemente</button>
+                </form>
+            </div>
         </div>
     </div>
     {% endif %}
 
+    <!-- MODAL PARA VER DETALLES DE UN ASESOR -->
+    <div class="modal-overlay" id="modalAsesor">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close" onclick="cerrarModalAsesor()">&times;</button>
+            <img id="modalAsesorFoto" src="" alt="Avatar" style="width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #0077b6; margin-bottom: 12px; background: #e9ecef;">
+            <h2 id="modalAsesorNombre" style="color: #0077b6; margin-bottom: 4px;"></h2>
+            <span id="modalAsesorRol" class="badge" style="margin-bottom: 12px;"></span>
+            <p id="modalAsesorBio" style="font-size: 0.85rem; color: #6c757d; margin-bottom: 15px; line-height: 1.4;"></p>
+            
+            <div id="modalAsesorRedes" style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Se llena dinámicamente -->
+            </div>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <div class="social-icons">
-            <a href="#" style="color: #0077b6;"><i class="fa-brands fa-facebook"></i></a>
-            <a href="#" style="color: #e4405f;"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#" style="color: #25d366;"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="#" style="color: #0077b6; font-size: 1.2rem;"><i class="fa-brands fa-facebook"></i></a>
+            <a href="#" style="color: #0077b6; font-size: 1.2rem;"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" style="color: #0077b6; font-size: 1.2rem;"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
         <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- Scripts de JavaScript para Modales y Formularios -->
     <script>
         function toggleCodigoVerificacion() {
-            const select = document.getElementById('rolSelect');
-            const grupo = document.getElementById('codigoGrupo');
-            const label = document.getElementById('labelCodigo');
+            const rolSelect = document.getElementById('rolSelect');
+            const codigoGrupo = document.getElementById('codigoGrupo');
+            const labelCodigo = document.getElementById('labelCodigo');
             
-            if (select.value === 'Vendedor') {
-                grupo.style.display = 'block';
-                label.textContent = 'Código de Verificación de Vendedor';
-            } else if (select.value === 'Dueno') {
-                grupo.style.display = 'block';
-                label.textContent = 'Código de Dueño / Administrador';
+            if (rolSelect.value === 'Vendedor') {
+                codigoGrupo.style.display = 'block';
+                labelCodigo.innerText = 'Código de Verificación de Vendedor';
+            } else if (rolSelect.value === 'Dueno') {
+                codigoGrupo.style.display = 'block';
+                labelCodigo.innerText = 'Código de Verificación de Dueño';
             } else {
-                grupo.style.display = 'none';
+                codigoGrupo.style.display = 'none';
             }
-        }
-
-        function abrirModalVendedores() {
-            document.getElementById('modalVendedores').style.display = 'flex';
-        }
-
-        function cerrarModalVendedores() {
-            document.getElementById('modalVendedores').style.display = 'none';
         }
 
         function abrirModalPerfil(event) {
@@ -547,6 +528,53 @@
 
         function cerrarModalPerfil() {
             document.getElementById('modalPerfil').style.display = 'none';
+        }
+
+        function verPerfilCompleto(nombre, rol, telefono, whatsapp, facebook, instagram, biografia, foto) {
+            document.getElementById('modalAsesorNombre').innerText = nombre;
+            document.getElementById('modalAsesorRol').innerText = rol;
+            document.getElementById('modalAsesorBio').innerText = biografia ? biografia : 'Asesor autorizado listo para brindarte la mejor atención.';
+            
+            const fotoImg = document.getElementById('modalAsesorFoto');
+            if (foto && foto !== 'None' && foto.trim() !== '') {
+                fotoImg.src = foto;
+                fotoImg.style.display = 'inline-block';
+            } else {
+                fotoImg.src = 'https://via.placeholder.com/90?text=Avatar';
+            }
+
+            let redesHtml = '';
+            if (whatsapp && whatsapp !== 'None') {
+                redesHtml += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Escribir al WhatsApp (${whatsapp})</a>`;
+            }
+            if (telefono && telefono !== 'None') {
+                redesHtml += `<a href="tel:${telefono}" class="btn-consultar btn-platform"><i class="fa-solid fa-phone"></i> Llamar al: ${telefono}</a>`;
+            }
+            if (facebook && facebook !== 'None') {
+                redesHtml += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Visitar Facebook</a>`;
+            }
+            if (instagram && instagram !== 'None') {
+                redesHtml += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Visitar Instagram</a>`;
+            }
+
+            document.getElementById('modalAsesorRedes').innerHTML = redesHtml;
+            document.getElementById('modalAsesorAsesoria') || '';
+            document.getElementById('modalAsesor').style.display = 'flex';
+        }
+
+        function cerrarModalAsesor() {
+            document.getElementById('modalAsesor').style.display = 'none';
+        }
+
+        window.onclick = function(event) {
+            const modalPerfil = document.getElementById('modalPerfil');
+            const modalAsesor = document.getElementById('modalAsesor');
+            if (event.target == modalPerfil) {
+                modalPerfil.style.display = 'none';
+            }
+            if (event.target == modalAsesor) {
+                modalAsesor.style.display = 'none';
+            }
         }
     </script>
 </body>
