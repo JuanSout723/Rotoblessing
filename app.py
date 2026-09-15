@@ -31,7 +31,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # --- LLAVES VAPID PARA NOTIFICACIONES PUSH ---
-# Configura estas variables en Render (o usa unas de prueba locales)
 VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY', 'TU_PUBLIC_KEY_AQUI')
 VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', 'TU_PRIVATE_KEY_AQUI')
 VAPID_CLAIMS = {"sub": "mailto:admin@rotoblessing.com"}
@@ -67,7 +66,11 @@ class Comentario(db.Model):
     autor = db.relationship('Usuario', foreign_keys=[usuario_id])
 
 with app.app_context():
-    db.create_all()
+    try:
+        db.create_all()
+        print("Tablas y columnas sincronizadas correctamente.")
+    except Exception as e:
+        print(f"Nota al sincronizar base de datos: {e}")
 
 # --- RUTAS DE NAVEGACIÓN Y AUTENTICACIÓN ---
 
