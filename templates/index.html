@@ -44,8 +44,8 @@
 
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 0.85rem; font-weight: 600; color: #495057; }
-        .form-group input, .form-group select { width: 100%; padding: 11px; border: 1px solid #ced4da; border-radius: 8px; outline: none; font-size: 0.95rem; background: #fff; }
-        .form-group input:focus, .form-group select:focus { border-color: #0077b6; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 11px; border: 1px solid #ced4da; border-radius: 8px; outline: none; font-size: 0.95rem; background: #fff; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: #0077b6; }
 
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; width: 100%; background-color: #0077b6; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: 600; font-size: 0.95rem; cursor: pointer; text-align: center; text-decoration: none; transition: background 0.2s; }
         .btn:hover { background-color: #005b8e; }
@@ -73,6 +73,21 @@
         .about-card { background: white; padding: 25px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); line-height: 1.6; color: #495057; margin-bottom: 30px; font-size: 0.95rem; }
         .about-card p { margin-bottom: 12px; }
 
+        /* ==========================================================
+            ESTILOS PARA SECCIÓN DE COMENTARIOS Y EXPERIENCIAS
+           ========================================================== */
+        .comments-section { background: white; padding: 30px 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .comment-form-box { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px solid #e9ecef; }
+        .comments-list { display: flex; flex-direction: column; gap: 15px; }
+        .comment-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 18px; box-shadow: 0 2px 6px rgba(0,0,0,0.02); }
+        .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 5px; }
+        .comment-author { font-weight: 600; color: #0077b6; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
+        .comment-date { font-size: 0.75rem; color: #6c757d; }
+        .comment-body { font-size: 0.9rem; color: #495057; line-height: 1.5; margin-bottom: 12px; white-space: pre-line; }
+        .comment-img-container { margin-top: 10px; }
+        .comment-img { max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; border: 1px solid #ced4da; cursor: pointer; transition: transform 0.2s; }
+        .comment-img:hover { transform: scale(1.02); }
+
         /* Botón Flotante de WhatsApp */
         .whatsapp-btn { position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 2px 4px 12px rgba(0,0,0,0.3); z-index: 2000; text-decoration: none; }
 
@@ -83,8 +98,8 @@
         .social-links a { color: white; font-size: 1.3rem; }
 
         /* ==========================================================
-           AJUSTES ESPECIALES PARA TELÉFONOS (Pantallas menores a 768px)
-           ========================================================== */
+            AJUSTES ESPECIALES PARA TELÉFONOS (Pantallas menores a 768px)
+            ========================================================== */
         @media (max-width: 768px) {
             header { padding: 12px 15px; flex-direction: column; gap: 8px; text-align: center; }
             header h1 { font-size: 1.2rem; }
@@ -114,6 +129,7 @@
         <div class="nav-links">
             <a href="#catalogo"><i class="fa-solid fa-store"></i> Catálogo</a>
             <a href="#conocenos"><i class="fa-solid fa-users"></i> Conócenos</a>
+            <a href="#seccion-comentarios"><i class="fa-solid fa-comments"></i> Experiencias</a>
             {% if usuario %}
                 <span><i class="fa-solid fa-circle-user"></i> {{ usuario.nombre }} ({{ usuario.rol }})</span>
                 <a href="/mensajes"><i class="fa-solid fa-comments"></i> Mensajes</a>
@@ -256,6 +272,62 @@
                 </div>
             </div>
 
+        </div>
+
+        <!-- ========================================================== -->
+        <!-- SECCIÓN DE EXPERIENCIAS Y COMENTARIOS DE CLIENTES         -->
+        <!-- ========================================================== -->
+        <div class="comments-section" id="seccion-comentarios">
+            <h2 class="section-title" style="margin-top: 0;">Experiencias con nuestros Tanques</h2>
+            
+            {% if usuario %}
+                <div class="comment-form-box">
+                    <h3 style="font-size: 1rem; color: #0077b6; margin-bottom: 10px;"><i class="fa-solid fa-pen-to-square"></i> Comparte tu experiencia</h3>
+                    <form action="/comentar" method="POST" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <textarea name="contenido" rows="3" required placeholder="Cuéntanos qué tal te ha ido con tu tanque Rotoblessing..."></textarea>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 10px;">
+                            <label style="font-size: 0.8rem;"><i class="fa-solid fa-image"></i> Adjuntar foto (Opcional - JPG, PNG, WEBP)</label>
+                            <input type="file" name="foto" accept="image/png, image/jpeg, image/jpg, image/webp" style="padding: 6px; font-size: 0.85rem;">
+                        </div>
+                        <button type="submit" class="btn" style="max-width: 200px; padding: 9px;"><i class="fa-solid fa-paper-plane"></i> Publicar</button>
+                    </form>
+                </div>
+            {% else %}
+                <div style="text-align: center; background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 25px; border: 1px dashed #ced4da;">
+                    <p style="color: #6c757d; font-size: 0.9rem; margin-bottom: 10px;">Inicia sesión o regístrate para dejar tu comentario o compartir una foto de tu instalación.</p>
+                </div>
+            {% endif %}
+
+            <!-- Listado Dinámico de Comentarios -->
+            <div class="comments-list">
+                {% if comentarios %}
+                    {% for c in comentarios %}
+                        <div class="comment-card">
+                            <div class="comment-header">
+                                <span class="comment-author">
+                                    <i class="fa-solid fa-circle-user"></i> {{ c.autor.nombre }} 
+                                    <span style="font-size: 0.75rem; font-weight: normal; color: #6c757d;">({{ c.autor.rol }})</span>
+                                </span>
+                                <span class="comment-date"><i class="fa-regular fa-clock"></i> {{ c.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
+                            </div>
+                            <div class="comment-body">
+                                {{ c.contenido }}
+                            </div>
+                            {% if c.foto %}
+                                <div class="comment-img-container">
+                                    <a href="{{ url_for('static', filename='uploads/' + c.foto) }}" target="_blank">
+                                        <img src="{{ url_for('static', filename='uploads/' + c.foto) }}" alt="Foto del comentario" class="comment-img">
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #6c757d; font-size: 0.9rem; padding: 20px;">Aún no hay experiencias publicadas. ¡Sé el primero en compartir la tuya!</p>
+                {% endif %}
+            </div>
         </div>
 
         <!-- Sección: Conócenos -->
