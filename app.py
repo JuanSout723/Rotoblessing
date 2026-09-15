@@ -296,6 +296,19 @@ def eliminar_comentario(id):
         flash('No tienes permisos para eliminar este comentario.', 'danger')
         
     return redirect(url_for('index') + '#seccion-comentarios')
+    
+    @app.route('/borrar-usuario-prueba')
+def borrar_usuario_prueba():
+    # Coloca aquí exactamente el correo de la cuenta de prueba que te da error
+    correo = "jp@gmail.com"
+    
+    usuario = Usuario.query.filter_by(email=correo).first()
+    
+    if usuario:
+        db.session.delete(usuario)
+        db.session.commit()
+        return f"¡Listo! El usuario {correo} y sus datos asociados fueron eliminados correctamente."
+    return "El usuario no fue encontrado o ya había sido borrado."
 
 if __name__ == '__main__':
     app.run(debug=True)
