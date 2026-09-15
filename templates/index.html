@@ -304,11 +304,13 @@
                         </form>
                     {% endif %}
 
+                    <!-- FOTO DE PERFIL DESDE BASE DE DATOS (BASE64) -->
                     {% if v.foto_perfil %}
-                        <img src="{{ url_for('static', filename='uploads/' + v.foto_perfil) }}" alt="{{ v.nombre }}" class="team-avatar">
+                        <img src="{{ v.foto_perfil }}" alt="{{ v.nombre }}" class="team-avatar">
                     {% else %}
                         <img src="https://via.placeholder.com/85?text=Avatar" alt="Sin foto" class="team-avatar">
                     {% endif %}
+
                     <h3>{{ v.nombre }}</h3>
                     <span class="badge" style="margin-bottom: 8px; font-size: 0.7rem;">{{ 'Dueño' if v.rol == 'Dueno' else v.rol }}</span>
                     <p>{{ v.biografia or 'Asesor oficial y verificado de Rotoblessing.' }}</p>
@@ -388,9 +390,11 @@
                             <span style="font-size: 0.72rem; color: #adb5bd;">{{ c.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
                         </div>
                         <span class="comment-text">{{ c.contenido }}</span>
+                        
+                        <!-- FOTO DEL COMENTARIO DESDE BASE DE DATOS (BASE64) -->
                         {% if c.foto %}
                             <div style="margin-top: 8px;">
-                                <img src="{{ url_for('static', filename='uploads/' + c.foto) }}" alt="Foto comentario" style="max-width: 150px; border-radius: 6px;">
+                                <img src="{{ c.foto }}" alt="Foto comentario" style="max-width: 150px; border-radius: 6px;">
                             </div>
                         {% endif %}
                         
@@ -425,11 +429,14 @@
                 {% if vendedores %}
                     {% for v in vendedores %}
                     <div style="display: flex; align-items: center; gap: 10px; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef; flex-wrap: wrap;">
+                        
+                        <!-- FOTO EN MODAL DESDE BASE DE DATOS (BASE64) -->
                         {% if v.foto_perfil %}
-                            <img src="{{ url_for('static', filename='uploads/' + v.foto_perfil) }}" alt="{{ v.nombre }}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0077b6;">
+                            <img src="{{ v.foto_perfil }}" alt="{{ v.nombre }}" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0077b6;">
                         {% else %}
                             <img src="https://via.placeholder.com/45?text=Avatar" alt="Sin foto" style="width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid #0077b6;">
                         {% endif %}
+
                         <div style="flex: 1; min-width: 110px;">
                             <h4 style="font-size: 0.9rem; color: #333; margin-bottom: 2px;">{{ v.nombre }}</h4>
                             <span style="font-size: 0.72rem; color: #0077b6; font-weight: 600;">{{ 'Dueño' if v.rol == 'Dueno' else v.rol }}</span>
@@ -500,53 +507,46 @@
     <!-- Footer -->
     <footer>
         <div class="social-icons">
-            <a href="#" style="color: #0077b6;"><i class="fa-brands fa-facebook fa-lg"></i></a>
-            <a href="#" style="color: #0077b6;"><i class="fa-brands fa-instagram fa-lg"></i></a>
-            <a href="#" style="color: #0077b6;"><i class="fa-brands fa-whatsapp fa-lg"></i></a>
+            <a href="#" style="color: #0077b6;"><i class="fa-brands fa-facebook"></i></a>
+            <a href="#" style="color: #e4405f;"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" style="color: #25d366;"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
         <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- Scripts de Control de Modales y Formularios -->
+    <!-- Scripts de JavaScript para Modales y Formularios -->
     <script>
+        function toggleCodigoVerificacion() {
+            const select = document.getElementById('rolSelect');
+            const grupo = document.getElementById('codigoGrupo');
+            const label = document.getElementById('labelCodigo');
+            
+            if (select.value === 'Vendedor') {
+                grupo.style.display = 'block';
+                label.textContent = 'Código de Verificación de Vendedor';
+            } else if (select.value === 'Dueno') {
+                grupo.style.display = 'block';
+                label.textContent = 'Código de Dueño / Administrador';
+            } else {
+                grupo.style.display = 'none';
+            }
+        }
+
         function abrirModalVendedores() {
             document.getElementById('modalVendedores').style.display = 'flex';
         }
+
         function cerrarModalVendedores() {
             document.getElementById('modalVendedores').style.display = 'none';
         }
 
         function abrirModalPerfil(event) {
             event.preventDefault();
-            const modal = document.getElementById('modalPerfil');
-            if (modal) modal.style.display = 'flex';
+            document.getElementById('modalPerfil').style.display = 'flex';
         }
+
         function cerrarModalPerfil() {
-            const modal = document.getElementById('modalPerfil');
-            if (modal) modal.style.display = 'none';
-        }
-
-        function toggleCodigoVerificacion() {
-            const rolSelect = document.getElementById('rolSelect');
-            const codigoGrupo = document.getElementById('codigoGrupo');
-            const labelCodigo = document.getElementById('labelCodigo');
-            if (!rolSelect) return;
-
-            const valor = rolSelect.value;
-            if (valor === 'Vendedor' || valor === 'Dueno') {
-                codigoGrupo.style.display = 'block';
-                labelCodigo.textContent = valor === 'Dueno' ? 'Código de Acceso de Dueño' : 'Código de Acceso de Vendedor';
-            } else {
-                codigoGrupo.style.display = 'none';
-            }
-        }
-
-        // Cerrar modales haciendo clic fuera del contenido
-        window.onclick = function(event) {
-            const modalV = document.getElementById('modalVendedores');
-            const modalP = document.getElementById('modalPerfil');
-            if (event.target === modalV) modalV.style.display = 'none';
-            if (event.target === modalP) modalP.style.display = 'none';
+            document.getElementById('modalPerfil').style.display = 'none';
         }
     </script>
 </body>
