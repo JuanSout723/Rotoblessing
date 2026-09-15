@@ -51,6 +51,33 @@
             ADAPTACIÓN MÓVIL (ANDROID)
             ========================================================== */
         @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 10px 15px;
+                gap: 8px;
+            }
+
+            header h1 {
+                font-size: 1.2rem;
+            }
+
+            header > div:last-child {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                flex-wrap: wrap;
+                gap: 5px;
+                border-top: 1px solid rgba(255, 255, 255, 0.2);
+                padding-top: 6px;
+            }
+
+            .btn-push {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+
             .chat-container { margin: 0; border-radius: 0; height: calc(100dvh - 50px); }
 
             {% if usuario.rol == 'Comprador' %}
