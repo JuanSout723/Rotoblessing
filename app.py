@@ -127,8 +127,15 @@ def centro_mensajes():
                 ((Mensaje.emisor_id == vendedor_principal.id) & (Mensaje.receptor_id == usuario_actual.id))
             ).order_by(Mensaje.fecha.asc()).all()
     else:
-        # SI ES VENDEDOR O DUEÑO: Muestra la lista de los demás usuarios y el chat del cliente seleccionado
-        clientes = Usuario.query.filter(Usuario.id != usuario_actual.id).all()
+        # SI ES VENDEDOR O DUEÑO: Buscamos únicamente los IDs de usuarios que tienen mensajes con el usuario actual
+        mensajes_enviados = db.session.query(Mensaje.receptor_id).filter(Mensaje.emisor_id == usuario_actual.id)
+        mensajes_recibidos = db.session.query(Mensaje.emisor_id).filter(Mensaje.receptor_id == usuario_actual.id)
+        
+        # Unimos ambas consultas para obtener los IDs únicos de las personas con las que se ha chateado
+        ids_con_chat = mensajes_enviados.union(mensajes_recibidos).subquery()
+        
+        # Filtramos la lista de clientes para mostrar solo aquellos con los que hay historial de chat
+        clientes = Usuario.query.filter(Usuario.id.in_(ids_con_chat)).all()
         
         cliente_id = request.args.get('cliente_id')
         if cliente_id:
@@ -200,7 +207,7 @@ def eliminar_chat(cliente_id):
     ).delete()
     
     db.session.commit()
-    flash('La conversación ha sido eliminada correctamente.', 'info')
+    flash('El chat ha sido eliminado correctamente.', 'info')
 
     return redirect(url_for('centro_mensajes'))
 
