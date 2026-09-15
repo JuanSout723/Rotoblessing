@@ -166,7 +166,6 @@ def editar_perfil():
     foto_archivo = request.files.get('foto_perfil')
     if foto_archivo and foto_archivo.filename != '':
         if archivo_permitido(foto_archivo.filename):
-            # Convertir imagen binaria a formato Base64 para guardarla en la BD de forma segura
             image_data = foto_archivo.read()
             encoded_string = base64.b64encode(image_data).decode('utf-8')
             mime_type = foto_archivo.mimetype or 'image/jpeg'
@@ -192,7 +191,7 @@ def eliminar_cuenta():
         db.session.delete(usuario)
         db.session.commit()
         session.clear()
-        flash('La cuenta ha sido eliminada permanentemente del sistema.', 'info')
+        flash('Tu cuenta ha sido eliminada permanentemente del sistema.', 'info')
         
     return redirect(url_for('index'))
 
