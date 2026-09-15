@@ -1,8 +1,10 @@
 import os
+import json
 from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.utils import secure_filename
+from pywebpush import webpush, WebPushException
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
@@ -28,6 +30,12 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# --- LLAVES VAPID PARA NOTIFICACIONES PUSH ---
+# Configura estas variables en Render (o usa unas de prueba locales)
+VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY', 'TU_PUBLIC_KEY_AQUI')
+VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', 'TU_PRIVATE_KEY_AQUI')
+VAPID_CLAIMS = {"sub": "mailto:admin@rotoblessing.com"}
+
 # --- MODELOS DE LA BASE DE DATOS ---
 
 class Usuario(db.Model):
@@ -36,6 +44,9 @@ class Usuario(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     rol = db.Column(db.String(50), nullable=False, default='Comprador')
+    
+    # Campo para almacenar la suscripción Web Push del navegador
+    push_subscription = db.Column(db.Text, nullable=True)
 
 class Mensaje(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -44,20 +55,17 @@ class Mensaje(db.Model):
     contenido = db.Column(db.Text, nullable=False)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relación para que el HTML pueda leer {{ msg.remitente.nombre }} sin errores
     remitente = db.relationship('Usuario', foreign_keys=[emisor_id])
 
 class Comentario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
     contenido = db.Column(db.Text, nullable=False)
-    foto = db.Column(db.String(200), nullable=True) # Guarda la ruta de la foto opcional
+    foto = db.Column(db.String(200), nullable=True)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
     
-    # Relación para acceder al autor fácilmente: {{ c.autor.nombre }}
     autor = db.relationship('Usuario', foreign_keys=[usuario_id])
 
-# Crear las tablas automáticamente si no existen
 with app.app_context():
     db.create_all()
 
@@ -67,11 +75,8 @@ with app.app_context():
 def index():
     usuario_id = session.get('usuario_id')
     usuario = Usuario.query.get(usuario_id) if usuario_id else None
-    
-    # Recuperamos todos los comentarios ordenados del más reciente al más antiguo
     comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
-    
-    return render_template('index.html', usuario=usuario, comentarios=comentarios)
+    return render_template('index.html', usuario=usuario, comentarios=comentarios, vapid_public_key=VAPID_PUBLIC_KEY)
 
 @app.route('/registro', methods=['POST'])
 def registro():
@@ -81,21 +86,17 @@ def registro():
     rol = request.form.get('rol')
     codigo = request.form.get('codigo_verificacion', '').strip()
 
-    # --- CLAVES SECRETAS DE VERIFICACIÓN ---
     CLAVE_VENDEDOR = "VENDEDOR2026"
     CLAVE_DUENO = "ADMIN2026"
 
-    # Validación estricta en el servidor para Vendedor
     if rol == 'Vendedor' and codigo != CLAVE_VENDEDOR:
         flash('Código de verificación incorrecto para el rol de Vendedor.', 'danger')
         return redirect(url_for('index'))
 
-    # Validación estricta en el servidor para Dueño / Administrador
     if rol == 'Dueno' and codigo != CLAVE_DUENO:
         flash('Código de verificación incorrecto para el rol de Dueño/Administrador.', 'danger')
         return redirect(url_for('index'))
 
-    # Verificar si el correo ya existe
     usuario_existente = Usuario.query.filter_by(email=email).first()
     if usuario_existente:
         flash('El correo electrónico ya está registrado.', 'danger')
@@ -138,13 +139,11 @@ def centro_mensajes():
         return redirect(url_for('index'))
 
     usuario_actual = Usuario.query.get(session['usuario_id'])
-    
     clientes = []
     cliente_actual = None
     conversacion = []
 
     if usuario_actual.rol == 'Comprador':
-        # SI ES COMPRADOR: Le asignamos automáticamente el primer vendedor/dueño disponible
         vendedor_principal = Usuario.query.filter(Usuario.rol != 'Comprador').first()
         if vendedor_principal:
             cliente_actual = vendedor_principal
@@ -153,14 +152,9 @@ def centro_mensajes():
                 ((Mensaje.emisor_id == vendedor_principal.id) & (Mensaje.receptor_id == usuario_actual.id))
             ).order_by(Mensaje.fecha.asc()).all()
     else:
-        # SI ES VENDEDOR O DUEÑO: Buscamos únicamente los IDs de usuarios que tienen mensajes con el usuario actual
         mensajes_enviados = db.session.query(Mensaje.receptor_id).filter(Mensaje.emisor_id == usuario_actual.id)
         mensajes_recibidos = db.session.query(Mensaje.emisor_id).filter(Mensaje.receptor_id == usuario_actual.id)
-        
-        # Unimos ambas consultas para obtener los IDs únicos de las personas con las que se ha chateado
         ids_con_chat = mensajes_enviados.union(mensajes_recibidos).subquery()
-        
-        # Filtramos la lista de clientes para mostrar solo aquellos con los que hay historial de chat
         clientes = Usuario.query.filter(Usuario.id.in_(ids_con_chat)).all()
         
         cliente_id = request.args.get('cliente_id')
@@ -177,7 +171,8 @@ def centro_mensajes():
         usuario=usuario_actual,
         clientes=clientes,
         cliente_actual=cliente_actual,
-        conversacion=conversacion
+        conversacion=conversacion,
+        vapid_public_key=VAPID_PUBLIC_KEY
     )
 
 @app.route('/enviar_mensaje', methods=['POST'])
@@ -187,16 +182,13 @@ def enviar_mensaje():
 
     usuario_actual = Usuario.query.get(session['usuario_id'])
     contenido = request.form.get('contenido', '').strip()
-    
     destinatario_id = None
 
     if usuario_actual.rol == 'Comprador':
-        # Si es comprador, el destinatario por defecto es el primer vendedor/dueño disponible
         vendedor_principal = Usuario.query.filter(Usuario.rol != 'Comprador').first()
         if vendedor_principal:
             destinatario_id = vendedor_principal.id
     else:
-        # Si es vendedor/dueño, lee el input oculto del formulario HTML
         destinatario_id = request.form.get('destinatario_id')
 
     if contenido and destinatario_id:
@@ -208,12 +200,32 @@ def enviar_mensaje():
             )
             db.session.add(nuevo_mensaje)
             db.session.commit()
+
+            # --- ENVÍO DE NOTIFICACIÓN PUSH AL DESTINATARIO ---
+            destinatario = Usuario.query.get(destinatario_id)
+            if destinatario and destinatario.push_subscription:
+                try:
+                    subscription_info = json.loads(destinatario.push_subscription)
+                    payload = json.dumps({
+                        "title": f"Nuevo mensaje de {usuario_actual.nombre}",
+                        "body": contenido[:50] + ("..." if len(contenido) > 50 else "")
+                    })
+                    webpush(
+                        subscription_info=subscription_info,
+                        data=payload,
+                        vapid_private_key=VAPID_PRIVATE_KEY,
+                        vapid_claims=VAPID_CLAIMS
+                    )
+                except WebPushException as ex:
+                    print(f"Error al enviar push notification: {ex}")
+                except Exception as e:
+                    print(f"Error general procesando push: {e}")
+
         except Exception as e:
             db.session.rollback()
             print(f"Error al guardar el mensaje: {e}")
             flash("Hubo un error al enviar el mensaje.", "danger")
 
-    # Redirección inteligente adaptada al rol
     if usuario_actual.rol == 'Comprador':
         return redirect(url_for('centro_mensajes'))
     else:
@@ -225,8 +237,6 @@ def eliminar_chat(cliente_id):
         return redirect(url_for('index'))
 
     usuario_actual = Usuario.query.get(session['usuario_id'])
-
-    # Borra todos los mensajes cruzados entre el usuario actual y el cliente seleccionado
     Mensaje.query.filter(
         ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == cliente_id)) |
         ((Mensaje.emisor_id == cliente_id) & (Mensaje.receptor_id == usuario_actual.id))
@@ -234,18 +244,14 @@ def eliminar_chat(cliente_id):
     
     db.session.commit()
     flash('El chat ha sido eliminado correctamente.', 'info')
-
     return redirect(url_for('centro_mensajes'))
 
-# --- NUEVA RUTA API PARA ACTUALIZAR EL CHAT EN TIEMPO REAL ---
 @app.route('/api/mensajes/<int:otro_usuario_id>')
 def api_mensajes(otro_usuario_id):
     if 'usuario_id' not in session:
         return jsonify({'error': 'No autorizado'}), 401
 
     usuario_actual_id = session['usuario_id']
-
-    # Consultar los mensajes entre el usuario actual y el otro usuario indicado
     mensajes = Mensaje.query.filter(
         ((Mensaje.emisor_id == usuario_actual_id) & (Mensaje.receptor_id == otro_usuario_id)) |
         ((Mensaje.emisor_id == otro_usuario_id) & (Mensaje.receptor_id == usuario_actual_id))
@@ -261,6 +267,24 @@ def api_mensajes(otro_usuario_id):
 
     return jsonify(lista_mensajes)
 
+# --- RUTA API PARA GUARDAR SUSCRIPCIÓN PUSH ---
+@app.route('/api/guardar_suscripcion', methods=['POST'])
+def guardar_suscripcion():
+    if 'usuario_id' not in session:
+        return jsonify({'error': 'No autorizado'}), 401
+
+    usuario = Usuario.query.get(session['usuario_id'])
+    if not usuario:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    subscription_data = request.get_json()
+    if subscription_data:
+        usuario.push_subscription = json.dumps(subscription_data)
+        db.session.commit()
+        return jsonify({'success': True, 'mensaje': 'Suscripción guardada correctamente'})
+
+    return jsonify({'error': 'Datos inválidos'}), 400
+
 # --- RUTAS DE COMENTARIOS Y EXPERIENCIAS ---
 
 @app.route('/comentar', methods=['POST'])
@@ -272,16 +296,14 @@ def comentar():
     usuario_actual = Usuario.query.get(session['usuario_id'])
     contenido = request.form.get('contenido', '').strip()
     foto_archivo = request.files.get('foto')
-    
     ruta_foto = None
 
-    # Procesar la imagen si el usuario subió una
     if foto_archivo and foto_archivo.filename != '':
         if archivo_permitido(foto_archivo.filename):
             filename = secure_filename(f"{datetime.utcnow().timestamp()}_{foto_archivo.filename}")
             foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             foto_archivo.save(foto_path)
-            ruta_foto = filename # Guardamos el nombre del archivo para la BD
+            ruta_foto = filename
         else:
             flash('Formato de imagen no permitido. Usa JPG, PNG o WEBP.', 'danger')
             return redirect(url_for('index'))
@@ -300,7 +322,6 @@ def comentar():
 
     return redirect(url_for('index') + '#seccion-comentarios')
 
-
 @app.route('/comentario/editar/<int:id>', methods=['POST'])
 def editar_comentario(id):
     if 'usuario_id' not in session:
@@ -310,7 +331,6 @@ def editar_comentario(id):
     comentario = Comentario.query.get_or_404(id)
     usuario_actual = Usuario.query.get(session['usuario_id'])
 
-    # Solo el autor del comentario puede editarlo
     if comentario.usuario_id == usuario_actual.id:
         nuevo_contenido = request.form.get('contenido', '').strip()
         if nuevo_contenido:
@@ -324,7 +344,6 @@ def editar_comentario(id):
         
     return redirect(url_for('index') + '#seccion-comentarios')
 
-
 @app.route('/comentario/eliminar/<int:id>', methods=['POST'])
 def eliminar_comentario(id):
     if 'usuario_id' not in session:
@@ -334,9 +353,7 @@ def eliminar_comentario(id):
     comentario = Comentario.query.get_or_404(id)
     usuario_actual = Usuario.query.get(session['usuario_id'])
 
-    # Permitir borrar si es el autor del comentario o si es el Administrador (Dueño)
     if comentario.usuario_id == usuario_actual.id or usuario_actual.rol == 'Dueno':
-        # Borrar la foto física del servidor si la tiene adjunta
         if comentario.foto:
             ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], comentario.foto)
             if os.path.exists(ruta_foto):
@@ -352,7 +369,6 @@ def eliminar_comentario(id):
         flash('No tienes permisos para eliminar este comentario.', 'danger')
         
     return redirect(url_for('index') + '#seccion-comentarios')
-
 
 if __name__ == '__main__':
     app.run(debug=True)
