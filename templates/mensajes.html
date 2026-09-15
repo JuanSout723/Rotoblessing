@@ -159,18 +159,18 @@
 
     </div>
 
-    <script>
+   <script>
         document.addEventListener("DOMContentLoaded", function() {
             var msgBox = document.getElementById("msgBox");
             if (msgBox) {
                 msgBox.scrollTop = msgBox.scrollHeight;
             }
 
-            {% if usuario.rol == 'Comprador' or cliente_actual %}
-            // ID del usuario con el que se está chateando actualmente
-            const otroUsuarioId = {% if usuario.rol == 'Comprador' %}"{{ (clientes[0].id if clientes else (Usuario.query.filter(Usuario.rol != 'Comprador').first().id if Usuario.query.filter(Usuario.rol != 'Comprador').first() else '')) }}"{% else %}"{{ cliente_actual.id }}"{% endif %};
+            // Como app.py ya asigna cliente_id o el vendedor principal a 'cliente_actual', 
+            // podemos usarlo directamente para cualquier rol de forma segura:
+            const otroUsuarioId = "{{ cliente_actual.id if cliente_actual else '' }}";
             const usuarioActualId = "{{ usuario.id }}";
-            const nombreRemitenteOtro = "{% if usuario.rol == 'Comprador' %}Atención al Cliente{% else %}{{ cliente_actual.nombre }}{% endif %}";
+            const nombreRemitenteOtro = "{% if usuario.rol == 'Comprador' %}Atención al Cliente{% else %}{{ cliente_actual.nombre if cliente_actual else '' }}{% endif %}";
 
             if (otroUsuarioId) {
                 setInterval(function() {
@@ -182,7 +182,6 @@
                             const msgBox = document.getElementById("msgBox");
                             if (!msgBox) return;
 
-                            // Comprobar si el usuario está al final del scroll antes de actualizar
                             const estaAbajo = msgBox.scrollHeight - msgBox.scrollTop <= msgBox.clientHeight + 50;
 
                             let htmlContenido = '';
@@ -200,7 +199,6 @@
                                 `;
                             });
 
-                            // Solo actualizamos si cambió algo para evitar parpadeos innecesarios
                             if (msgBox.innerHTML.trim() !== htmlContenido.trim()) {
                                 msgBox.innerHTML = htmlContenido;
                                 if (estaAbajo) {
@@ -209,9 +207,8 @@
                             }
                         })
                         .catch(err => console.error("Error actualizando chat:", err));
-                }, 3000); // Consulta cada 3 segundos
+                }, 3000);
             }
-            {% endif %}
         });
     </script>
 </body>
