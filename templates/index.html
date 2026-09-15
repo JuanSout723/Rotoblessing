@@ -83,32 +83,29 @@
         .comment-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 5px; }
         .comment-author { font-weight: 600; color: #0077b6; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
         .comment-date { font-size: 0.75rem; color: #6c757d; }
-        .comment-body { font-size: 0.9rem; color: #495057; line-height: 1.5; margin-bottom: 12px; white-space: pre-line; }
+        .comment-body { font-size: 0.9rem; color: #495057; line-height: 1.5; margin-bottom: 12px; white-space: pre-line; word-break: break-word; }
         .comment-img-container { margin-top: 10px; }
         .comment-img { max-width: 200px; max-height: 150px; border-radius: 8px; object-fit: cover; border: 1px solid #ced4da; cursor: pointer; transition: transform 0.2s; }
         .comment-img:hover { transform: scale(1.02); }
 
-        /* Acciones de Edición/Eliminación en Comentarios */
-        .comment-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; border-top: 1px solid #f1f5f9; padding-top: 10px; }
-        .btn-action-mini { padding: 5px 10px; font-size: 0.75rem; border-radius: 5px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; gap: 4px; color: white; border: none; cursor: pointer; }
+        /* Acciones de Edición/Eliminación en Comentarios (Adaptables a móvil) */
+        .comment-actions { display: flex; gap: 8px; margin-top: 12px; justify-content: flex-end; border-top: 1px solid #f1f5f9; padding-top: 10px; align-items: center; flex-wrap: wrap; }
+        .btn-action-mini { padding: 6px 12px; font-size: 0.78rem; border-radius: 5px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px; color: white; border: none; cursor: pointer; flex-shrink: 0; }
         .btn-edit { background-color: #ffc107; color: #212529; }
         .btn-edit:hover { background-color: #e0a800; }
         .btn-delete { background-color: #dc3545; }
         .btn-delete:hover { background-color: #c82333; }
+        .edit-form-container { display: none; margin-top: 12px; padding-top: 12px; border-top: 1px dashed #cbd5e1; }
 
         /* Botón Flotante de WhatsApp */
         .whatsapp-btn { position: fixed; bottom: 20px; right: 20px; background-color: #25d366; color: white; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; box-shadow: 2px 4px 12px rgba(0,0,0,0.3); z-index: 2000; text-decoration: none; }
 
         /* Footer */
-        <footer>
-            <div class="social-links">
-                <a href="https://facebook.com" target="_blank" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
-                <a href="https://instagram.com" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                <a href="https://wa.me/" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-                <a href="mailto:contacto@rotoblessing.com" title="Correo Electrónico"><i class="fa-solid fa-envelope"></i></a>
-            </div>
-            <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
-        </footer>
+        footer { background-color: #0b2545; color: white; text-align: center; padding: 25px 20px; margin-top: auto; }
+        .social-links { display: flex; justify-content: center; gap: 15px; margin-bottom: 12px; }
+        .social-links a { color: white; font-size: 1.2rem; transition: opacity 0.2s; }
+        .social-links a:hover { opacity: 0.8; }
+        footer p { font-size: 0.85rem; color: #adb5bd; }
 
         /* ==========================================================
             AJUSTES ESPECIALES PARA TELÉFONOS (Pantallas menores a 768px)
@@ -123,6 +120,11 @@
             .welcome-panel { padding: 25px 15px; }
             .catalog-grid { grid-template-columns: 1fr; }
             .product-card { max-width: 100%; }
+
+            /* Forzar botones de comentarios a adaptarse de manera ordenada en celulares */
+            .comment-actions { justify-content: stretch; gap: 6px; }
+            .comment-actions form { flex: 1; display: flex !important; }
+            .comment-actions .btn-action-mini { width: 100%; padding: 9px 10px; font-size: 0.82rem; }
         }
     </style>
 </head>
@@ -283,7 +285,7 @@
         </div>
 
         <!-- ========================================================== -->
-        <!-- SECCIÓN DE EXPERIencias Y COMENTARIOS DE CLIENTES          -->
+        <!-- SECCIÓN DE EXPERIENCIAS Y COMENTARIOS DE CLIENTES          -->
         <!-- ========================================================== -->
         <div class="comments-section" id="seccion-comentarios">
             <h2 class="section-title" style="margin-top: 0;">Experiencias con nuestros Tanques</h2>
@@ -320,9 +322,11 @@
                                 </span>
                                 <span class="comment-date"><i class="fa-regular fa-clock"></i> {{ c.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
                             </div>
+                            
                             <div class="comment-body">
                                 {{ c.contenido }}
                             </div>
+
                             {% if c.foto %}
                                 <div class="comment-img-container">
                                     <a href="{{ url_for('static', filename='uploads/' + c.foto) }}" target="_blank">
@@ -331,15 +335,37 @@
                                 </div>
                             {% endif %}
 
-                            <!-- BOTONES DE EDITAR Y ELIMINAR (Visibles solo para el autor o si es Dueño/Vendedor) -->
+                            <!-- Formulario Desplegable Oculto para Editar Comentario (Método POST) -->
+                            {% if usuario and session.get('usuario_id') == c.autor_id %}
+                                <div class="edit-form-container" id="edit-box-{{ c.id }}">
+                                    <form action="/comentario/editar/{{ c.id }}" method="POST">
+                                        <div class="form-group" style="margin-bottom: 8px;">
+                                            <textarea name="contenido" rows="2" required style="font-size: 0.9rem;">{{ c.contenido }}</textarea>
+                                        </div>
+                                        <div style="display: flex; gap: 6px; justify-content: flex-end;">
+                                            <button type="button" class="btn-action-mini" style="background-color: #6c757d;" onclick="toggleEditar({{ c.id }})">Cancelar</button>
+                                            <button type="submit" class="btn-action-mini btn-success">Guardar Cambios</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            {% endif %}
+
+                            <!-- BOTONES DE EDITAR Y ELIMINAR (Adaptados a Formularios POST) -->
                             {% if usuario and (session.get('usuario_id') == c.autor_id or usuario.rol in ['Dueno', 'Vendedor']) %}
                                 <div class="comment-actions">
-                                    <a href="/comentario/editar/{{ c.id }}" class="btn-action-mini btn-edit">
-                                        <i class="fa-solid fa-pen"></i> Editar
-                                    </a>
-                                    <a href="/comentario/eliminar/{{ c.id }}" class="btn-action-mini btn-delete" onclick="return confirm('¿Estás seguro de que deseas eliminar este comentario?');">
-                                        <i class="fa-solid fa-trash"></i> Eliminar
-                                    </a>
+                                    <!-- Botón Editar (Solo si es el autor) -->
+                                    {% if session.get('usuario_id') == c.autor_id %}
+                                        <button type="button" class="btn-action-mini btn-edit" onclick="toggleEditar({{ c.id }})">
+                                            <i class="fa-solid fa-pen"></i> Editar
+                                        </button>
+                                    {% endif %}
+
+                                    <!-- Botón Eliminar (Método POST seguro) -->
+                                    <form action="/comentario/eliminar/{{ c.id }}" method="POST" style="display:inline;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este comentario?');">
+                                        <button type="submit" class="btn-action-mini btn-delete">
+                                            <i class="fa-solid fa-trash"></i> Eliminar
+                                        </button>
+                                    </form>
                                 </div>
                             {% endif %}
                         </div>
@@ -375,7 +401,7 @@
         <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- Lógica de Validación JavaScript para el Selector de Roles -->
+    <!-- Lógica JavaScript para Roles y Despliegue de Edición -->
     <script>
         function evaluarRol() {
             var rolSelect = document.getElementById('rolSelect');
@@ -392,6 +418,13 @@
                 campoCodigo.style.display = 'none';
                 inputCodigo.removeAttribute('required');
                 inputCodigo.value = '';
+            }
+        }
+
+        function toggleEditar(id) {
+            var box = document.getElementById('edit-box-' + id);
+            if (box) {
+                box.style.display = (box.style.display === 'block') ? 'none' : 'block';
             }
         }
 
