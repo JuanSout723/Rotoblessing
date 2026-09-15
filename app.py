@@ -47,9 +47,9 @@ class Usuario(db.Model):
     # Campo para almacenar la suscripción Web Push del navegador
     push_subscription = db.Column(db.Text, nullable=True)
 
-    # --- NUEVOS CAMPOS DE PERFIL Y CONFIANZA ---
+    # --- CAMPOS DE PERFIL Y CONFIANZA ---
     telefono = db.Column(db.String(30), nullable=True)
-    whatsapp = db.Column(db.String(30), nullable=True)  # <-- NUEVO CAMPO DE WHATSAPP
+    whatsapp = db.Column(db.String(30), nullable=True)
     facebook = db.Column(db.String(150), nullable=True)
     instagram = db.Column(db.String(150), nullable=True)
     biografia = db.Column(db.Text, nullable=True)
@@ -98,7 +98,7 @@ def index():
     usuario = Usuario.query.get(usuario_id) if usuario_id else None
     comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
     
-    # Obtener lista de asesores/vendedores para mostrarlos en la vitrina de confianza
+    # Obtener lista de asesores/vendedores y dueños para mostrarlos en la vitrina de confianza
     vendedores = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
     
     return render_template(
@@ -175,7 +175,7 @@ def editar_perfil():
         return redirect(url_for('index'))
     
     usuario.telefono = request.form.get('telefono', '').strip()
-    usuario.whatsapp = request.form.get('whatsapp', '').strip() # <-- Capturar WhatsApp
+    usuario.whatsapp = request.form.get('whatsapp', '').strip()
     usuario.facebook = request.form.get('facebook', '').strip()
     usuario.instagram = request.form.get('instagram', '').strip()
     usuario.biografia = request.form.get('biografia', '').strip()
@@ -206,7 +206,6 @@ def eliminar_cuenta():
     usuario = Usuario.query.get(usuario_id)
     
     if usuario:
-        # Eliminar archivo de foto de perfil si existía en disco
         if usuario.foto_perfil:
             ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], usuario.foto_perfil)
             if os.path.exists(ruta_foto):
@@ -220,6 +219,38 @@ def eliminar_cuenta():
         session.clear()
         flash('La cuenta ha sido eliminada permanentemente del sistema.', 'info')
         
+    return redirect(url_for('index'))
+
+# --- RUTA PARA QUE EL DUEÑO ELIMINE A CUALQUIER USUARIO DEL EQUIPO ---
+@app.route('/admin/eliminar_usuario/<int:id>', methods=['POST'])
+def admin_eliminar_usuario(id):
+    if 'usuario_id' not in session:
+        flash('Debes iniciar sesión.', 'danger')
+        return redirect(url_for('index'))
+        
+    usuario_actual = Usuario.query.get(session['usuario_id'])
+    
+    if not usuario_actual or usuario_actual.rol != 'Dueno':
+        flash('No tienes permisos de Administrador para realizar esta acción.', 'danger')
+        return redirect(url_for('index'))
+        
+    usuario_a_eliminar = Usuario.query.get_or_404(id)
+    
+    if usuario_a_eliminar.id == usuario_actual.id:
+        flash('No puedes eliminar tu propia cuenta desde el panel de control. Usa la opción de eliminar cuenta personal abajo.', 'warning')
+        return redirect(url_for('index'))
+    
+    if usuario_a_eliminar.foto_perfil:
+        ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], usuario_a_eliminar.foto_perfil)
+        if os.path.exists(ruta_foto):
+            try:
+                os.remove(ruta_foto)
+            except Exception as e:
+                print(f"Error al eliminar foto de perfil: {e}")
+
+    db.session.delete(usuario_a_eliminar)
+    db.session.commit()
+    flash(f'El usuario {usuario_a_eliminar.nombre} ha sido eliminado del sistema exitosamente.', 'success')
     return redirect(url_for('index'))
 
 # --- RUTAS DE MENSAJERÍA Y CHAT ---
