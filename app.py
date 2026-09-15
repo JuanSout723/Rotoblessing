@@ -2,18 +2,12 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
-from werkzeug.utils import secure_filename
+import base64
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
 
-# Configuración de carpeta para guardar las fotos (perfiles y comentarios)
-UPLOAD_FOLDER = 'static/uploads'
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-# Asegurarse de que la carpeta de subidas exista
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 def archivo_permitido(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -44,9 +38,10 @@ class Usuario(db.Model):
     facebook = db.Column(db.String(150), nullable=True)
     instagram = db.Column(db.String(150), nullable=True)
     biografia = db.Column(db.Text, nullable=True)
-    foto_perfil = db.Column(db.String(200), nullable=True)
+    
+    # Almacena la imagen en texto Base64 para que no se borre en Render
+    foto_perfil = db.Column(db.Text, nullable=True)
 
-    # Relación configurada con cascade para que elimine automáticamente sus comentarios sin generar Error 500
     comentarios = db.relationship('Comentario', backref='autor_ref', cascade='all, delete-orphan', passive_deletes=True)
 
 class Comentario(db.Model):
@@ -54,7 +49,9 @@ class Comentario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='CASCADE'), nullable=False)
     contenido = db.Column(db.Text, nullable=False)
-    foto = db.Column(db.String(200), nullable=True)
+    
+    # Almacena la imagen del comentario en texto Base64
+    foto = db.Column(db.Text, nullable=True)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
     
     autor = db.relationship('Usuario', foreign_keys=[usuario_id])
@@ -62,14 +59,15 @@ class Comentario(db.Model):
 with app.app_context():
     try:
         db.create_all()
-        # Forzar la creación de columnas nuevas en PostgreSQL si la tabla ya existía previamente
+        # Asegurar columnas de tipo TEXT para soportar las imágenes en Base64
         with db.engine.connect() as connection:
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS telefono VARCHAR(30);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(30);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS facebook VARCHAR(150);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS instagram VARCHAR(150);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS biografia TEXT;"))
-            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS foto_perfil VARCHAR(200);"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS foto_perfil TEXT;"))
+            connection.execute(db.text("ALTER TABLE comentario ADD COLUMN IF NOT EXISTS foto TEXT;"))
             connection.commit()
         print("Tablas y columnas sincronizadas correctamente.")
     except Exception as e:
@@ -82,8 +80,6 @@ def index():
     usuario_id = session.get('usuario_id')
     usuario = Usuario.query.get(usuario_id) if usuario_id else None
     comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
-    
-    # Obtener lista de asesores/vendedores y dueños para mostrarlos en la vitrina de contacto directo
     vendedores = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
     
     return render_template(
@@ -170,10 +166,11 @@ def editar_perfil():
     foto_archivo = request.files.get('foto_perfil')
     if foto_archivo and foto_archivo.filename != '':
         if archivo_permitido(foto_archivo.filename):
-            filename = secure_filename(f"perfil_{usuario.id}_{datetime.utcnow().timestamp()}_{foto_archivo.filename}")
-            foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            foto_archivo.save(foto_path)
-            usuario.foto_perfil = filename
+            # Convertir imagen binaria a formato Base64 para guardarla en la BD de forma segura
+            image_data = foto_archivo.read()
+            encoded_string = base64.b64encode(image_data).decode('utf-8')
+            mime_type = foto_archivo.mimetype or 'image/jpeg'
+            usuario.foto_perfil = f"data:{mime_type};base64,{encoded_string}"
         else:
             flash('Formato de imagen de perfil no permitido. Usa JPG, PNG o WEBP.', 'danger')
             return redirect(url_for('index'))
@@ -192,25 +189,6 @@ def eliminar_cuenta():
     usuario = Usuario.query.get(usuario_id)
     
     if usuario:
-        # Eliminar foto de perfil si existe
-        if usuario.foto_perfil:
-            ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], usuario.foto_perfil)
-            if os.path.exists(ruta_foto):
-                try:
-                    os.remove(ruta_foto)
-                except Exception as e:
-                    print(f"Error al eliminar foto de perfil: {e}")
-
-        # Limpiar archivos físicos de las fotos asociadas a sus comentarios
-        for com in usuario.comentarios:
-            if com.foto:
-                ruta_foto_com = os.path.join(app.config['UPLOAD_FOLDER'], com.foto)
-                if os.path.exists(ruta_foto_com):
-                    try:
-                        os.remove(ruta_foto_com)
-                    except Exception:
-                        pass
-
         db.session.delete(usuario)
         db.session.commit()
         session.clear()
@@ -235,29 +213,8 @@ def admin_eliminar_usuario(id):
     if usuario_a_eliminar.id == usuario_actual.id:
         flash('No puedes eliminar tu propia cuenta desde el panel de control.', 'warning')
         return redirect(url_for('index'))
-    
-    # Eliminar archivo físico de la foto de perfil del usuario a borrar
-    if usuario_a_eliminar.foto_perfil:
-        ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], usuario_a_eliminar.foto_perfil)
-        if os.path.exists(ruta_foto):
-            try:
-                os.remove(ruta_foto)
-            except Exception as e:
-                print(f"Error al eliminar foto de perfil: {e}")
-
-    # Limpiar archivos físicos de las fotos adjuntas en sus comentarios
-    for com in usuario_a_eliminar.comentarios:
-        if com.foto:
-            ruta_foto_com = os.path.join(app.config['UPLOAD_FOLDER'], com.foto)
-            if os.path.exists(ruta_foto_com):
-                try:
-                    os.remove(ruta_foto_com)
-                except Exception:
-                    pass
 
     nombre_borrado = usuario_a_eliminar.nombre
-    
-    # Gracias a cascade='all, delete-orphan', SQLAlchemy borra al usuario y sus comentarios de forma limpia en una sola transacción
     db.session.delete(usuario_a_eliminar)
     db.session.commit()
     
@@ -275,14 +232,14 @@ def comentar():
     usuario_actual = Usuario.query.get(session['usuario_id'])
     contenido = request.form.get('contenido', '').strip()
     foto_archivo = request.files.get('foto')
-    ruta_foto = None
+    base64_foto = None
 
     if foto_archivo and foto_archivo.filename != '':
         if archivo_permitido(foto_archivo.filename):
-            filename = secure_filename(f"{datetime.utcnow().timestamp()}_{foto_archivo.filename}")
-            foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            foto_archivo.save(foto_path)
-            ruta_foto = filename
+            image_data = foto_archivo.read()
+            encoded_string = base64.b64encode(image_data).decode('utf-8')
+            mime_type = foto_archivo.mimetype or 'image/jpeg'
+            base64_foto = f"data:{mime_type};base64,{encoded_string}"
         else:
             flash('Formato de imagen no permitido. Usa JPG, PNG o WEBP.', 'danger')
             return redirect(url_for('index'))
@@ -291,7 +248,7 @@ def comentar():
         nuevo_comentario = Comentario(
             usuario_id=usuario_actual.id,
             contenido=contenido,
-            foto=ruta_foto
+            foto=base64_foto
         )
         db.session.add(nuevo_comentario)
         db.session.commit()
@@ -333,14 +290,6 @@ def eliminar_comentario(id):
     usuario_actual = Usuario.query.get(session['usuario_id'])
 
     if comentario.usuario_id == usuario_actual.id or usuario_actual.rol == 'Dueno':
-        if comentario.foto:
-            ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], comentario.foto)
-            if os.path.exists(ruta_foto):
-                try:
-                    os.remove(ruta_foto)
-                except Exception as e:
-                    print(f"Error al eliminar archivo de foto: {e}")
-                
         db.session.delete(comentario)
         db.session.commit()
         flash('Comentario eliminado exitosamente.', 'success')
