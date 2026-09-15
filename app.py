@@ -2,9 +2,21 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
+
+# Configuración de carpeta para guardar las fotos de los comentarios
+UPLOAD_FOLDER = 'static/uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# Asegurarse de que la carpeta de subidas exista
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def archivo_permitido(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # Configuración de la base de datos (Compatible con PostgreSQL en Render y SQLite local)
 database_url = os.environ.get('DATABASE_URL')
@@ -35,6 +47,16 @@ class Mensaje(db.Model):
     # Relación para que el HTML pueda leer {{ msg.remitente.nombre }} sin errores
     remitente = db.relationship('Usuario', foreign_keys=[emisor_id])
 
+class Comentario(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    contenido = db.Column(db.Text, nullable=False)
+    foto = db.Column(db.String(200), nullable=True) # Guarda la ruta de la foto opcional
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+    
+    # Relación para acceder al autor fácilmente: {{ c.autor.nombre }}
+    autor = db.relationship('Usuario', foreign_keys=[usuario_id])
+
 # Crear las tablas automáticamente si no existen
 with app.app_context():
     db.create_all()
@@ -45,7 +67,11 @@ with app.app_context():
 def index():
     usuario_id = session.get('usuario_id')
     usuario = Usuario.query.get(usuario_id) if usuario_id else None
-    return render_template('index.html', usuario=usuario)
+    
+    # Recuperamos todos los comentarios ordenados del más reciente al más antiguo
+    comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
+    
+    return render_template('index.html', usuario=usuario, comentarios=comentarios)
 
 @app.route('/registro', methods=['POST'])
 def registro():
@@ -210,6 +236,45 @@ def eliminar_chat(cliente_id):
     flash('El chat ha sido eliminado correctamente.', 'info')
 
     return redirect(url_for('centro_mensajes'))
+
+# --- RUTAS DE COMENTARIOS Y EXPERIENCIAS ---
+
+@app.route('/comentar', methods=['POST'])
+def comentar():
+    if 'usuario_id' not in session:
+        flash('Debes iniciar sesión para dejar una experiencia o comentario.', 'warning')
+        return redirect(url_for('index'))
+
+    usuario_actual = Usuario.query.get(session['usuario_id'])
+    contenido = request.form.get('contenido', '').strip()
+    foto_archivo = request.files.get('foto')
+    
+    ruta_foto = None
+
+    # Procesar la imagen si el usuario subió una
+    if foto_archivo and foto_archivo.filename != '':
+        if archivo_permitido(foto_archivo.filename):
+            filename = secure_filename(f"{datetime.utcnow().timestamp()}_{foto_archivo.filename}")
+            foto_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            foto_archivo.save(foto_path)
+            ruta_foto = filename # Guardamos el nombre del archivo para la BD
+        else:
+            flash('Formato de imagen no permitido. Usa JPG, PNG o WEBP.', 'danger')
+            return redirect(url_for('index'))
+
+    if contenido:
+        nuevo_comentario = Comentario(
+            usuario_id=usuario_actual.id,
+            contenido=contenido,
+            foto=ruta_foto
+        )
+        db.session.add(nuevo_comentario)
+        db.session.commit()
+        flash('¡Gracias por compartir tu experiencia con el tanque!', 'success')
+    else:
+        flash('El comentario no puede estar vacío.', 'danger')
+
+    return redirect(url_for('index') + '#seccion-comentarios')
 
 if __name__ == '__main__':
     app.run(debug=True)
