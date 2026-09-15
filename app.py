@@ -1,10 +1,8 @@
 import os
-import json
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
+from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.utils import secure_filename
-from pywebpush import webpush, WebPushException
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
@@ -30,11 +28,6 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# --- LLAVES VAPID PARA NOTIFICACIONES PUSH ---
-VAPID_PUBLIC_KEY = os.environ.get('VAPID_PUBLIC_KEY', 'TU_PUBLIC_KEY_AQUI')
-VAPID_PRIVATE_KEY = os.environ.get('VAPID_PRIVATE_KEY', 'TU_PRIVATE_KEY_AQUI')
-VAPID_CLAIMS = {"sub": "mailto:admin@rotoblessing.com"}
-
 # --- MODELOS DE LA BASE DE DATOS ---
 
 class Usuario(db.Model):
@@ -43,9 +36,6 @@ class Usuario(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     rol = db.Column(db.String(50), nullable=False, default='Comprador')
-    
-    # Campo para almacenar la suscripción Web Push del navegador
-    push_subscription = db.Column(db.Text, nullable=True)
 
     # --- CAMPOS DE PERFIL Y CONFIANZA ---
     telefono = db.Column(db.String(30), nullable=True)
@@ -54,15 +44,6 @@ class Usuario(db.Model):
     instagram = db.Column(db.String(150), nullable=True)
     biografia = db.Column(db.Text, nullable=True)
     foto_perfil = db.Column(db.String(200), nullable=True)
-
-class Mensaje(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    emisor_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
-    receptor_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
-    contenido = db.Column(db.Text, nullable=False)
-    fecha = db.Column(db.DateTime, default=datetime.utcnow)
-    
-    remitente = db.relationship('Usuario', foreign_keys=[emisor_id])
 
 class Comentario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -78,7 +59,6 @@ with app.app_context():
         db.create_all()
         # Forzar la creación de columnas nuevas en PostgreSQL si la tabla ya existía previamente
         with db.engine.connect() as connection:
-            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS push_subscription TEXT;"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS telefono VARCHAR(30);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(30);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS facebook VARCHAR(150);"))
@@ -98,15 +78,14 @@ def index():
     usuario = Usuario.query.get(usuario_id) if usuario_id else None
     comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
     
-    # Obtener lista de asesores/vendedores y dueños para mostrarlos en la vitrina de confianza
+    # Obtener lista de asesores/vendedores y dueños para mostrarlos en la vitrina de contacto directo
     vendedores = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
     
     return render_template(
         'index.html', 
         usuario=usuario, 
         comentarios=comentarios, 
-        vendedores=vendedores,
-        vapid_public_key=VAPID_PUBLIC_KEY
+        vendedores=vendedores
     )
 
 @app.route('/registro', methods=['POST'])
@@ -253,172 +232,6 @@ def admin_eliminar_usuario(id):
     db.session.commit()
     flash(f'El miembro del equipo {usuario_a_eliminar.nombre} ha sido eliminado exitosamente.', 'success')
     return redirect(url_for('index'))
-
-# --- RUTAS DE MENSAJERÍA Y CHAT ---
-
-@app.route('/mensajes')
-def centro_mensajes():
-    if 'usuario_id' not in session:
-        flash('Debes iniciar sesión para acceder al centro de mensajes.', 'warning')
-        return redirect(url_for('index'))
-
-    usuario_actual = Usuario.query.get(session['usuario_id'])
-    clientes = []
-    cliente_actual = None
-    conversacion = []
-
-    # Obtenemos todos los usuarios con rol Vendedor o Dueño disponibles para chatear
-    vendedores_disponibles = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
-
-    if usuario_actual.rol == 'Comprador':
-        # Permitir al comprador elegir un asesor específico mediante parámetro o tomar el primero por defecto
-        destinatario_id = request.args.get('destinatario_id')
-        if destinatario_id:
-            cliente_actual = Usuario.query.get(destinatario_id)
-        
-        if not cliente_actual and vendedores_disponibles:
-            cliente_actual = vendedores_disponibles[0]
-
-        if cliente_actual:
-            conversacion = Mensaje.query.filter(
-                ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == cliente_actual.id)) |
-                ((Mensaje.emisor_id == cliente_actual.id) & (Mensaje.receptor_id == usuario_actual.id))
-            ).order_by(Mensaje.fecha.asc()).all()
-    else:
-        # Lógica para Vendedores/Dueños: listar con quién tienen chats activos o permitir listar compradores
-        mensajes_enviados = db.session.query(Mensaje.receptor_id).filter(Mensaje.emisor_id == usuario_actual.id)
-        mensajes_recibidos = db.session.query(Mensaje.emisor_id).filter(Mensaje.receptor_id == usuario_actual.id)
-        ids_con_chat = mensajes_enviados.union(mensajes_recibidos).subquery()
-        clientes = Usuario.query.filter(Usuario.id.in_(ids_con_chat)).all()
-        
-        cliente_id = request.args.get('cliente_id') or request.args.get('destinatario_id')
-        if cliente_id:
-            cliente_actual = Usuario.query.get(cliente_id)
-            if cliente_actual:
-                conversacion = Mensaje.query.filter(
-                    ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == int(cliente_id))) |
-                    ((Mensaje.emisor_id == int(cliente_id)) & (Mensaje.receptor_id == usuario_actual.id))
-                ).order_by(Mensaje.fecha.asc()).all()
-
-    return render_template(
-        'mensajes.html',
-        usuario=usuario_actual,
-        clientes=clientes,
-        vendedores_disponibles=vendedores_disponibles,
-        cliente_actual=cliente_actual,
-        conversacion=conversacion,
-        vapid_public_key=VAPID_PUBLIC_KEY
-    )
-
-@app.route('/enviar_mensaje', methods=['POST'])
-def enviar_mensaje():
-    if 'usuario_id' not in session:
-        return redirect(url_for('index'))
-
-    usuario_actual = Usuario.query.get(session['usuario_id'])
-    contenido = request.form.get('contenido', '').strip()
-    destinatario_id = request.form.get('destinatario_id')
-
-    # Si es comprador y no vino un destinatario explícito, asignar el primer vendedor disponible
-    if usuario_actual.rol == 'Comprador' and not destinatario_id:
-        vendedor_principal = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).first()
-        if vendedor_principal:
-            destinatario_id = vendedor_principal.id
-
-    if contenido and destinatario_id:
-        try:
-            nuevo_mensaje = Mensaje(
-                emisor_id=usuario_actual.id,
-                receptor_id=int(destinatario_id),
-                contenido=contenido
-            )
-            db.session.add(nuevo_mensaje)
-            db.session.commit()
-
-            # --- ENVÍO DE NOTIFICACIÓN PUSH AL DESTINATARIO ---
-            destinatario = Usuario.query.get(destinatario_id)
-            if destinatario and destinatario.push_subscription:
-                try:
-                    subscription_info = json.loads(destinatario.push_subscription)
-                    payload = json.dumps({
-                        "title": f"Nuevo mensaje de {usuario_actual.nombre}",
-                        "body": contenido[:50] + ("..." if len(contenido) > 50 else "")
-                    })
-                    webpush(
-                        subscription_info=subscription_info,
-                        data=payload,
-                        vapid_private_key=VAPID_PRIVATE_KEY,
-                        vapid_claims=VAPID_CLAIMS
-                    )
-                except WebPushException as ex:
-                    print(f"Error al enviar push notification: {ex}")
-                except Exception as e:
-                    print(f"Error general procesando push: {e}")
-
-        except Exception as e:
-            db.session.rollback()
-            print(f"Error al guardar el mensaje: {e}")
-            flash("Hubo un error al enviar el mensaje.", "danger")
-
-    # Redirección correcta según el rol para mantener la conversación activa en pantalla
-    if usuario_actual.rol == 'Comprador':
-        return redirect(url_for('centro_mensajes', destinatario_id=destinatario_id))
-    else:
-        return redirect(url_for('centro_mensajes', cliente_id=destinatario_id))
-
-@app.route('/eliminar_chat/<int:cliente_id>', methods=['POST'])
-def eliminar_chat(cliente_id):
-    if 'usuario_id' not in session:
-        return redirect(url_for('index'))
-
-    usuario_actual = Usuario.query.get(session['usuario_id'])
-    Mensaje.query.filter(
-        ((Mensaje.emisor_id == usuario_actual.id) & (Mensaje.receptor_id == cliente_id)) |
-        ((Mensaje.emisor_id == cliente_id) & (Mensaje.receptor_id == usuario_actual.id))
-    ).delete()
-    
-    db.session.commit()
-    flash('El chat ha sido eliminado correctamente.', 'info')
-    return redirect(url_for('centro_mensajes'))
-
-@app.route('/api/mensajes/<int:otro_usuario_id>')
-def api_mensajes(otro_usuario_id):
-    if 'usuario_id' not in session:
-        return jsonify({'error': 'No autorizado'}), 401
-
-    usuario_actual_id = session['usuario_id']
-    mensajes = Mensaje.query.filter(
-        ((Mensaje.emisor_id == usuario_actual_id) & (Mensaje.receptor_id == otro_usuario_id)) |
-        ((Mensaje.emisor_id == otro_usuario_id) & (Mensaje.receptor_id == usuario_actual_id))
-    ).order_by(Mensaje.fecha.asc()).all()
-
-    lista_mensajes = []
-    for m in mensajes:
-        lista_mensajes.append({
-            'emisor_id': m.emisor_id,
-            'nombre_emisor': m.remitente.nombre if m.remitente else 'Desconocido',
-            'contenido': m.contenido,
-            'fecha': m.fecha.strftime('%d/%m/%Y %H:%M')
-        })
-
-    return jsonify(lista_mensajes)
-
-@app.route('/api/guardar_suscripcion', methods=['POST'])
-def guardar_suscripcion():
-    if 'usuario_id' not in session:
-        return jsonify({'error': 'No autorizado'}), 401
-
-    usuario = Usuario.query.get(session['usuario_id'])
-    if not usuario:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
-
-    subscription_data = request.get_json()
-    if subscription_data:
-        usuario.push_subscription = json.dumps(subscription_data)
-        db.session.commit()
-        return jsonify({'success': True, 'mensaje': 'Suscripción guardada correctamente'})
-
-    return jsonify({'error': 'Datos inválidos'}), 400
 
 # --- RUTAS DE COMENTARIOS Y EXPERIENCIAS ---
 
