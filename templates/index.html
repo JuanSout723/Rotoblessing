@@ -74,7 +74,7 @@
         .product-card .price { font-size: 1.15rem; font-weight: 700; color: #28a745; margin-bottom: 12px; }
 
         .product-actions { display: flex; gap: 6px; margin-top: auto; }
-        .btn-consultar { flex: 1; padding: 10px 4px; font-size: 0.78rem; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px; color: white; white-space: nowrap; cursor: pointer; border: none; }
+        .btn-consultar { width: 100%; padding: 10px 12px; font-size: 0.85rem; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: white; white-space: nowrap; cursor: pointer; border: none; }
         .btn-platform { background-color: #0077b6; }
         .btn-platform:hover { background-color: #005b8e; }
         .btn-whatsapp { background-color: #25d366; }
@@ -100,11 +100,13 @@
         .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6c757d; }
 
         /* Footer y Redes Sociales */
-        footer { background-color: #0b2545; color: white; text-align: center; padding: 30px 20px; margin-top: auto; }
-        .social-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 15px; }
-        .social-icons a { color: white; background: rgba(255,255,255,0.1); width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; transition: background 0.2s; }
-        .social-icons a:hover { background: #0077b6; }
-        footer p { font-size: 0.85rem; color: #adb5bd; }
+        <footer>
+            <div class="social-icons">
+                <a href="https://instagram.com" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://facebook.com" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            </div>
+            <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
+        </footer>
 
         @media (max-width: 768px) {
             header { padding: 12px 15px; flex-direction: column; gap: 8px; text-align: center; }
@@ -293,13 +295,10 @@
                     <div class="price">$120.00</div>
                 </div>
                 <div class="product-actions">
-                    <!-- Botón Consultar a que activa la ventana emergente de vendedores -->
+                    <!-- Único botón de acción conservado -->
                     <button type="button" class="btn-consultar btn-platform" onclick="abrirModalVendedores()">
                         <i class="fa-solid fa-comments"></i> Consultar a...
                     </button>
-                    <a href="https://wa.me/58000000000?text=Hola,%20estoy%20interesado%20en%20el%20Tanque%20Residencial%20500L" target="_blank" class="btn-consultar btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> WhatsApp
-                    </a>
                 </div>
             </div>
         </div>
@@ -383,17 +382,17 @@
                         </div>
                         <div style="display: flex; gap: 5px;">
                             {% if v.whatsapp %}
-                                <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20consultando%20sobre%20los%20productos%20de%20Rotoblessing." target="_blank" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem;" title="Contactar por WhatsApp">
+                                <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20consultando%20sobre%20los%20productos%20de%20Rotoblessing." target="_blank" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;" title="Contactar por WhatsApp">
                                     <i class="fa-brands fa-whatsapp"></i>
                                 </a>
                             {% endif %}
                             {% if v.instagram %}
-                                <a href="{{ v.instagram }}" target="_blank" class="btn-consultar" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white; padding: 8px 12px; font-size: 0.8rem;" title="Instagram">
+                                <a href="{{ v.instagram }}" target="_blank" class="btn-consultar" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white; padding: 8px 12px; font-size: 0.8rem; width: auto;" title="Instagram">
                                     <i class="fa-brands fa-instagram"></i>
                                 </a>
                             {% endif %}
                             {% if v.facebook %}
-                                <a href="{{ v.facebook }}" target="_blank" class="btn-consultar" style="background-color: #1877f2; color: white; padding: 8px 12px; font-size: 0.8rem;" title="Facebook">
+                                <a href="{{ v.facebook }}" target="_blank" class="btn-consultar" style="background-color: #1877f2; color: white; padding: 8px 12px; font-size: 0.8rem; width: auto;" title="Facebook">
                                     <i class="fa-brands fa-facebook-f"></i>
                                 </a>
                             {% endif %}
@@ -451,49 +450,29 @@
     </div>
     {% endif %}
 
-    <!-- Footer con Redes Sociales -->
-    <footer>
-        <div class="social-icons">
-            <a href="https://instagram.com" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-            <a href="https://facebook.com" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
-            <a href="https://wa.me/58000000000" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-            <a href="mailto:contacto@rotoblessing.com" title="Correo"><i class="fa-solid fa-envelope"></i></a>
-        </div>
-        <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
-    </footer>
-
+    <!-- Scripts para el manejo de modales -->
     <script>
-        // Funciones para el Modal de Editar Perfil
-        function abrirModalPerfil(event) {
-            event.preventDefault();
-            const modal = document.getElementById('modalPerfil');
-            if (modal) modal.style.display = 'flex';
-        }
-        function cerrarModalPerfil() {
-            const modal = document.getElementById('modalPerfil');
-            if (modal) modal.style.display = 'none';
-        }
-
-        // Funciones para el Modal de la Lista de Vendedores en el Catálogo
         function abrirModalVendedores() {
-            const modal = document.getElementById('modalVendedores');
-            if (modal) modal.style.display = 'flex';
+            document.getElementById('modalVendedores').style.display = 'flex';
         }
         function cerrarModalVendedores() {
-            const modal = document.getElementById('modalVendedores');
-            if (modal) modal.style.display = 'none';
+            document.getElementById('modalVendedores').style.display = 'none';
+        }
+        function abrirModalPerfil(event) {
+            event.preventDefault();
+            document.getElementById('modalPerfil').style.display = 'flex';
+        }
+        function cerrarModalPerfil() {
+            document.getElementById('modalPerfil').style.display = 'none';
         }
 
-        // Script para mostrar código de verificación al registrarse según el rol
+        // Script para mostrar/ocultar el código de verificación según el rol seleccionado en Registro
         const rolSelect = document.getElementById('rolSelect');
-        const codigoGrupo = document.getElementById('codigoGrupo');
-        const labelCodigo = document.getElementById('labelCodigo');
-        
         if (rolSelect) {
             rolSelect.addEventListener('change', function() {
+                const codigoGrupo = document.getElementById('codigoGrupo');
                 if (this.value === 'Vendedor' || this.value === 'Dueno') {
                     codigoGrupo.style.display = 'block';
-                    labelCodigo.textContent = this.value === 'Vendedor' ? 'Código de Vendedor' : 'Código de Dueño/Admin';
                 } else {
                     codigoGrupo.style.display = 'none';
                 }
