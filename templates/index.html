@@ -134,7 +134,7 @@
                         <a href="/mensajes"><i class="fa-solid fa-comments"></i> Centro de Mensajes</a>
                         
                         {% if usuario.rol != 'Comprador' %}
-                            <a href="#" onclick="alert('Aquí puedes habilitar tu ventana de edición o perfil.'); return false;"><i class="fa-solid fa-id-card"></i> Personalizar mi Perfil</a>
+                            <a href="/perfil/editar"><i class="fa-solid fa-id-card"></i> Personalizar mi Perfil</a>
                         {% endif %}
                         
                         <a href="/logout" style="color: #dc3545 !important;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
