@@ -31,6 +31,10 @@
         .chat-header { padding: 12px 15px; background-color: #f0f2f5; border-bottom: 1px solid #ddd; font-weight: 600; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
         .btn-volver-movil { display: none; color: #0077b6; font-size: 1.1rem; text-decoration: none; margin-right: 5px; }
 
+        /* Botón de activar notificaciones */
+        .btn-push { background-color: #e2f0fb; color: #0077b6; border: 1px solid #0077b6; padding: 5px 10px; border-radius: 15px; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 5px; font-weight: 500; transition: background 0.2s; }
+        .btn-push:hover { background-color: #0077b6; color: white; }
+
         /* Área de mensajes con scroll fluido y flex correcto */
         .messages-area { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
         .msg-bubble { max-width: 75%; padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; position: relative; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
@@ -68,9 +72,13 @@
 
     <header>
         <h1><i class="fa-solid fa-comments"></i> Centro de Mensajes</h1>
-        <div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <!-- Botón para activar notificaciones push -->
+            <button id="btn-activar-push" class="btn-push" onclick="registrarNotificacionesPush()">
+                <i class="fa-solid fa-bell"></i> Activar Alertas
+            </button>
             <a href="{{ url_for('index') }}"><i class="fa-solid fa-store"></i> Catálogo</a>
-            <span style="margin: 0 8px; color: #90e0ef;">|</span>
+            <span style="color: #90e0ef;">|</span>
             <a href="{{ url_for('logout') }}"><i class="fa-solid fa-right-from-bracket"></i> Salir</a>
         </div>
     </header>
@@ -159,15 +167,68 @@
 
     </div>
 
-   <script>
+    <script>
+        // --- LÓGICA DE NOTIFICACIONES PUSH ---
+        const vapidPublicKey = "{{ vapid_public_key }}";
+
+        function urlBase64ToUint8Array(base64String) {
+            const padding = '='.repeat((4 - base64String.length % 4) % 4);
+            const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+            const rawData = window.atob(base64);
+            const outputArray = new Uint8Array(rawData.length);
+            for (let i = 0; i < rawData.length; ++i) {
+                outputArray[i] = rawData.charCodeAt(i);
+            }
+            return outputArray;
+        }
+
+        async function registrarNotificacionesPush() {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+                alert("Tu navegador no soporta notificaciones Push.");
+                return;
+            }
+
+            try {
+                const registration = await navigator.serviceWorker.register('/static/sw.js');
+                
+                const permissionResult = await Notification.requestPermission();
+                if (permissionResult !== 'granted') {
+                    alert("Has denegado el permiso de notificaciones.");
+                    return;
+                }
+
+                const convertedVapidKey = urlBase64ToUint8Array(vapidPublicKey);
+                const subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: convertedVapidKey
+                });
+
+                const response = await fetch('/api/guardar_suscripcion', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(subscription)
+                });
+
+                if (response.ok) {
+                    alert("¡Notificaciones activadas con éxito!");
+                    const btn = document.getElementById('btn-activar-push');
+                    if(btn) btn.style.display = 'none';
+                } else {
+                    alert("Hubo un error al guardar la suscripción.");
+                }
+            } catch (error) {
+                console.error("Error al configurar notificaciones push:", error);
+                alert("Ocurrió un error al activar las notificaciones.");
+            }
+        }
+
+        // --- CHAT EN TIEMPO REAL (POLLING) ---
         document.addEventListener("DOMContentLoaded", function() {
             var msgBox = document.getElementById("msgBox");
             if (msgBox) {
                 msgBox.scrollTop = msgBox.scrollHeight;
             }
 
-            // Como app.py ya asigna cliente_id o el vendedor principal a 'cliente_actual', 
-            // podemos usarlo directamente para cualquier rol de forma segura:
             const otroUsuarioId = "{{ cliente_actual.id if cliente_actual else '' }}";
             const usuarioActualId = "{{ usuario.id }}";
             const nombreRemitenteOtro = "{% if usuario.rol == 'Comprador' %}Atención al Cliente{% else %}{{ cliente_actual.nombre if cliente_actual else '' }}{% endif %}";
