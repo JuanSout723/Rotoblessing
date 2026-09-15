@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.utils import secure_filename
@@ -236,6 +236,30 @@ def eliminar_chat(cliente_id):
     flash('El chat ha sido eliminado correctamente.', 'info')
 
     return redirect(url_for('centro_mensajes'))
+
+# --- NUEVA RUTA API PARA ACTUALIZAR EL CHAT EN TIEMPO REAL ---
+@app.route('/api/mensajes/<int:otro_usuario_id>')
+def api_mensajes(otro_usuario_id):
+    if 'usuario_id' not in session:
+        return jsonify({'error': 'No autorizado'}), 401
+
+    usuario_actual_id = session['usuario_id']
+
+    # Consultar los mensajes entre el usuario actual y el otro usuario indicado
+    mensajes = Mensaje.query.filter(
+        ((Mensaje.emisor_id == usuario_actual_id) & (Mensaje.receptor_id == otro_usuario_id)) |
+        ((Mensaje.emisor_id == otro_usuario_id) & (Mensaje.receptor_id == usuario_actual_id))
+    ).order_by(Mensaje.fecha.asc()).all()
+
+    lista_mensajes = []
+    for m in mensajes:
+        lista_mensajes.append({
+            'emisor_id': m.emisor_id,
+            'contenido': m.contenido,
+            'fecha': m.fecha.strftime('%d/%m/%Y %H:%M')
+        })
+
+    return jsonify(lista_mensajes)
 
 # --- RUTAS DE COMENTARIOS Y EXPERIENCIAS ---
 
