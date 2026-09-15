@@ -73,6 +73,15 @@ with app.app_context():
     except Exception as e:
         print(f"Nota al sincronizar base de datos: {e}")
 
+
+# --- RUTA TEMPORAL PARA LIMPIAR LA BASE DE DATOS (BORRAR DESPUÉS DE USAR) ---
+@app.route('/reset-database-secreto')
+def reset_database():
+    db.drop_all()   # Borra todas las tablas y datos viejos
+    db.create_all() # Crea las tablas nuevas y limpias
+    return "¡Base de datos reiniciada con éxito! Ya puedes registrarte de nuevo."
+
+
 # --- RUTAS DE NAVEGACIÓN Y AUTENTICACIÓN ---
 
 @app.route('/')
@@ -166,7 +175,6 @@ def editar_perfil():
     foto_archivo = request.files.get('foto_perfil')
     if foto_archivo and foto_archivo.filename != '':
         if archivo_permitido(foto_archivo.filename):
-            # Convertir imagen binaria a formato Base64 para guardarla en la BD de forma segura
             image_data = foto_archivo.read()
             encoded_string = base64.b64encode(image_data).decode('utf-8')
             mime_type = foto_archivo.mimetype or 'image/jpeg'
