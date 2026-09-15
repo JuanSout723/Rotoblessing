@@ -68,6 +68,10 @@ class Comentario(db.Model):
 with app.app_context():
     try:
         db.create_all()
+        # Forzar la creación de la columna en PostgreSQL si la tabla ya existía previamente
+        with db.engine.connect() as connection:
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS push_subscription TEXT;"))
+            connection.commit()
         print("Tablas y columnas sincronizadas correctamente.")
     except Exception as e:
         print(f"Nota al sincronizar base de datos: {e}")
