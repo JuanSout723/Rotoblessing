@@ -165,6 +165,53 @@
             if (msgBox) {
                 msgBox.scrollTop = msgBox.scrollHeight;
             }
+
+            {% if usuario.rol == 'Comprador' or cliente_actual %}
+            // ID del usuario con el que se está chateando actualmente
+            const otroUsuarioId = {% if usuario.rol == 'Comprador' %}"{{ (clientes[0].id if clientes else (Usuario.query.filter(Usuario.rol != 'Comprador').first().id if Usuario.query.filter(Usuario.rol != 'Comprador').first() else '')) }}"{% else %}"{{ cliente_actual.id }}"{% endif %};
+            const usuarioActualId = "{{ usuario.id }}";
+            const nombreRemitenteOtro = "{% if usuario.rol == 'Comprador' %}Atención al Cliente{% else %}{{ cliente_actual.nombre }}{% endif %}";
+
+            if (otroUsuarioId) {
+                setInterval(function() {
+                    fetch(`/api/mensajes/${otroUsuarioId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.error) return;
+
+                            const msgBox = document.getElementById("msgBox");
+                            if (!msgBox) return;
+
+                            // Comprobar si el usuario está al final del scroll antes de actualizar
+                            const estaAbajo = msgBox.scrollHeight - msgBox.scrollTop <= msgBox.clientHeight + 50;
+
+                            let htmlContenido = '';
+                            data.forEach(m => {
+                                let esMio = (m.emisor_id == usuarioActualId);
+                                let claseCss = esMio ? 'msg-enviado' : 'msg-recibido';
+                                let nombreMostrar = esMio ? 'Tú' : nombreRemitenteOtro;
+
+                                htmlContenido += `
+                                    <div class="msg-bubble ${claseCss}">
+                                        <strong style="font-size: 0.8rem; color: #555;">${nombreMostrar}</strong>
+                                        <p>${m.contenido}</p>
+                                        <div class="msg-info">${m.fecha.split(' ')[1]}</div>
+                                    </div>
+                                `;
+                            });
+
+                            // Solo actualizamos si cambió algo para evitar parpadeos innecesarios
+                            if (msgBox.innerHTML.trim() !== htmlContenido.trim()) {
+                                msgBox.innerHTML = htmlContenido;
+                                if (estaAbajo) {
+                                    msgBox.scrollTop = msgBox.scrollHeight;
+                                }
+                            }
+                        })
+                        .catch(err => console.error("Error actualizando chat:", err));
+                }, 3000); // Consulta cada 3 segundos
+            }
+            {% endif %}
         });
     </script>
 </body>
