@@ -74,8 +74,9 @@
         .product-card .price { font-size: 1.15rem; font-weight: 700; color: #28a745; margin-bottom: 12px; }
 
         .product-actions { display: flex; gap: 6px; margin-top: auto; }
-        .btn-consultar { flex: 1; padding: 10px 4px; font-size: 0.78rem; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px; color: white; white-space: nowrap; }
+        .btn-consultar { flex: 1; padding: 10px 4px; font-size: 0.78rem; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 4px; color: white; white-space: nowrap; cursor: pointer; border: none; }
         .btn-platform { background-color: #0077b6; }
+        .btn-platform:hover { background-color: #005b8e; }
         .btn-whatsapp { background-color: #25d366; }
         .btn-whatsapp:hover { background-color: #1ebe5d; }
 
@@ -93,7 +94,7 @@
         .comment-author { font-weight: 600; font-size: 0.9rem; color: #0077b6; }
         .comment-text { font-size: 0.88rem; color: #495057; }
 
-        /* Modal de Editar Perfil */
+        /* Modales Generales */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; }
         .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6c757d; }
@@ -125,7 +126,7 @@
         </h1>
         <div class="nav-links">
             <a href="#catalogo"><i class="fa-solid fa-store"></i> Catálogo</a>
-            <a href="#equipo"><i class="fa-solid fa-users"></i> Asesores</a>
+            <a href="#equipo"><i class="fa-solid fa-users"></i> Nuestro Equipo de Venta</a>
             <a href="#seccion-comentarios"><i class="fa-solid fa-comments"></i> Experiencias</a>
             
             {% if usuario %}
@@ -136,7 +137,6 @@
                     </div>
                     <div class="dropdown-menu">
                         <span style="padding: 10px 16px; font-size: 0.75rem; color: #6c757d; border-bottom: 1px solid #f1f5f9; display: block;">Rol: <strong>{{ usuario.rol }}</strong></span>
-                        <a href="/mensajes"><i class="fa-solid fa-comments"></i> Centro de Mensajes</a>
                         
                         {% if usuario.rol != 'Comprador' %}
                             <a onclick="abrirModalPerfil(event)"><i class="fa-solid fa-id-card"></i> Personalizar mi Perfil</a>
@@ -170,8 +170,7 @@
                 <span class="badge"><i class="fa-solid fa-shield-halved"></i> Rol: {{ usuario.rol }}</span>
                 <p>Hola <strong>{{ usuario.nombre }}</strong>, tu sesión está activa y protegida de forma segura en la plataforma.</p>
                 <div class="actions">
-                    <a href="/mensajes" class="btn"><i class="fa-solid fa-comments"></i> Centro de Mensajes</a>
-                    <a href="/logout" class="btn" style="background-color: #dc3545;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
+                    <a href="/logout" class="btn" style="background-color: #dc3545; max-width: 250px;"><i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión</a>
                 </div>
             {% else %}
                 <p>Tu plataforma confiable de comercio e interacción. Explora nuestro catálogo de tanques y soluciones de almacenamiento de agua, regístrate o inicia sesión para contactar con nuestros vendedores autorizados.</p>
@@ -230,25 +229,10 @@
             </div>
         {% endif %}
 
-        <!-- SECCIÓN: CATÁLOGO -->
-        <h2 class="section-title" id="catalogo">Nuestro Catálogo</h2>
-        <div class="catalog-grid">
-            <div class="product-card">
-                <div>
-                    <img src="{{ url_for('static', filename='tanque1.jpg') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+1'">
-                    <h3>Tanque Residencial 500L</h3>
-                    <p>Ideal para departamentos o casas pequeñas.</p>
-                    <div class="price">$120.00</div>
-                </div>
-                <div class="product-actions">
-                    <a href="/mensajes" class="btn-consultar btn-platform"><i class="fa-solid fa-comments"></i> Consultar</a>
-                    <a href="https://wa.me/58000000000?text=Hola,%20estoy%20interesado%20en%20el%20Tanque%20Residencial%20500L" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECCIÓN: ASESORES -->
-        <h2 class="section-title" id="equipo">Nuestro Equipo Autorizado</h2>
+        <!-- SECCIÓN: NUESTRO EQUIPO DE VENTA (ARRIBA) -->
+        <h2 class="section-title" id="equipo">Nuestro Equipo de Venta</h2>
+        <p style="text-align: center; color: #6c757d; margin-bottom: 20px; font-size: 0.9rem;">Conoce a nuestros asesores autorizados, investiga sus perfiles y contacta al de tu preferencia con total confianza.</p>
+        
         <div class="team-grid">
             {% if vendedores %}
                 {% for v in vendedores %}
@@ -294,8 +278,30 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <p style="text-align: center; color: #6c757d; grid-column: 1 / -1;">Pronto se mostrará el listado oficial.</p>
+                <p style="text-align: center; color: #6c757d; grid-column: 1 / -1;">Pronto se mostrará el listado oficial del equipo de ventas.</p>
             {% endif %}
+        </div>
+
+        <!-- SECCIÓN: CATÁLOGO CON BOTÓN "CONSULTAR A" -->
+        <h2 class="section-title" id="catalogo">Nuestro Catálogo</h2>
+        <div class="catalog-grid">
+            <div class="product-card">
+                <div>
+                    <img src="{{ url_for('static', filename='tanque1.jpg') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x180?text=Tanque+1'">
+                    <h3>Tanque Residencial 500L</h3>
+                    <p>Ideal para departamentos o casas pequeñas.</p>
+                    <div class="price">$120.00</div>
+                </div>
+                <div class="product-actions">
+                    <!-- Botón Consultar a que activa la ventana emergente de vendedores -->
+                    <button type="button" class="btn-consultar btn-platform" onclick="abrirModalVendedores()">
+                        <i class="fa-solid fa-comments"></i> Consultar a...
+                    </button>
+                    <a href="https://wa.me/58000000000?text=Hola,%20estoy%20interesado%20en%20el%20Tanque%20Residencial%20500L" target="_blank" class="btn-consultar btn-whatsapp">
+                        <i class="fa-brands fa-whatsapp"></i> WhatsApp
+                    </a>
+                </div>
+            </div>
         </div>
 
         <!-- SECCIÓN: COMENTARIOS Y EXPERIENCIAS -->
@@ -350,6 +356,55 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- VENTANA EMERGENTE (MODAL) PARA SELECCIONAR VENDEDOR AL CONSULTAR -->
+    <div id="modalVendedores" class="modal-overlay">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModalVendedores()">&times;</button>
+            <h2 style="color: #0077b6; margin-bottom: 10px; font-size: 1.2rem; text-align: center;">
+                <i class="fa-solid fa-users"></i> Nuestro Equipo de Ventas
+            </h2>
+            <p style="text-align: center; color: #6c757d; font-size: 0.85rem; margin-bottom: 20px;">
+                Selecciona a cualquiera de nuestros asesores para comunicarte de forma directa y recibir atención personalizada.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 15px; max-height: 60vh; overflow-y: auto;">
+                {% if vendedores %}
+                    {% for v in vendedores %}
+                    <div style="display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e9ecef;">
+                        {% if v.foto_perfil %}
+                            <img src="{{ url_for('static', filename='uploads/' + v.foto_perfil) }}" alt="{{ v.nombre }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0077b6;">
+                        {% else %}
+                            <img src="https://via.placeholder.com/50?text=Avatar" alt="Sin foto" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0077b6;">
+                        {% endif %}
+                        <div style="flex: 1;">
+                            <h4 style="font-size: 0.95rem; color: #333; margin-bottom: 2px;">{{ v.nombre }}</h4>
+                            <span style="font-size: 0.75rem; color: #0077b6; font-weight: 600;">{{ 'Dueño' if v.rol == 'Dueno' else v.rol }}</span>
+                        </div>
+                        <div style="display: flex; gap: 5px;">
+                            {% if v.whatsapp %}
+                                <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20consultando%20sobre%20los%20productos%20de%20Rotoblessing." target="_blank" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem;" title="Contactar por WhatsApp">
+                                    <i class="fa-brands fa-whatsapp"></i>
+                                </a>
+                            {% endif %}
+                            {% if v.instagram %}
+                                <a href="{{ v.instagram }}" target="_blank" class="btn-consultar" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white; padding: 8px 12px; font-size: 0.8rem;" title="Instagram">
+                                    <i class="fa-brands fa-instagram"></i>
+                                </a>
+                            {% endif %}
+                            {% if v.facebook %}
+                                <a href="{{ v.facebook }}" target="_blank" class="btn-consultar" style="background-color: #1877f2; color: white; padding: 8px 12px; font-size: 0.8rem;" title="Facebook">
+                                    <i class="fa-brands fa-facebook-f"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #6c757d; font-size: 0.85rem;">No hay asesores disponibles en este momento.</p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 
     <!-- MODAL DE EDITAR PERFIL -->
@@ -408,6 +463,7 @@
     </footer>
 
     <script>
+        // Funciones para el Modal de Editar Perfil
         function abrirModalPerfil(event) {
             event.preventDefault();
             const modal = document.getElementById('modalPerfil');
@@ -415,6 +471,16 @@
         }
         function cerrarModalPerfil() {
             const modal = document.getElementById('modalPerfil');
+            if (modal) modal.style.display = 'none';
+        }
+
+        // Funciones para el Modal de la Lista de Vendedores en el Catálogo
+        function abrirModalVendedores() {
+            const modal = document.getElementById('modalVendedores');
+            if (modal) modal.style.display = 'flex';
+        }
+        function cerrarModalVendedores() {
+            const modal = document.getElementById('modalVendedores');
             if (modal) modal.style.display = 'none';
         }
 
