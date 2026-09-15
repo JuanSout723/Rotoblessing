@@ -115,7 +115,14 @@
                         <div class="chat-avatar" style="width: 32px; height: 32px; font-size: 0.8rem; margin-right: 0;">
                             {{ cliente_actual.nombre[0].upper() }}
                         </div>
-                        <span>Chat con {{ cliente_actual.nombre }}</span>
+                        <span style="flex: 1;">Chat con {{ cliente_actual.nombre }}</span>
+
+                        <!-- Botón para eliminar chat (Visible para vendedores/dueños cuando hay un cliente seleccionado) -->
+                        <form action="{{ url_for('eliminar_chat', cliente_id=cliente_actual.id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar todo este chat?');" style="margin: 0;">
+                            <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1rem;" title="Eliminar chat">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </form>
                     {% endif %}
                 </div>
 
