@@ -9,7 +9,7 @@
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
         
-        /* Ajuste clave para móviles: usamos 100dvh (Dynamic Viewport Height) para evitar que las barras del sistema tapen el contenido */
+        /* Ajuste clave para móviles: usamos 100dvh para evitar que las barras del sistema tapen el contenido */
         body { background-color: #e5ddd5; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
         header { background-color: #0077b6; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
@@ -48,7 +48,7 @@
         .input-area button { background-color: #0077b6; color: white; border: none; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; }
 
         /* ==========================================================
-            ADAPTACIÓN MÓVIL (ANDROID)
+            ADAPTACIÓN MÓVIL (ANDROID) - Clases de control responsive
             ========================================================== */
         @media (max-width: 768px) {
             header {
@@ -80,7 +80,9 @@
 
             .chat-container { margin: 0; border-radius: 0; height: calc(100dvh - 50px); }
 
+            /* Control mediante clases condicionales limpias para móvil */
             {% if usuario.rol == 'Comprador' %}
+                .sidebar { display: none; }
                 .main-chat { display: flex; width: 100%; }
             {% else %}
                 {% if cliente_actual %}
@@ -100,7 +102,6 @@
     <header>
         <h1><i class="fa-solid fa-comments"></i> Centro de Mensajes</h1>
         <div style="display: flex; align-items: center; gap: 10px;">
-            <!-- Botón para activar notificaciones push -->
             <button id="btn-activar-push" class="btn-push" onclick="registrarNotificacionesPush()">
                 <i class="fa-solid fa-bell"></i> Activar Alertas
             </button>
@@ -139,7 +140,6 @@
 
             {% if usuario.rol == 'Comprador' or cliente_actual %}
                 <div class="chat-header">
-                    <!-- Botón para regresar a la lista en móviles -->
                     <a href="{{ url_for('centro_mensajes') }}" class="btn-volver-movil" title="Volver a lista">
                         <i class="fa-solid fa-arrow-left"></i>
                     </a>
@@ -152,7 +152,6 @@
                         </div>
                         <span style="flex: 1;">Chat con {{ cliente_actual.nombre }}</span>
 
-                        <!-- Botón para eliminar chat (Visible para vendedores/dueños cuando hay un cliente seleccionado) -->
                         <form action="{{ url_for('eliminar_chat', cliente_id=cliente_actual.id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar todo este chat?');" style="margin: 0;">
                             <button type="submit" style="background: none; border: none; color: #dc3545; cursor: pointer; font-size: 1rem;" title="Eliminar chat">
                                 <i class="fa-solid fa-trash-can"></i>
@@ -161,7 +160,7 @@
                     {% endif %}
                 </div>
 
-                <!-- Historial de Conversación con scroll interno fluido -->
+                <!-- Historial de Conversación -->
                 <div class="messages-area" id="msgBox">
                     {% for msg in conversacion %}
                         <div class="msg-bubble {% if msg.emisor_id == usuario.id %}msg-enviado{% else %}msg-recibido{% endif %}">
@@ -195,7 +194,6 @@
     </div>
 
     <script>
-        // --- LÓGICA DE NOTIFICACIONES PUSH ---
         const vapidPublicKey = "{{ vapid_public_key }}";
 
         function urlBase64ToUint8Array(base64String) {
