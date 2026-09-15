@@ -43,7 +43,7 @@
         .welcome-panel h2 { color: #0077b6; margin-bottom: 10px; font-size: 1.5rem; }
         .badge { display: inline-block; padding: 5px 14px; background-color: #0077b6; color: white; border-radius: 20px; font-size: 0.8rem; font-weight: 600; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
         .welcome-panel p { color: #6c757d; font-size: 0.95rem; max-width: 700px; margin: 0 auto 20px auto; line-height: 1.5; }
-        .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+        .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
         .actions a { width: 100%; max-width: 250px; padding: 12px 20px; }
 
         /* Cuadrícula de Formularios (Login / Registro) */
@@ -73,48 +73,62 @@
         .product-card p { font-size: 0.82rem; color: #6c757d; margin-bottom: 12px; line-height: 1.4; }
         .product-card .price { font-size: 1.15rem; font-weight: 700; color: #28a745; margin-bottom: 12px; }
 
-        .product-actions { display: flex; gap: 6px; margin-top: auto; }
-        .btn-consultar { width: 100%; padding: 10px 12px; font-size: 0.85rem; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 6px; color: white; white-space: nowrap; cursor: pointer; border: none; }
+        .product-actions { display: flex; gap: 8px; margin-top: 15px; }
+        .btn-consultar { width: 100%; padding: 12px 14px; font-size: 0.9rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: white; white-space: nowrap; cursor: pointer; border: none; }
         .btn-platform { background-color: #0077b6; }
         .btn-platform:hover { background-color: #005b8e; }
         .btn-whatsapp { background-color: #25d366; }
         .btn-whatsapp:hover { background-color: #1ebe5d; }
 
-        /* Tarjetas de Asesores */
+        /* Tarjetas de Asesores (Mejorado el espaciado de botones móviles) */
         .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px; }
         .team-card { background: white; border-radius: 12px; padding: 22px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; position: relative; }
         .team-avatar { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; border: 3px solid #0077b6; margin-bottom: 15px; background: #e9ecef; }
         .team-card h3 { font-size: 1.1rem; color: #333; margin-bottom: 4px; }
         .team-card p { font-size: 0.85rem; color: #6c757d; margin-bottom: 15px; line-height: 1.4; flex: 1; }
+        
+        /* Contenedor de botones de redes del asesor con buen espacio vertical en móviles */
+        .team-social-buttons { display: flex; flex-direction: column; gap: 10px; width: 100%; margin-top: 15px; }
+        .team-social-buttons .btn-consultar { padding: 11px; font-size: 0.85rem; border-radius: 8px; }
 
         /* Sección de Comentarios */
         .comments-section { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .comment-item { padding: 12px 0; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 4px; }
+        .comment-item { padding: 12px 0; border-bottom: 1px solid #f1f5f9; display: flex; flex-direction: column; gap: 6px; }
         .comment-item:last-child { border-bottom: none; }
         .comment-author { font-weight: 600; font-size: 0.9rem; color: #0077b6; }
         .comment-text { font-size: 0.88rem; color: #495057; }
 
         /* Modales Generales */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center; padding: 15px; }
         .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); position: relative; max-height: 90vh; overflow-y: auto; }
-        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6c757d; }
+        .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.4rem; cursor: pointer; color: #6c757d; }
 
         /* Footer y Redes Sociales */
         <footer>
-            <div class="social-icons">
-                <a href="https://instagram.com" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-                <a href="https://facebook.com" target="_blank" title="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+            <div class="social-icons" style="display: flex; justify-content: center; gap: 15px; margin-bottom: 10px;">
+                <a href="https://instagram.com" target="_blank" title="Instagram" style="color: #0077b6; font-size: 1.2rem;"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://facebook.com" target="_blank" title="Facebook" style="color: #0077b6; font-size: 1.2rem;"><i class="fa-brands fa-facebook-f"></i></a>
             </div>
-            <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
+            <p style="text-align: center; color: #6c757d; font-size: 0.85rem; padding-bottom: 20px;">&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
         </footer>
 
+        /* Media Queries adaptadas para móviles */
         @media (max-width: 768px) {
-            header { padding: 12px 15px; flex-direction: column; gap: 8px; text-align: center; }
+            header { padding: 12px 15px; flex-direction: column; gap: 10px; text-align: center; }
             header h1 { font-size: 1.2rem; }
-            .nav-links { gap: 12px; font-size: 0.85rem; flex-wrap: wrap; justify-content: center; }
+            .nav-links { gap: 10px; font-size: 0.85rem; flex-wrap: wrap; justify-content: center; width: 100%; }
             .forms-grid { grid-template-columns: 1fr; gap: 20px; }
             .welcome-panel .logo-corner { display: none; }
             .catalog-grid, .team-grid { grid-template-columns: 1fr; }
+            
+            /* Ajustes extra para separar elementos en pantallas pequeñas */
+            .card { padding: 20px 15px; }
+            .welcome-panel { padding: 20px 15px; }
+            .comments-section { padding: 15px; }
+            
+            /* Botones individuales a ancho completo y separados cómodamente en móvil */
+            .product-actions { flex-direction: column; gap: 10px; }
+            .team-social-buttons { gap: 10px; }
         }
     </style>
 </head>
@@ -128,7 +142,7 @@
         </h1>
         <div class="nav-links">
             <a href="#catalogo"><i class="fa-solid fa-store"></i> Catálogo</a>
-            <a href="#equipo"><i class="fa-solid fa-users"></i> Nuestro Equipo de Venta</a>
+            <a href="#equipo"><i class="fa-solid fa-users"></i> Nuestro Equipo</a>
             <a href="#seccion-comentarios"><i class="fa-solid fa-comments"></i> Experiencias</a>
             
             {% if usuario %}
@@ -231,7 +245,7 @@
             </div>
         {% endif %}
 
-        <!-- SECCIÓN: NUESTRO EQUIPO DE VENTA (ARRIBA) -->
+        <!-- SECCIÓN: NUESTRO EQUIPO DE VENTA -->
         <h2 class="section-title" id="equipo">Nuestro Equipo de Venta</h2>
         <p style="text-align: center; color: #6c757d; margin-bottom: 20px; font-size: 0.9rem;">Conoce a nuestros asesores autorizados, investiga sus perfiles y contacta al de tu preferencia con total confianza.</p>
         
@@ -239,7 +253,6 @@
             {% if vendedores %}
                 {% for v in vendedores %}
                 <div class="team-card">
-                    <!-- Botón para que el Dueño elimine a cualquier miembro del equipo (excepto a sí mismo) -->
                     {% if usuario and usuario.rol == 'Dueno' and v.id != usuario.id %}
                         <form action="{{ url_for('admin_eliminar_usuario', id=v.id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de eliminar a {{ v.nombre }} del equipo?');" style="position: absolute; top: 12px; right: 12px; z-index: 10;">
                             <button type="submit" style="background: #dc3545; color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.2);" title="Eliminar miembro del equipo">
@@ -257,22 +270,22 @@
                     <span class="badge" style="margin-bottom: 8px; font-size: 0.7rem;">{{ 'Dueño' if v.rol == 'Dueno' else v.rol }}</span>
                     <p>{{ v.biografia or 'Asesor oficial y verificado de Rotoblessing.' }}</p>
 
-                    <!-- Botones de Redes Sociales del Asesor -->
-                    <div style="display: flex; flex-direction: column; gap: 6px; width: 100%; margin-top: auto;">
+                    <!-- Botones de Redes Sociales del Asesor con espaciado móvil corregido -->
+                    <div class="team-social-buttons">
                         {% if v.whatsapp %}
-                            <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20interesado%20en%20los%20tanques%20de%20Rotoblessing." target="_blank" class="btn-consultar btn-whatsapp" style="width: 100%; border-radius: 6px; padding: 8px; font-size: 0.8rem;">
+                            <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20interesado%20en%20los%20tanques%20de%20Rotoblessing." target="_blank" class="btn-consultar btn-whatsapp">
                                 <i class="fa-brands fa-whatsapp"></i> WhatsApp
                             </a>
                         {% endif %}
 
                         {% if v.instagram %}
-                            <a href="{{ v.instagram }}" target="_blank" class="btn-consultar" style="width: 100%; background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white; border-radius: 6px; padding: 8px; font-size: 0.8rem; text-decoration: none;">
+                            <a href="{{ v.instagram }}" target="_blank" class="btn-consultar" style="background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285AEB 90%); color: white;">
                                 <i class="fa-brands fa-instagram"></i> Instagram
                             </a>
                         {% endif %}
 
                         {% if v.facebook %}
-                            <a href="{{ v.facebook }}" target="_blank" class="btn-consultar" style="width: 100%; background-color: #1877f2; color: white; border-radius: 6px; padding: 8px; font-size: 0.8rem; text-decoration: none;">
+                            <a href="{{ v.facebook }}" target="_blank" class="btn-consultar" style="background-color: #1877f2; color: white;">
                                 <i class="fa-brands fa-facebook-f"></i> Facebook
                             </a>
                         {% endif %}
@@ -284,7 +297,7 @@
             {% endif %}
         </div>
 
-        <!-- SECCIÓN: CATÁLOGO CON BOTÓN "CONSULTAR A" -->
+        <!-- SECCIÓN: CATÁLOGO -->
         <h2 class="section-title" id="catalogo">Nuestro Catálogo</h2>
         <div class="catalog-grid">
             <div class="product-card">
@@ -295,7 +308,6 @@
                     <div class="price">$120.00</div>
                 </div>
                 <div class="product-actions">
-                    <!-- Único botón de acción conservado -->
                     <button type="button" class="btn-consultar btn-platform" onclick="abrirModalVendedores()">
                         <i class="fa-solid fa-comments"></i> Consultar a...
                     </button>
@@ -328,7 +340,7 @@
                 {% if comentarios %}
                     {% for c in comentarios %}
                     <div class="comment-item">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 5px;">
                             <span class="comment-author"><i class="fa-solid fa-user-circle"></i> {{ c.autor.nombre if c.autor else 'Usuario' }}</span>
                             <span style="font-size: 0.75rem; color: #adb5bd;">{{ c.fecha.strftime('%d/%m/%Y %H:%M') }}</span>
                         </div>
@@ -339,9 +351,8 @@
                             </div>
                         {% endif %}
                         
-                        <!-- Botón para eliminar comentario si es propio o Dueño -->
                         {% if usuario and (c.usuario_id == usuario.id or usuario.rol == 'Dueno') %}
-                            <form action="{{ url_for('eliminar_comentario', id=c.id) }}" method="POST" style="margin-top: 5px;" onsubmit="return confirm('¿Eliminar este comentario?');">
+                            <form action="{{ url_for('eliminar_comentario', id=c.id) }}" method="POST" style="margin-top: 8px;" onsubmit="return confirm('¿Eliminar este comentario?');">
                                 <button type="submit" style="background: none; border: none; color: #dc3545; font-size: 0.78rem; cursor: pointer; display: flex; align-items: center; gap: 4px;">
                                     <i class="fa-solid fa-trash"></i> Eliminar
                                 </button>
@@ -370,20 +381,20 @@
             <div style="display: flex; flex-direction: column; gap: 15px; max-height: 60vh; overflow-y: auto;">
                 {% if vendedores %}
                     {% for v in vendedores %}
-                    <div style="display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <div style="display: flex; align-items: center; gap: 12px; background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e9ecef; flex-wrap: wrap;">
                         {% if v.foto_perfil %}
                             <img src="{{ url_for('static', filename='uploads/' + v.foto_perfil) }}" alt="{{ v.nombre }}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0077b6;">
                         {% else %}
                             <img src="https://via.placeholder.com/50?text=Avatar" alt="Sin foto" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #0077b6;">
                         {% endif %}
-                        <div style="flex: 1;">
+                        <div style="flex: 1; min-width: 120px;">
                             <h4 style="font-size: 0.95rem; color: #333; margin-bottom: 2px;">{{ v.nombre }}</h4>
                             <span style="font-size: 0.75rem; color: #0077b6; font-weight: 600;">{{ 'Dueño' if v.rol == 'Dueno' else v.rol }}</span>
                         </div>
-                        <div style="display: flex; gap: 5px;">
+                        <div style="display: flex; gap: 6px; width: 100%; justify-content: flex-end; margin-top: 5px;">
                             {% if v.whatsapp %}
                                 <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20consultando%20sobre%20los%20productos%20de%20Rotoblessing." target="_blank" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;" title="Contactar por WhatsApp">
-                                    <i class="fa-brands fa-whatsapp"></i>
+                                    <i class="fa-brands fa-whatsapp"></i> WhatsApp
                                 </a>
                             {% endif %}
                             {% if v.instagram %}
@@ -437,12 +448,11 @@
                     <label>Foto de Perfil (Avatar)</label>
                     <input type="file" name="foto_perfil" accept="image/*">
                 </div>
-                <button type="submit" class="btn" style="margin-bottom: 10px;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
+                <button type="submit" class="btn" style="margin-bottom: 15px;"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
             </form>
 
             <hr style="margin: 20px 0; border: none; border-top: 1px solid #eee;">
             
-            <!-- Botón para eliminar cuenta personal -->
             <form action="/perfil/eliminar" method="POST" onsubmit="return confirm('¿Estás COMPLETAMENTE SEGURO de eliminar tu cuenta de forma permanente? Esta acción no se puede deshacer.');">
                 <button type="submit" class="btn" style="background-color: #dc3545;"><i class="fa-solid fa-user-xmark"></i> Eliminar mi cuenta permanentemente</button>
             </form>
@@ -466,7 +476,6 @@
             document.getElementById('modalPerfil').style.display = 'none';
         }
 
-        // Script para mostrar/ocultar el código de verificación según el rol seleccionado en Registro
         const rolSelect = document.getElementById('rolSelect');
         if (rolSelect) {
             rolSelect.addEventListener('change', function() {
