@@ -31,6 +31,7 @@ db = SQLAlchemy(app)
 # --- MODELOS DE LA BASE DE DATOS ---
 
 class Usuario(db.Model):
+    __tablename__ = 'usuario'
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
@@ -45,9 +46,13 @@ class Usuario(db.Model):
     biografia = db.Column(db.Text, nullable=True)
     foto_perfil = db.Column(db.String(200), nullable=True)
 
+    # Relación configurada con cascade para que elimine automáticamente sus comentarios sin generar Error 500
+    comentarios = db.relationship('Comentario', backref='autor_ref', cascade='all, delete-orphan', passive_deletes=True)
+
 class Comentario(db.Model):
+    __tablename__ = 'comentario'
     id = db.Column(db.Integer, primary_key=True)
-    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id'), nullable=False)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='CASCADE'), nullable=False)
     contenido = db.Column(db.Text, nullable=False)
     foto = db.Column(db.String(200), nullable=True)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
@@ -196,9 +201,8 @@ def eliminar_cuenta():
                 except Exception as e:
                     print(f"Error al eliminar foto de perfil: {e}")
 
-        # NUEVO: Eliminar comentarios asociados para evitar conflicto de llave foránea
-        comentarios_usuario = Comentario.query.filter_by(usuario_id=usuario.id).all()
-        for com in comentarios_usuario:
+        # Limpiar archivos físicos de las fotos asociadas a sus comentarios
+        for com in usuario.comentarios:
             if com.foto:
                 ruta_foto_com = os.path.join(app.config['UPLOAD_FOLDER'], com.foto)
                 if os.path.exists(ruta_foto_com):
@@ -206,7 +210,6 @@ def eliminar_cuenta():
                         os.remove(ruta_foto_com)
                     except Exception:
                         pass
-            db.session.delete(com)
 
         db.session.delete(usuario)
         db.session.commit()
@@ -233,6 +236,7 @@ def admin_eliminar_usuario(id):
         flash('No puedes eliminar tu propia cuenta desde el panel de control.', 'warning')
         return redirect(url_for('index'))
     
+    # Eliminar archivo físico de la foto de perfil del usuario a borrar
     if usuario_a_eliminar.foto_perfil:
         ruta_foto = os.path.join(app.config['UPLOAD_FOLDER'], usuario_a_eliminar.foto_perfil)
         if os.path.exists(ruta_foto):
@@ -241,9 +245,8 @@ def admin_eliminar_usuario(id):
             except Exception as e:
                 print(f"Error al eliminar foto de perfil: {e}")
 
-    # NUEVO: Eliminar los comentarios y las fotos asociadas a los comentarios del usuario antes de borrarlo
-    comentarios_usuario = Comentario.query.filter_by(usuario_id=usuario_a_eliminar.id).all()
-    for com in comentarios_usuario:
+    # Limpiar archivos físicos de las fotos adjuntas en sus comentarios
+    for com in usuario_a_eliminar.comentarios:
         if com.foto:
             ruta_foto_com = os.path.join(app.config['UPLOAD_FOLDER'], com.foto)
             if os.path.exists(ruta_foto_com):
@@ -251,11 +254,14 @@ def admin_eliminar_usuario(id):
                     os.remove(ruta_foto_com)
                 except Exception:
                     pass
-        db.session.delete(com)
 
+    nombre_borrado = usuario_a_eliminar.nombre
+    
+    # Gracias a cascade='all, delete-orphan', SQLAlchemy borra al usuario y sus comentarios de forma limpia en una sola transacción
     db.session.delete(usuario_a_eliminar)
     db.session.commit()
-    flash(f'El miembro del equipo {usuario_a_eliminar.nombre} ha sido eliminado exitosamente.', 'success')
+    
+    flash(f'El miembro del equipo {nombre_borrado} ha sido eliminado exitosamente.', 'success')
     return redirect(url_for('index'))
 
 # --- RUTAS DE COMENTARIOS Y EXPERIENCIAS ---
@@ -342,3 +348,6 @@ def eliminar_comentario(id):
         flash('No tienes permisos para eliminar este comentario.', 'danger')
         
     return redirect(url_for('index') + '#seccion-comentarios')
+
+if __name__ == '__main__':
+    app.run(debug=True)
