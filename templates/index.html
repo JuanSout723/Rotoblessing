@@ -111,7 +111,6 @@
         .social-icons a { color: #0077b6; font-size: 1.2rem; transition: opacity 0.2s; }
         .social-icons a:hover { opacity: 0.7; }
 
-        /* Media Queries adaptadas para móviles */
         @media (max-width: 768px) {
             header { padding: 10px 15px; flex-direction: column; align-items: stretch; gap: 8px; }
             header h1 { font-size: 1.15rem; justify-content: center; padding-bottom: 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.15); }
@@ -145,7 +144,6 @@
             <a href="#seccion-comentarios"><i class="fa-solid fa-comments"></i> Opiniones</a>
             
             {% if usuario %}
-                <!-- Menú Desplegable para el usuario activo -->
                 <div class="dropdown">
                     <div class="dropdown-toggle">
                         <i class="fa-solid fa-circle-user"></i> {{ usuario.nombre }} <i class="fa-solid fa-caret-down"></i>
@@ -189,7 +187,6 @@
         </div>
 
         {% if not usuario %}
-            <!-- Formularios de Iniciar Sesión y Registro -->
             <div class="forms-grid">
                 <div class="card">
                     <h2><i class="fa-solid fa-right-to-bracket"></i> Iniciar Sesión</h2>
@@ -256,7 +253,6 @@
                         </form>
                     {% endif %}
 
-                    <!-- Icono de usuario limpio -->
                     <div class="team-avatar-icon">
                         <i class="fa-solid fa-user"></i>
                     </div>
@@ -293,9 +289,6 @@
                 <p>Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada.</p>
                 <div class="price">Consultar Precio</div>
                 <div class="product-actions">
-                    <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%20500%20litros" target="_blank" class="btn-consultar btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
-                    </a>
                     <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('Tanque Bicapa 500 Litros')">
                         <i class="fa-solid fa-comments"></i> Consultar a...
                     </button>
@@ -308,9 +301,6 @@
                 <p>El estándar más buscado por las familias para garantizar reserva óptima de agua potable.</p>
                 <div class="price">Consultar Precio</div>
                 <div class="product-actions">
-                    <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%201000%20litros" target="_blank" class="btn-consultar btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
-                    </a>
                     <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('Tanque Bicapa 1.000 Litros')">
                         <i class="fa-solid fa-comments"></i> Consultar a...
                     </button>
@@ -323,9 +313,6 @@
                 <p>Mayor capacidad estructural con capa antibacteriana interna. Máxima seguridad y calidad.</p>
                 <div class="price">Consultar Precio</div>
                 <div class="product-actions">
-                    <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%201500%20litros" target="_blank" class="btn-consultar btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
-                    </a>
                     <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('Tanque Tricapa 1.500 Litros')">
                         <i class="fa-solid fa-comments"></i> Consultar a...
                     </button>
@@ -390,7 +377,7 @@
 
     </div>
 
-    <!-- MODAL DE PERSONALIZACIÓN DE PERFIL Y ELIMINACIÓN DE CUENTA -->
+    <!-- MODAL DE PERSONALIZACIÓN DE PERFIL -->
     {% if usuario %}
     <div class="modal-overlay" id="modalPerfil">
         <div class="modal-content">
@@ -423,7 +410,6 @@
 
             <hr style="margin: 20px 0; border: none; border-top: 1px solid #e9ecef;">
 
-            <!-- Sección de Eliminación de Cuenta -->
             <div style="background: #fff5f5; padding: 15px; border-radius: 8px; border: 1px solid #fed7d7;">
                 <h3 style="color: #c53030; font-size: 0.95rem; margin-bottom: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Peligro</h3>
                 <p style="font-size: 0.8rem; color: #718096; margin-bottom: 12px;">Una vez que elimines tu cuenta, todos tus datos y comentarios asociados se borrarán permanentemente del sistema.</p>
@@ -446,13 +432,11 @@
             <span id="modalAsesorRol" class="badge" style="margin-bottom: 12px;"></span>
             <p id="modalAsesorBio" style="font-size: 0.85rem; color: #6c757d; margin-bottom: 15px; line-height: 1.4;"></p>
             
-            <div id="modalAsesorRedes" style="display: flex; flex-direction: column; gap: 8px;">
-                <!-- Se llena dinámicamente con JavaScript -->
-            </div>
+            <div id="modalAsesorRedes" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
     </div>
 
-    <!-- NUEVO MODAL: CONSULTAR PRODUCTO A ASESOR -->
+    <!-- MODAL: CONSULTAR PRODUCTO A ASESOR -->
     <div class="modal-overlay" id="modalConsultar">
         <div class="modal-content">
             <button class="modal-close" onclick="cerrarModalConsultar()">&times;</button>
@@ -511,7 +495,6 @@
             }
         }
 
-        // Control de Modales de Perfil y Asesor
         function abrirModalPerfil(e) {
             if (e) e.preventDefault();
             const m = document.getElementById('modalPerfil');
@@ -547,7 +530,6 @@
             document.getElementById('modalAsesor').style.display = 'none';
         }
 
-        // Funciones para el nuevo botón "Consultar a..."
         function abrirModalConsultar(nombreProducto) {
             document.getElementById('nombreProductoModal').innerText = nombreProducto;
             document.getElementById('modalConsultar').style.display = 'flex';
@@ -561,7 +543,6 @@
             cerrarModalConsultar();
         }
 
-        // Cerrar modales al hacer clic fuera del contenido
         window.onclick = function(event) {
             const modalPerfil = document.getElementById('modalPerfil');
             const modalAsesor = document.getElementById('modalAsesor');
