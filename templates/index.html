@@ -74,8 +74,7 @@
         .product-card img { width: 100%; height: 160px; object-fit: contain; border-radius: 8px; margin-bottom: 12px; background: #f8f9fa; }
         .product-card h3 { font-size: 1.05rem; color: #333; margin-bottom: 6px; }
         .product-card p { font-size: 0.82rem; color: #6c757d; margin-bottom: 12px; line-height: 1.4; }
-        .product-card .price { font-size: 1.15rem; font-weight: 700; color: #28a745; margin-bottom: 12px; }
-
+        
         .product-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
         .btn-consultar { width: 100%; padding: 11px 14px; font-size: 0.88rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: white; white-space: nowrap; cursor: pointer; border: none; }
         .btn-platform { background-color: #0077b6; }
@@ -280,44 +279,35 @@
 
         <!-- SECCIÓN: CATÁLOGO DE PRODUCTOS -->
         <h2 class="section-title" id="catalogo">Nuestros Tanques y Productos</h2>
+        <div style="text-align: center; margin-bottom: 20px;">
+            <span class="badge" style="background-color: #17a2b8; font-size: 0.85rem;">
+                <i class="fa-solid fa-coins"></i> Tasa Oficial BCV del Día: <strong>Bs. {{ "%.2f"|format(tasa_bcv) }}</strong> / USD
+            </span>
+        </div>
         <p style="text-align: center; color: #6c757d; margin-bottom: 20px; font-size: 0.88rem;">Soluciones de almacenamiento fabricadas con máxima calidad, durabilidad y resistencia.</p>
 
         <div class="catalog-grid">
+            {% for p in productos %}
             <div class="product-card">
-                <img src="{{ url_for('static', filename='uploads/tanque500.png') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x160?text=Tanque+500L'">
-                <h3>Tanque Bicapa 500 Litros</h3>
-                <p>Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada.</p>
-                <div class="price">Consultar Precio</div>
-                <div class="product-actions">
-                    <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('Tanque Bicapa 500 Litros')">
-                        <i class="fa-solid fa-comments"></i> Consultar a...
-                    </button>
+                <img src="{{ url_for('static', filename='uploads/' + p.imagen) }}" alt="{{ p.nombre }}" onerror="this.src='https://via.placeholder.com/250x160?text=Tanque'">
+                <h3>{{ p.nombre }}</h3>
+                <p>{{ p.desc }}</p>
+                
+                <!-- Precios dinámicos en Dólares y calculados al BCV -->
+                <div style="margin: 12px 0; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef;">
+                    <div style="font-size: 1.25rem; font-weight: 700; color: #28a745;">${{ "%.2f"|format(p.precio_usd) }} USD</div>
+                    <div style="font-size: 0.95rem; font-weight: 600; color: #0077b6; margin-top: 2px;">
+                        ≈ Bs. {{ "%.2f"|format(p.precio_usd * tasa_bcv) }} <span style="font-size: 0.72rem; color: #6c757d; font-weight: normal;">(Tasa BCV)</span>
+                    </div>
                 </div>
-            </div>
 
-            <div class="product-card">
-                <img src="{{ url_for('static', filename='uploads/tanque1000.png') }}" alt="Tanque 1000L" onerror="this.src='https://via.placeholder.com/250x160?text=Tanque+1000L'">
-                <h3>Tanque Bicapa 1.000 Litros</h3>
-                <p>El estándar más buscado por las familias para garantizar reserva óptima de agua potable.</p>
-                <div class="price">Consultar Precio</div>
                 <div class="product-actions">
-                    <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('Tanque Bicapa 1.000 Litros')">
+                    <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('{{ p.nombre }}')">
                         <i class="fa-solid fa-comments"></i> Consultar a...
                     </button>
                 </div>
             </div>
-
-            <div class="product-card">
-                <img src="{{ url_for('static', filename='uploads/tanque1500.png') }}" alt="Tanque 1500L" onerror="this.src='https://via.placeholder.com/250x160?text=Tanque+1500L'">
-                <h3>Tanque Tricapa 1.500 Litros</h3>
-                <p>Mayor capacidad estructural con capa antibacteriana interna. Máxima seguridad y calidad.</p>
-                <div class="price">Consultar Precio</div>
-                <div class="product-actions">
-                    <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('Tanque Tricapa 1.500 Litros')">
-                        <i class="fa-solid fa-comments"></i> Consultar a...
-                    </button>
-                </div>
-            </div>
+            {% endfor %}
         </div>
 
         <!-- SECCIÓN DE COMENTARIOS Y EXPERIENCIAS -->
@@ -455,9 +445,12 @@
                                 <span style="font-size: 0.75rem; color: #6c757d;">{{ v.rol }}</span>
                             </div>
                             {% if v.whatsapp %}
-                                <a href="#" onclick="enviarConsultaWhatsApp('{{ v.whatsapp }}', document.getElementById('nombreProductoModal').innerText)" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;">
-                                    <i class="fa-brands fa-whatsapp"></i> Contactar
-                                </a>
+                                <form action="{{ url_for('consultar_a', vendedor_id=v.id) }}" method="POST" style="margin: 0;">
+                                    <input type="hidden" name="mensaje" id="inputMensajeWhatsApp">
+                                    <button type="submit" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;">
+                                        <i class="fa-brands fa-whatsapp"></i> Contactar
+                                    </button>
+                                </form>
                             {% else %}
                                 <span style="font-size: 0.75rem; color: #dc3545; font-weight: 600;">Sin WhatsApp</span>
                             {% endif %}
@@ -532,15 +525,11 @@
 
         function abrirModalConsultar(nombreProducto) {
             document.getElementById('nombreProductoModal').innerText = nombreProducto;
+            document.getElementById('inputMensajeWhatsApp').value = `Hola, estoy interesado en el producto: ${nombreProducto} y quisiera recibir asesoría y disponibilidad.`;
             document.getElementById('modalConsultar').style.display = 'flex';
         }
         function cerrarModalConsultar() {
             document.getElementById('modalConsultar').style.display = 'none';
-        }
-        function enviarConsultaWhatsApp(whatsappNum, producto) {
-            const mensaje = encodeURIComponent(`Hola, estoy interesado en el producto: ${producto} y quisiera recibir asesoría.`);
-            window.open(`https://wa.me/${whatsappNum}?text=${mensaje}`, '_blank');
-            cerrarModalConsultar();
         }
 
         window.onclick = function(event) {
