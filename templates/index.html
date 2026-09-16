@@ -106,8 +106,10 @@
         .modal-close { position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.3rem; cursor: pointer; color: #6c757d; }
 
         /* Footer y Redes Sociales */
-        footer { padding: 15px 0; text-align: center; color: #6c757d; font-size: 0.85rem; }
+        footer { padding: 20px 0; text-align: center; color: #6c757d; font-size: 0.85rem; background: #fff; border-top: 1px solid #e9ecef; margin-top: auto; }
         .social-icons { display: flex; justify-content: center; gap: 15px; margin-bottom: 8px; }
+        .social-icons a { color: #0077b6; font-size: 1.2rem; transition: opacity 0.2s; }
+        .social-icons a:hover { opacity: 0.7; }
 
         /* Media Queries adaptadas específicamente para móviles */
         @media (max-width: 768px) {
@@ -321,7 +323,7 @@
                             </a>
                         {% endif %}
                         <button class="btn-consultar btn-platform" onclick="verPerfilCompleto('{{ v.nombre }}', '{{ v.rol }}', '{{ v.telefono }}', '{{ v.whatsapp }}', '{{ v.facebook }}', '{{ v.instagram }}', '{{ v.biografia }}', '{{ v.foto_perfil }}')">
-                            <i class="fa-solid id-card"></i> Ver Contacto
+                            <i class="fa-solid fa-id-card"></i> Ver Contacto
                         </button>
                     </div>
                 </div>
@@ -340,7 +342,7 @@
                 <img src="{{ url_for('static', filename='uploads/tanque500.png') }}" alt="Tanque 500L" onerror="this.src='https://via.placeholder.com/250x160?text=Tanque+500L'">
                 <h3>Tanque Bicapa 500 Litros</h3>
                 <p>Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada.</p>
-                <div class="price">Consutar Precio</div>
+                <div class="price">Consultar Precio</div>
                 <div class="product-actions">
                     <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%20500%20litros" target="_blank" class="btn-consultar btn-whatsapp">
                         <i class="fa-brands fa-whatsapp"></i> Consultar
@@ -497,27 +499,25 @@
     <!-- Footer -->
     <footer>
         <div class="social-icons">
-            <a href="#" style="color: #0077b6; font-size: 1.2rem;"><i class="fa-brands fa-facebook"></i></a>
-            <a href="#" style="color: #0077b6; font-size: 1.2rem;"><i class="fa-brands fa-instagram"></i></a>
-            <a href="#" style="color: #0077b6; font-size: 1.2rem;"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="#" target="_blank"><i class="fa-brands fa-facebook"></i></a>
+            <a href="#" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
-        <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
+        <p>&copy; 2026 Rotoblessing. Todos los derechos reservados. Fabricación y distribución de tanques de agua de alta calidad.</p>
     </footer>
 
+    <!-- Scripts de Control de Modales y Lógica del Sistema -->
     <script>
         function toggleCodigoVerificacion() {
-            const rolSelect = document.getElementById('rolSelect');
-            const codigoGrupo = document.getElementById('codigoGrupo');
+            const rol = document.getElementById('rolSelect').value;
+            const grupoCodigo = document.getElementById('codigoGrupo');
             const labelCodigo = document.getElementById('labelCodigo');
             
-            if (rolSelect.value === 'Vendedor') {
-                codigoGrupo.style.display = 'block';
-                labelCodigo.innerText = 'Código de Verificación de Vendedor';
-            } else if (rolSelect.value === 'Dueno') {
-                codigoGrupo.style.display = 'block';
-                labelCodigo.innerText = 'Código de Verificación de Dueño';
+            if (rol === 'Vendedor' || rol === 'Dueno') {
+                grupoCodigo.style.display = 'block';
+                labelCodigo.innerText = rol === 'Dueno' ? 'Código de Dueño / Admin' : 'Código de Vendedor';
             } else {
-                codigoGrupo.style.display = 'none';
+                grupoCodigo.style.display = 'none';
             }
         }
 
@@ -533,48 +533,39 @@
         function verPerfilCompleto(nombre, rol, telefono, whatsapp, facebook, instagram, biografia, foto) {
             document.getElementById('modalAsesorNombre').innerText = nombre;
             document.getElementById('modalAsesorRol').innerText = rol;
-            document.getElementById('modalAsesorBio').innerText = biografia ? biografia : 'Asesor autorizado listo para brindarte la mejor atención.';
+            document.getElementById('modalAsesorBio').innerText = biografia ? biografia : 'Asesor autorizado de Rotoblessing.';
             
-            const fotoImg = document.getElementById('modalAsesorFoto');
-            if (foto && foto !== 'None' && foto.trim() !== '') {
-                fotoImg.src = foto;
-                fotoImg.style.display = 'inline-block';
-            } else {
-                fotoImg.src = 'https://via.placeholder.com/90?text=Avatar';
-            }
+            const fotoElem = document.getElementById('modalAsesorFoto');
+            fotoElem.src = foto ? foto : 'https://via.placeholder.com/90?text=Avatar';
 
             let redesHtml = '';
-            if (whatsapp && whatsapp !== 'None') {
-                redesHtml += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Escribir al WhatsApp (${whatsapp})</a>`;
+            if (whatsapp) {
+                redesHtml += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Escribir al WhatsApp</a>`;
             }
-            if (telefono && telefono !== 'None') {
-                redesHtml += `<a href="tel:${telefono}" class="btn-consultar btn-platform"><i class="fa-solid fa-phone"></i> Llamar al: ${telefono}</a>`;
+            if (telefono) {
+                redesHtml += `<a href="tel:${telefono}" class="btn-consultar btn-platform"><i class="fa-solid fa-phone"></i> Llamar: ${telefono}</a>`;
             }
-            if (facebook && facebook !== 'None') {
-                redesHtml += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Visitar Facebook</a>`;
+            if (facebook) {
+                redesHtml += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #1877f2;"><i class="fa-brands fa-facebook"></i> Facebook</a>`;
             }
-            if (instagram && instagram !== 'None') {
-                redesHtml += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Visitar Instagram</a>`;
+            if (instagram) {
+                redesHtml += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e4405f;"><i class="fa-brands fa-instagram"></i> Instagram</a>`;
             }
 
             document.getElementById('modalAsesorRedes').innerHTML = redesHtml;
-            document.getElementById('modalAsesorAsesoria') || '';
-            document.getElementById('modalAsesor').style.display = 'flex';
+            document.getElementById('modalAsesorAsesorModal' || 'modalAsesor').style.display = 'flex';
         }
 
         function cerrarModalAsesor() {
             document.getElementById('modalAsesor').style.display = 'none';
         }
 
+        // Cerrar modales al hacer clic fuera del contenido
         window.onclick = function(event) {
             const modalPerfil = document.getElementById('modalPerfil');
             const modalAsesor = document.getElementById('modalAsesor');
-            if (event.target == modalPerfil) {
-                modalPerfil.style.display = 'none';
-            }
-            if (event.target == modalAsesor) {
-                modalAsesor.style.display = 'none';
-            }
+            if (event.target === modalPerfil) modalPerfil.style.display = 'none';
+            if (event.target === modalAsesor) modalAsesor.style.display = 'none';
         }
     </script>
 </body>
