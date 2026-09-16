@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.utils import secure_filename
 import urllib.parse
+import requests
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
@@ -86,11 +87,46 @@ def index():
     comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
     vendedores = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
     
+    # Obtener la tasa oficial del BCV del día actual de forma automática
+    tasa_bcv = 0.0
+    try:
+        response = requests.get('https://pydolarvenezuela-api.vercel.app/api/v1/dollar/bcv', timeout=3)
+        if response.status_code == 200:
+            data = response.json()
+            tasa_bcv = float(data.get('monitors', {}).get('usd', {}).get('price', 0.0))
+    except Exception as e:
+        print(f"No se pudo obtener la tasa BCV automática: {e}")
+        tasa_bcv = 40.00  # Tasa de respaldo por defecto si hay problemas de red
+
+    # Catálogo de productos con sus precios base en dólares
+    productos = [
+        {
+            "nombre": "Tanque Bicapa 500 Litros", 
+            "precio_usd": 120.0, 
+            "imagen": "tanque500.png", 
+            "desc": "Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada."
+        },
+        {
+            "nombre": "Tanque Bicapa 1.000 Litros", 
+            "precio_usd": 180.0, 
+            "imagen": "tanque1000.png", 
+            "desc": "El estándar más buscado por las familias para garantizar reserva óptima de agua potable."
+        },
+        {
+            "nombre": "Tanque Tricapa 1.500 Litros", 
+            "precio_usd": 250.0, 
+            "imagen": "tanque1500.png", 
+            "desc": "Mayor capacidad estructural con capa antibacteriana interna. Máxima seguridad y calidad."
+        }
+    ]
+    
     return render_template(
         'index.html', 
         usuario=usuario, 
         comentarios=comentarios, 
-        vendedores=vendedores
+        vendedores=vendedores,
+        tasa_bcv=tasa_bcv,
+        productos=productos
     )
 
 @app.route('/registro', methods=['POST'])
@@ -145,7 +181,7 @@ def logout():
     flash('Has cerrado sesión correctamente.', 'info')
     return redirect(url_for('index'))
 
-# --- NUEVA FUNCIÓN: CONSULTAR A UN ASESOR ESPECÍFICO ---
+# --- CONSULTAR A UN ASESOR ESPECÍFICO ---
 
 @app.route('/consultar/<int:vendedor_id>', methods=['POST'])
 def consultar_a(vendedor_id):
@@ -155,7 +191,6 @@ def consultar_a(vendedor_id):
 
     vendedor = Usuario.query.get_or_404(vendedor_id)
     
-    # Validar que el usuario destino sea realmente un vendedor o dueño
     if vendedor.rol not in ['Vendedor', 'Dueno']:
         flash('El usuario seleccionado no es un asesor válido.', 'danger')
         return redirect(url_for('index'))
@@ -167,24 +202,18 @@ def consultar_a(vendedor_id):
     mensaje_usuario = request.form.get('mensaje', '').strip()
     usuario_actual = Usuario.query.get(session['usuario_id'])
 
-    # Si el mensaje está vacío, creamos uno predeterminado
     if not mensaje_usuario:
         mensaje_usuario = f"Hola {vendedor.nombre}, soy {usuario_actual.nombre}. Me gustaría consultar sobre sus productos y disponibilidad."
     else:
         mensaje_usuario = f"Hola {vendedor.nombre}, soy {usuario_actual.nombre}. Consulta: {mensaje_usuario}"
 
-    # Limpiar el número de WhatsApp de caracteres no numéricos comunes
     whatsapp_num = ''.join(filter(str.isdigit, vendedor.whatsapp))
-
-    # Codificar el mensaje para URL
     mensaje_codificado = urllib.parse.quote(mensaje_usuario)
-    
-    # Construir enlace oficial de WhatsApp
     link_whatsapp = f"https://wa.me/{whatsapp_num}?text={mensaje_codificado}"
 
     return redirect(link_whatsapp)
 
-# --- RUTAS DE GESTIÓN DE PERFIL PROFESIONAL Y ELIMINACIÓN DE CUENTA ---
+# --- GESTIÓN DE PERFIL Y ELIMINACIÓN DE CUENTA ---
 
 @app.route('/perfil/editar', methods=['GET', 'POST'])
 def editar_perfil():
@@ -259,7 +288,7 @@ def admin_eliminar_usuario(id):
     flash(f'El usuario {nombre_usuario} ha sido retirado del equipo de asesores exitosamente.', 'success')
     return redirect(url_for('index'))
 
-# --- RUTAS DE COMENTARIOS Y EXPERIENCIAS ---
+# --- COMENTARIOS Y EXPERIENCIAS ---
 
 @app.route('/comentar', methods=['POST'])
 def comentar():
