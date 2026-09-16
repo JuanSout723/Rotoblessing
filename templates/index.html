@@ -76,7 +76,7 @@
         .product-card p { font-size: 0.82rem; color: #6c757d; margin-bottom: 12px; line-height: 1.4; }
         .product-card .price { font-size: 1.15rem; font-weight: 700; color: #28a745; margin-bottom: 12px; }
 
-        .product-actions { display: flex; gap: 8px; margin-top: 12px; }
+        .product-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
         .btn-consultar { width: 100%; padding: 11px 14px; font-size: 0.88rem; border-radius: 8px; text-decoration: none; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 8px; color: white; white-space: nowrap; cursor: pointer; border: none; }
         .btn-platform { background-color: #0077b6; }
         .btn-platform:hover { background-color: #005b8e; }
@@ -294,8 +294,11 @@
                 <div class="price">Consultar Precio</div>
                 <div class="product-actions">
                     <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%20500%20litros" target="_blank" class="btn-consultar btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar
+                        <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
                     </a>
+                    <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('Tanque Bicapa 500 Litros')">
+                        <i class="fa-solid fa-comments"></i> Consultar a...
+                    </button>
                 </div>
             </div>
 
@@ -306,8 +309,11 @@
                 <div class="price">Consultar Precio</div>
                 <div class="product-actions">
                     <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%201000%20litros" target="_blank" class="btn-consultar btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar
+                        <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
                     </a>
+                    <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('Tanque Bicapa 1.000 Litros')">
+                        <i class="fa-solid fa-comments"></i> Consultar a...
+                    </button>
                 </div>
             </div>
 
@@ -318,8 +324,11 @@
                 <div class="price">Consultar Precio</div>
                 <div class="product-actions">
                     <a href="https://wa.me/584120000000?text=Hola,%20estoy%20interesado%20en%20el%20tanque%20de%201500%20litros" target="_blank" class="btn-consultar btn-whatsapp">
-                        <i class="fa-brands fa-whatsapp"></i> Consultar
+                        <i class="fa-brands fa-whatsapp"></i> Consultar WhatsApp
                     </a>
+                    <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('Tanque Tricapa 1.500 Litros')">
+                        <i class="fa-solid fa-comments"></i> Consultar a...
+                    </button>
                 </div>
             </div>
         </div>
@@ -443,6 +452,40 @@
         </div>
     </div>
 
+    <!-- NUEVO MODAL: CONSULTAR PRODUCTO A ASESOR -->
+    <div class="modal-overlay" id="modalConsultar">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModalConsultar()">&times;</button>
+            <h2 style="color: #0077b6; margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-comments"></i> Consultar sobre <span id="nombreProductoModal" style="color: #28a745;"></span>
+            </h2>
+            <p style="font-size: 0.85rem; color: #6c757d; margin-bottom: 18px;">
+                Selecciona a uno de nuestros asesores de venta autorizados para enviar tu consulta directamente por WhatsApp:
+            </p>
+            <div id="listaAsesoresModal" style="display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto;">
+                {% if vendedores %}
+                    {% for v in vendedores %}
+                        <div style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                            <div>
+                                <strong style="font-size: 0.9rem; color: #333; display: block;"><i class="fa-solid fa-user-tie" style="color: #0077b6;"></i> {{ v.nombre }}</strong>
+                                <span style="font-size: 0.75rem; color: #6c757d;">{{ v.rol }}</span>
+                            </div>
+                            {% if v.whatsapp %}
+                                <a href="#" onclick="enviarConsultaWhatsApp('{{ v.whatsapp }}', document.getElementById('nombreProductoModal').innerText)" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;">
+                                    <i class="fa-brands fa-whatsapp"></i> Contactar
+                                </a>
+                            {% else %}
+                                <span style="font-size: 0.75rem; color: #dc3545; font-weight: 600;">Sin WhatsApp</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #6c757d; font-size: 0.85rem;">No hay asesores disponibles en este momento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="social-icons">
             <a href="https://facebook.com" target="_blank"><i class="fa-brands fa-facebook"></i></a>
@@ -458,24 +501,25 @@
             const rolSelect = document.getElementById('rolSelect');
             const codigoGrupo = document.getElementById('codigoGrupo');
             const labelCodigo = document.getElementById('labelCodigo');
-            
-            if (rolSelect.value === 'Vendedor' || rolSelect.value === 'Dueno') {
-                codigoGrupo.style.display = 'block';
-                labelCodigo.innerText = rolSelect.value === 'Vendedor' ? 'Código de Vendedor' : 'Código de Administrador (Dueño)';
-            } else {
-                codigoGrupo.style.display = 'none';
+            if (rolSelect && codigoGrupo) {
+                if (rolSelect.value === 'Vendedor' || rolSelect.value === 'Dueno') {
+                    codigoGrupo.style.display = 'block';
+                    labelCodigo.innerText = rolSelect.value === 'Vendedor' ? 'Código de Vendedor' : 'Código de Dueño';
+                } else {
+                    codigoGrupo.style.display = 'none';
+                }
             }
         }
 
-        function abrirModalPerfil(event) {
-            event.preventDefault();
-            const modal = document.getElementById('modalPerfil');
-            if (modal) modal.style.display = 'flex';
+        // Control de Modales de Perfil y Asesor
+        function abrirModalPerfil(e) {
+            if (e) e.preventDefault();
+            const m = document.getElementById('modalPerfil');
+            if (m) m.style.display = 'flex';
         }
-
         function cerrarModalPerfil() {
-            const modal = document.getElementById('modalPerfil');
-            if (modal) modal.style.display = 'none';
+            const m = document.getElementById('modalPerfil');
+            if (m) m.style.display = 'none';
         }
 
         function verPerfilCompleto(nombre, rol, telefono, whatsapp, facebook, instagram, biografia) {
@@ -483,33 +527,48 @@
             document.getElementById('modalAsesorRol').innerText = rol;
             document.getElementById('modalAsesorBio').innerText = biografia ? biografia : 'Asesor autorizado listo para brindarte la mejor atención y asesoría con nuestros tanques.';
             
-            let htmlRedes = '';
-            if (whatsapp) {
-                htmlRedes += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp: ${whatsapp}</a>`;
+            let redesHTML = '';
+            if (telefono && telefono !== 'None') {
+                redesHTML += `<a href="tel:${telefono}" class="btn-consultar" style="background-color: #17a2b8;"><i class="fa-solid fa-phone"></i> Llamar: ${telefono}</a>`;
             }
-            if (telefono) {
-                htmlRedes += `<a href="tel:${telefono}" class="btn-consultar btn-platform" style="background-color: #4a5568;"><i class="fa-solid fa-phone"></i> Teléfono: ${telefono}</a>`;
+            if (whatsapp && whatsapp !== 'None') {
+                redesHTML += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Chat de WhatsApp</a>`;
             }
-            if (facebook) {
-                htmlRedes += `<a href="${facebook}" target="_blank" class="btn-consultar btn-platform" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Ver Facebook</a>`;
+            if (facebook && facebook !== 'None') {
+                redesHTML += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Facebook</a>`;
             }
-            if (instagram) {
-                htmlRedes += `<a href="${instagram}" target="_blank" class="btn-consultar btn-platform" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Ver Instagram</a>`;
+            if (instagram && instagram !== 'None') {
+                redesHTML += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Instagram</a>`;
             }
-            
-            document.getElementById('modalAsesorRedes').innerHTML = htmlRedes;
+            document.getElementById('modalAsesorRedes').innerHTML = redesHTML;
             document.getElementById('modalAsesor').style.display = 'flex';
         }
-
         function cerrarModalAsesor() {
             document.getElementById('modalAsesor').style.display = 'none';
         }
 
+        // Funciones para el nuevo botón "Consultar a..."
+        function abrirModalConsultar(nombreProducto) {
+            document.getElementById('nombreProductoModal').innerText = nombreProducto;
+            document.getElementById('modalConsultar').style.display = 'flex';
+        }
+        function cerrarModalConsultar() {
+            document.getElementById('modalConsultar').style.display = 'none';
+        }
+        function enviarConsultaWhatsApp(whatsappNum, producto) {
+            const mensaje = encodeURIComponent(`Hola, estoy interesado en el producto: ${producto} y quisiera recibir asesoría.`);
+            window.open(`https://wa.me/${whatsappNum}?text=${mensaje}`, '_blank');
+            cerrarModalConsultar();
+        }
+
+        // Cerrar modales al hacer clic fuera del contenido
         window.onclick = function(event) {
             const modalPerfil = document.getElementById('modalPerfil');
             const modalAsesor = document.getElementById('modalAsesor');
-            if (event.target === modalPerfil) modalPerfil.style.display = 'none';
-            if (event.target === modalAsesor) modalAsesor.style.display = 'none';
+            const modalConsultar = document.getElementById('modalConsultar');
+            if (event.target === modalPerfil) cerrarModalPerfil();
+            if (event.target === modalAsesor) cerrarModalAsesor();
+            if (event.target === modalConsultar) cerrarModalConsultar();
         }
     </script>
 </body>
