@@ -199,17 +199,26 @@ def admin_eliminar_usuario(id):
         flash('No tienes permisos de Administrador/Dueño para realizar esta acción.', 'danger')
         return redirect(url_for('index'))
         
-    usuario_a_eliminar = Usuario.query.get_or_404(id)
+    usuario_a_modificar = Usuario.query.get_or_404(id)
     
-    if usuario_a_eliminar.id == usuario_actual.id:
-        flash('No puedes eliminar tu propia cuenta desde el panel de control.', 'warning')
+    if usuario_a_modificar.id == usuario_actual.id:
+        flash('No puedes modificar tu propia cuenta desde el panel de control.', 'warning')
         return redirect(url_for('index'))
 
-    nombre_borrado = usuario_a_eliminar.nombre
-    db.session.delete(usuario_a_eliminar)
+    nombre_usuario = usuario_a_modificar.nombre
+    
+    # En lugar de borrar la cuenta físicamente (lo que causaba el error 500 por datos vinculados),
+    # cambiamos su rol a 'Comprador' y limpiamos sus datos de asesor para sacarlo de la lista.
+    usuario_a_modificar.rol = 'Comprador'
+    usuario_a_modificar.telefono = None
+    usuario_a_modificar.whatsapp = None
+    usuario_a_modificar.facebook = None
+    usuario_a_modificar.instagram = None
+    usuario_a_modificar.biografia = None
+
     db.session.commit()
     
-    flash(f'El miembro del equipo {nombre_borrado} ha sido eliminado exitosamente.', 'success')
+    flash(f'El usuario {nombre_usuario} ha sido retirado del equipo de asesores exitosamente.', 'success')
     return redirect(url_for('index'))
 
 # --- RUTAS DE COMENTARIOS Y EXPERIENCIAS ---
