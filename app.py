@@ -142,7 +142,7 @@ def index():
     productos = [
         {
             "nombre": "Tanque Bicapa 500 Litros", 
-            "precio_usd": 120.0, 
+            "precio_usd": 140.0, 
             "imagen": "tanque500.png", 
             "desc": "Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada."
         },
