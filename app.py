@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, ses
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from werkzeug.utils import secure_filename
+import urllib.parse
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
@@ -39,7 +40,7 @@ class Usuario(db.Model):
     password = db.Column(db.String(200), nullable=False)
     rol = db.Column(db.String(50), nullable=False, default='Comprador')
 
-    # --- CAMPOS DE PERFIL Y CONFIANZA (SIN FOTO DE PERFIL) ---
+    # --- CAMPOS DE PERFIL Y CONFIANZA ---
     telefono = db.Column(db.String(30), nullable=True)
     whatsapp = db.Column(db.String(30), nullable=True)
     facebook = db.Column(db.String(150), nullable=True)
@@ -144,6 +145,45 @@ def logout():
     flash('Has cerrado sesión correctamente.', 'info')
     return redirect(url_for('index'))
 
+# --- NUEVA FUNCIÓN: CONSULTAR A UN ASESOR ESPECÍFICO ---
+
+@app.route('/consultar/<int:vendedor_id>', methods=['POST'])
+def consultar_a(vendedor_id):
+    if 'usuario_id' not in session:
+        flash('Debes iniciar sesión para realizar una consulta.', 'warning')
+        return redirect(url_for('index'))
+
+    vendedor = Usuario.query.get_or_404(vendedor_id)
+    
+    # Validar que el usuario destino sea realmente un vendedor o dueño
+    if vendedor.rol not in ['Vendedor', 'Dueno']:
+        flash('El usuario seleccionado no es un asesor válido.', 'danger')
+        return redirect(url_for('index'))
+
+    if not vendedor.whatsapp:
+        flash(f'Lo sentimos, el asesor {vendedor.nombre} aún no ha configurado su número de WhatsApp.', 'warning')
+        return redirect(url_for('index'))
+
+    mensaje_usuario = request.form.get('mensaje', '').strip()
+    usuario_actual = Usuario.query.get(session['usuario_id'])
+
+    # Si el mensaje está vacío, creamos uno predeterminado
+    if not mensaje_usuario:
+        mensaje_usuario = f"Hola {vendedor.nombre}, soy {usuario_actual.nombre}. Me gustaría consultar sobre sus productos y disponibilidad."
+    else:
+        mensaje_usuario = f"Hola {vendedor.nombre}, soy {usuario_actual.nombre}. Consulta: {mensaje_usuario}"
+
+    # Limpiar el número de WhatsApp de caracteres no numéricos comunes
+    whatsapp_num = ''.join(filter(str.isdigit, vendedor.whatsapp))
+
+    # Codificar el mensaje para URL
+    mensaje_codificado = urllib.parse.quote(mensaje_usuario)
+    
+    # Construir enlace oficial de WhatsApp
+    link_whatsapp = f"https://wa.me/{whatsapp_num}?text={mensaje_codificado}"
+
+    return redirect(link_whatsapp)
+
 # --- RUTAS DE GESTIÓN DE PERFIL PROFESIONAL Y ELIMINACIÓN DE CUENTA ---
 
 @app.route('/perfil/editar', methods=['GET', 'POST'])
@@ -207,8 +247,6 @@ def admin_eliminar_usuario(id):
 
     nombre_usuario = usuario_a_modificar.nombre
     
-    # En lugar de borrar la cuenta físicamente (lo que causaba el error 500 por datos vinculados),
-    # cambiamos su rol a 'Comprador' y limpiamos sus datos de asesor para sacarlo de la lista.
     usuario_a_modificar.rol = 'Comprador'
     usuario_a_modificar.telefono = None
     usuario_a_modificar.whatsapp = None
