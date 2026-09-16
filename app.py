@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_super_segura_rotoblessing')
 
-# Carpeta donde se guardarán las fotos de forma segura
+# Carpeta donde se guardarán las fotos de los comentarios de forma segura
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -39,16 +39,13 @@ class Usuario(db.Model):
     password = db.Column(db.String(200), nullable=False)
     rol = db.Column(db.String(50), nullable=False, default='Comprador')
 
-    # --- CAMPOS DE PERFIL Y CONFIANZA ---
+    # --- CAMPOS DE PERFIL Y CONFIANZA (SIN FOTO DE PERFIL) ---
     telefono = db.Column(db.String(30), nullable=True)
     whatsapp = db.Column(db.String(30), nullable=True)
     facebook = db.Column(db.String(150), nullable=True)
     instagram = db.Column(db.String(150), nullable=True)
     biografia = db.Column(db.Text, nullable=True)
     
-    # Almacena el nombre del archivo de la foto
-    foto_perfil = db.Column(db.String(200), nullable=True)
-
     comentarios = db.relationship('Comentario', backref='autor_ref', cascade='all, delete-orphan', passive_deletes=True)
 
 class Comentario(db.Model):
@@ -73,7 +70,6 @@ with app.app_context():
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS facebook VARCHAR(150);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS instagram VARCHAR(150);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS biografia TEXT;"))
-            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS foto_perfil VARCHAR(200);"))
             connection.execute(db.text("ALTER TABLE comentario ADD COLUMN IF NOT EXISTS foto VARCHAR(200);"))
             connection.commit()
         print("Tablas y columnas sincronizadas correctamente.")
@@ -169,18 +165,6 @@ def editar_perfil():
     usuario.facebook = request.form.get('facebook', '').strip()
     usuario.instagram = request.form.get('instagram', '').strip()
     usuario.biografia = request.form.get('biografia', '').strip()
-    
-    foto_archivo = request.files.get('foto_perfil')
-    if foto_archivo and foto_archivo.filename != '':
-        if archivo_permitido(foto_archivo.filename):
-            filename = secure_filename(foto_archivo.filename)
-            nombre_unico = f"user_{usuario.id}_{int(datetime.utcnow().timestamp())}_{filename}"
-            foto_path = os.path.join(app.config['UPLOAD_FOLDER'], nombre_unico)
-            foto_archivo.save(foto_path)
-            usuario.foto_perfil = nombre_unico
-        else:
-            flash('Formato de imagen de perfil no permitido. Usa JPG, PNG o WEBP.', 'danger')
-            return redirect(url_for('index'))
 
     db.session.commit()
     flash('¡Tu perfil profesional ha sido actualizado con éxito!', 'success')
