@@ -31,34 +31,53 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# --- VARIABLES DE CACHÉ PARA LA TASA BCV ---
-_tasa_cache = 40.00
+# --- VARIABLES Y SISTEMA DE OBTENCIÓN DE TASA BCV ---
+_tasa_cache = 0.0
 _ultima_actualizacion_tasa = datetime.min
 
 def obtener_tasa_bcv_en_linea():
     """
-    Obtiene la tasa oficial del dólar BCV en línea de forma automática.
-    Utiliza caché por 1 hora para optimizar la velocidad de carga y evitar bloqueos.
+    Obtiene la tasa oficial del dólar BCV consultando varias APIs de respaldo.
+    Usa caché por 2 horas para optimizar el rendimiento del servidor en Render.
     """
     global _tasa_cache, _ultima_actualizacion_tasa
     
-    # Si la última consulta exitosa fue hace menos de 1 hora, usamos la caché
-    if datetime.utcnow() - _ultima_actualizacion_tasa < timedelta(hours=1):
+    # Si ya tenemos una tasa válida obtenida hace menos de 2 horas, la reutilizamos
+    if _tasa_cache > 0 and (datetime.utcnow() - _ultima_actualizacion_tasa < timedelta(hours=2)):
         return _tasa_cache
 
-    try:
-        response = requests.get('https://pydolarvenezuela-api.vercel.app/api/v1/dollar/bcv', timeout=4)
-        if response.status_code == 200:
-            data = response.json()
-            nueva_tasa = float(data.get('monitors', {}).get('usd', {}).get('price', 0.0))
-            if nueva_tasa > 0:
-                _tasa_cache = nueva_tasa
-                _ultima_actualizacion_tasa = datetime.utcnow()
-                return _tasa_cache
-    except Exception as e:
-        print(f"Aviso: No se pudo obtener la tasa BCV automática, usando valor almacenado: {e}")
-        
-    return _tasa_cache
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    }
+
+    # Lista de fuentes públicas en orden de prioridad
+    fuentes_api = [
+        # Fuente 1: DolarApi Venezuela (Muy rápida y estable)
+        ("https://ve.dolarapi.com/v1/dolares/oficial", lambda d: float(d.get("promedio", 0))),
+        # Fuente 2: PyDolarVenezuela
+        ("https://pydolarvenezuela-api.vercel.app/api/v1/dollar/bcv", lambda d: float(d.get("monitors", {}).get("usd", {}).get("price", 0))),
+        # Fuente 3: Rates DolarVzla
+        ("https://rates.dolarvzla.com/bcv/current.json", lambda d: float(d.get("current", {}).get("usd", 0)))
+    ]
+
+    for url, funcion_parseo in fuentes_api:
+        try:
+            response = requests.get(url, headers=headers, timeout=5)
+            if response.status_code == 200:
+                tasa_detectada = funcion_parseo(response.json())
+                if tasa_detectada > 0:
+                    _tasa_cache = round(tasa_detectada, 2)
+                    _ultima_actualizacion_tasa = datetime.utcnow()
+                    print(f" Tasa BCV actualizada desde {url}: {_tasa_cache} Bs.")
+                    return _tasa_cache
+        except Exception as e:
+            print(f"Intento fallido en {url}: {e}")
+
+    # Si todas las APIs fallan pero teníamos un valor previo en memoria, lo usamos
+    if _tasa_cache > 0:
+        return _tasa_cache
+
+    return 0.0
 
 # --- MODELOS DE LA BASE DE DATOS ---
 
@@ -116,7 +135,7 @@ def index():
     comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
     vendedores = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
     
-    # Obtener la tasa oficial del BCV actualizada en línea automáticamente
+    # Obtener la tasa oficial del BCV actualizada automáticamente
     tasa_bcv = obtener_tasa_bcv_en_linea()
 
     # Catálogo de productos con sus precios base en dólares
