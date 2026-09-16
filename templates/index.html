@@ -452,60 +452,52 @@
         <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- Scripts de Control Corregidos -->
+    <!-- Scripts de Control -->
     <script>
         function toggleCodigoVerificacion() {
             const rolSelect = document.getElementById('rolSelect');
             const codigoGrupo = document.getElementById('codigoGrupo');
             const labelCodigo = document.getElementById('labelCodigo');
             
-            if (rolSelect.value === 'Vendedor') {
+            if (rolSelect.value === 'Vendedor' || rolSelect.value === 'Dueno') {
                 codigoGrupo.style.display = 'block';
-                labelCodigo.innerText = 'Código de Verificación de Vendedor';
-            } else if (rolSelect.value === 'Dueno') {
-                codigoGrupo.style.display = 'block';
-                labelCodigo.innerText = 'Código de Verificación de Dueño';
+                labelCodigo.innerText = rolSelect.value === 'Vendedor' ? 'Código de Vendedor' : 'Código de Administrador (Dueño)';
             } else {
                 codigoGrupo.style.display = 'none';
             }
         }
 
         function abrirModalPerfil(event) {
-            if (event) event.preventDefault();
-            document.getElementById('modalPerfil').style.display = 'flex';
+            event.preventDefault();
+            const modal = document.getElementById('modalPerfil');
+            if (modal) modal.style.display = 'flex';
         }
 
         function cerrarModalPerfil() {
-            document.getElementById('modalPerfil').style.display = 'none';
+            const modal = document.getElementById('modalPerfil');
+            if (modal) modal.style.display = 'none';
         }
 
         function verPerfilCompleto(nombre, rol, telefono, whatsapp, facebook, instagram, biografia) {
             document.getElementById('modalAsesorNombre').innerText = nombre;
             document.getElementById('modalAsesorRol').innerText = rol;
-            document.getElementById('modalAsesorBio').innerText = (biografia && biografia !== 'None' && biografia.trim() !== '') ? biografia : 'Asesor autorizado listo para brindarte la mejor atención.';
+            document.getElementById('modalAsesorBio').innerText = biografia ? biografia : 'Asesor autorizado listo para brindarte la mejor atención y asesoría con nuestros tanques.';
             
             let htmlRedes = '';
+            if (whatsapp) {
+                htmlRedes += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> WhatsApp: ${whatsapp}</a>`;
+            }
+            if (telefono) {
+                htmlRedes += `<a href="tel:${telefono}" class="btn-consultar btn-platform" style="background-color: #4a5568;"><i class="fa-solid fa-phone"></i> Teléfono: ${telefono}</a>`;
+            }
+            if (facebook) {
+                htmlRedes += `<a href="${facebook}" target="_blank" class="btn-consultar btn-platform" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Ver Facebook</a>`;
+            }
+            if (instagram) {
+                htmlRedes += `<a href="${instagram}" target="_blank" class="btn-consultar btn-platform" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Ver Instagram</a>`;
+            }
             
-            if (telefono && telefono !== 'None' && telefono.trim() !== '') {
-                htmlRedes += `<a href="tel:${telefono}" class="btn-consultar" style="background-color: #17a2b8;"><i class="fa-solid fa-phone"></i> Llamar: ${telefono}</a>`;
-            }
-            if (whatsapp && whatsapp !== 'None' && whatsapp.trim() !== '') {
-                htmlRedes += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Escribir al WhatsApp</a>`;
-            }
-            if (facebook && facebook !== 'None' && facebook.trim() !== '') {
-                htmlRedes += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Perfil de Facebook</a>`;
-            }
-            if (instagram && instagram !== 'None' && instagram.trim() !== '') {
-                htmlRedes += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Perfil de Instagram</a>`;
-            }
-
-            if (htmlRedes === '') {
-                htmlRedes = '<p style="font-size: 0.8rem; color: #adb5bd;">Este asesor aún no ha configurado sus métodos de contacto adicionales.</p>';
-            }
-
             document.getElementById('modalAsesorRedes').innerHTML = htmlRedes;
-            
-            // CORRECCIÓN AQUÍ: Apunta directo al ID correcto del modal
             document.getElementById('modalAsesor').style.display = 'flex';
         }
 
@@ -514,14 +506,10 @@
         }
 
         window.onclick = function(event) {
-            const modalP = document.getElementById('modalPerfil');
-            const modalA = document.getElementById('modalAsesor');
-            if (modalP && event.target === modalP) {
-                modalP.style.display = 'none';
-            }
-            if (modalA && event.target === modalA) {
-                modalA.style.display = 'none';
-            }
+            const modalPerfil = document.getElementById('modalPerfil');
+            const modalAsesor = document.getElementById('modalAsesor');
+            if (event.target === modalPerfil) modalPerfil.style.display = 'none';
+            if (event.target === modalAsesor) modalAsesor.style.display = 'none';
         }
     </script>
 </body>
