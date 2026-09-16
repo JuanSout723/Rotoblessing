@@ -62,15 +62,19 @@ class Comentario(db.Model):
 
 with app.app_context():
     try:
-        # =========================================================================
-        # ACCIÓN TEMPORAL PARA RENDER: Borra y recrea toda la base de datos limpia
-        # =========================================================================
-        db.drop_all() 
         db.create_all()
-        
-        print("¡Base de datos limpiada y recreada desde cero exitosamente en Render!")
+        # Sincronizar columnas por si la base de datos ya existía
+        with db.engine.connect() as connection:
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS telefono VARCHAR(30);"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(30);"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS facebook VARCHAR(150);"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS instagram VARCHAR(150);"))
+            connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS biografia TEXT;"))
+            connection.execute(db.text("ALTER TABLE comentario ADD COLUMN IF NOT EXISTS foto VARCHAR(200);"))
+            connection.commit()
+        print("Tablas y columnas sincronizadas correctamente.")
     except Exception as e:
-        print(f"Nota al recrear la base de datos: {e}")
+        print(f"Nota al sincronizar base de datos: {e}")
 
 # --- RUTAS DE NAVEGACIÓN Y AUTENTICACIÓN ---
 
