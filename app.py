@@ -1,7 +1,7 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, session
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime
+from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
 import urllib.parse
 import requests
@@ -30,6 +30,35 @@ app.config['SQLALCHEMY_DATABASE_URI'] = database_url or 'sqlite:///rotoblessing.
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
+
+# --- VARIABLES DE CACHÉ PARA LA TASA BCV ---
+_tasa_cache = 40.00
+_ultima_actualizacion_tasa = datetime.min
+
+def obtener_tasa_bcv_en_linea():
+    """
+    Obtiene la tasa oficial del dólar BCV en línea de forma automática.
+    Utiliza caché por 1 hora para optimizar la velocidad de carga y evitar bloqueos.
+    """
+    global _tasa_cache, _ultima_actualizacion_tasa
+    
+    # Si la última consulta exitosa fue hace menos de 1 hora, usamos la caché
+    if datetime.utcnow() - _ultima_actualizacion_tasa < timedelta(hours=1):
+        return _tasa_cache
+
+    try:
+        response = requests.get('https://pydolarvenezuela-api.vercel.app/api/v1/dollar/bcv', timeout=4)
+        if response.status_code == 200:
+            data = response.json()
+            nueva_tasa = float(data.get('monitors', {}).get('usd', {}).get('price', 0.0))
+            if nueva_tasa > 0:
+                _tasa_cache = nueva_tasa
+                _ultima_actualizacion_tasa = datetime.utcnow()
+                return _tasa_cache
+    except Exception as e:
+        print(f"Aviso: No se pudo obtener la tasa BCV automática, usando valor almacenado: {e}")
+        
+    return _tasa_cache
 
 # --- MODELOS DE LA BASE DE DATOS ---
 
@@ -87,16 +116,8 @@ def index():
     comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
     vendedores = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
     
-    # Obtener la tasa oficial del BCV del día actual de forma automática
-    tasa_bcv = 0.0
-    try:
-        response = requests.get('https://pydolarvenezuela-api.vercel.app/api/v1/dollar/bcv', timeout=3)
-        if response.status_code == 200:
-            data = response.json()
-            tasa_bcv = float(data.get('monitors', {}).get('usd', {}).get('price', 0.0))
-    except Exception as e:
-        print(f"No se pudo obtener la tasa BCV automática: {e}")
-        tasa_bcv = 40.00  # Tasa de respaldo por defecto si hay problemas de red
+    # Obtener la tasa oficial del BCV actualizada en línea automáticamente
+    tasa_bcv = obtener_tasa_bcv_en_linea()
 
     # Catálogo de productos con sus precios base en dólares
     productos = [
