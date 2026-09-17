@@ -143,7 +143,7 @@ def index():
         {
             "nombre": "Tanque Cónico 1100 litros", 
             "precio_usd": 105.0, 
-            "imagen": "tanque1100.png", 
+            "imagen": "tanque1100.jpg", 
             "desc": "Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada."
         },
         {
