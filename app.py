@@ -141,21 +141,21 @@ def index():
     # Catálogo de productos con sus precios base en dólares
     productos = [
         {
-            "nombre": "Tanque Bicapa 500 Litros", 
-            "precio_usd": 140.0, 
-            "imagen": "tanque500.png", 
+            "nombre": "Tanque Cónico 1100 litros", 
+            "precio_usd": 105.0, 
+            "imagen": "tanque1100.png", 
             "desc": "Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada."
         },
         {
-            "nombre": "Tanque Bicapa 1.000 Litros", 
-            "precio_usd": 180.0, 
-            "imagen": "tanque1000.png", 
+            "nombre": "Tanque Cónico 900 Litros", 
+            "precio_usd": 90.0, 
+            "imagen": "tanque900.png", 
             "desc": "El estándar más buscado por las familias para garantizar reserva óptima de agua potable."
         },
         {
-            "nombre": "Tanque Tricapa 1.500 Litros", 
-            "precio_usd": 250.0, 
-            "imagen": "tanque1500.png", 
+            "nombre": "Tanque Cilindro 1050 Litros", 
+            "precio_usd": 105.0, 
+            "imagen": "tanque1050.png", 
             "desc": "Mayor capacidad estructural con capa antibacteriana interna. Máxima seguridad y calidad."
         }
     ]
