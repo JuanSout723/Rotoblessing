@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
-        body { background-color: #f4f6f9; color: #333; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
+        body { background-color: #f4f6f9; color: #333; min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; scroll-behavior: smooth; }
 
         /* Barra de Navegación Header Optimizada */
         header { background-color: #0077b6; color: white; padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); position: sticky; top: 0; z-index: 1000; flex-wrap: wrap; gap: 10px; }
@@ -113,8 +113,8 @@
         @media (max-width: 768px) {
             header { padding: 10px 15px; flex-direction: column; align-items: stretch; gap: 8px; }
             header h1 { font-size: 1.15rem; justify-content: center; padding-bottom: 4px; border-bottom: 1px solid rgba(255, 255, 255, 0.15); }
-            .nav-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; width: 100%; justify-content: center; }
-            .nav-links > a { background: rgba(255, 255, 255, 0.12); padding: 7px 5px; border-radius: 6px; font-size: 0.75rem; text-align: center; justify-content: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .nav-links { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; width: 100%; justify-content: center; }
+            .nav-links > a { background: rgba(255, 255, 255, 0.12); padding: 7px 5px; border-radius: 6px; font-size: 0.72rem; text-align: center; justify-content: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
             .dropdown { grid-column: 1 / -1; width: 100%; }
             .dropdown-toggle { width: 100%; justify-content: center; background: rgba(255, 255, 255, 0.2); padding: 8px; font-size: 0.82rem; }
             .dropdown-menu { width: 100%; right: auto; left: 0; }
@@ -138,6 +138,7 @@
             Rotoblessing
         </h1>
         <div class="nav-links">
+            <a href="#conocenos"><i class="fa-solid fa-circle-info"></i> Conócenos</a>
             <a href="#catalogo"><i class="fa-solid fa-store"></i> Catálogo</a>
             <a href="#equipo"><i class="fa-solid fa-users"></i> Equipo</a>
             <a href="#seccion-comentarios"><i class="fa-solid fa-comments"></i> Opiniones</a>
@@ -235,6 +236,34 @@
                 </div>
             </div>
         {% endif %}
+
+        <!-- SECCIÓN: CONÓCENOS (MISIÓN Y VISIÓN) -->
+        <h2 class="section-title" id="conocenos">Conócenos</h2>
+        <div class="card" style="margin-bottom: 30px; line-height: 1.6;">
+            <p style="margin-bottom: 20px; font-size: 0.95rem; color: #495057; text-align: center; max-width: 900px; margin-left: auto; margin-right: auto;">
+                En <strong>Rotoblessing</strong> nos especializamos en la fabricación y comercialización de tanques y soluciones de almacenamiento de agua de alta durabilidad. Nuestro compromiso es garantizar el suministro seguro y eficiente del vital líquido para hogares, comercios e industrias, ofreciendo productos resistentes bajo los más altos estándares de calidad.
+            </p>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #0077b6;">
+                    <h3 style="color: #0077b6; font-size: 1.05rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-bullseye"></i> Misión
+                    </h3>
+                    <p style="font-size: 0.88rem; color: #6c757d; line-height: 1.5;">
+                        Brindar soluciones confiables y accesibles para el almacenamiento de agua potable, fabricando tanques seguros y duraderos que satisfagan las necesidades de nuestros clientes, respaldados por un servicio de atención cercano y profesional.
+                    </p>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
+                    <h3 style="color: #28a745; font-size: 1.05rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-eye"></i> Visión
+                    </h3>
+                    <p style="font-size: 0.88rem; color: #6c757d; line-height: 1.5;">
+                        Consolidarnos como una empresa líder y referente en el mercado de almacenamiento de agua, reconocida por la calidad de nuestros productos, la innovación constante y el compromiso con el bienestar de las familias y el sector productivo.
+                    </p>
+                </div>
+            </div>
+        </div>
 
         <!-- SECCIÓN: NUESTRO EQUIPO DE VENTA -->
         <h2 class="section-title" id="equipo">Nuestro Equipo de Venta</h2>
@@ -445,100 +474,117 @@
                                 <span style="font-size: 0.75rem; color: #6c757d;">{{ v.rol }}</span>
                             </div>
                             {% if v.whatsapp %}
-                                <form action="{{ url_for('consultar_a', vendedor_id=v.id) }}" method="POST" style="margin: 0;">
-                                    <input type="hidden" name="mensaje" id="inputMensajeWhatsApp">
-                                    <button type="submit" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;">
-                                        <i class="fa-brands fa-whatsapp"></i> Contactar
-                                    </button>
-                                </form>
+                                <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20interesado%20en%20consultar%20sobre%20el%20producto:%20" target="_blank" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;" onclick="actualizarEnlaceWhatsApp(this, '{{ v.whatsapp }}')">
+                                    <i class="fa-brands fa-whatsapp"></i> Contactar
+                                </a>
                             {% else %}
-                                <span style="font-size: 0.75rem; color: #dc3545; font-weight: 600;">Sin WhatsApp</span>
+                                <span style="font-size: 0.75rem; color: #dc3545;">Sin WhatsApp</span>
                             {% endif %}
                         </div>
                     {% endfor %}
                 {% else %}
-                    <p style="text-align: center; color: #6c757d; font-size: 0.85rem;">No hay asesores disponibles en este momento.</p>
+                    <p style="text-align: center; color: #6c757d; font-size: 0.88rem;">No hay asesores disponibles en este momento.</p>
                 {% endif %}
             </div>
         </div>
     </div>
 
+    <!-- FOOTER -->
     <footer>
         <div class="social-icons">
-            <a href="https://facebook.com" target="_blank"><i class="fa-brands fa-facebook"></i></a>
-            <a href="https://instagram.com" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-            <a href="https://wa.me/584120000000" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="https://facebook.com" target="_blank" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
+            <a href="https://instagram.com" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
+            <a href="https://wa.me/" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
         <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- Scripts de Control -->
+    <!-- SCRIPTS JAVASCRIPT PARA MODALES Y ACCIONES -->
     <script>
+        let productoActualSeleccionado = '';
+
         function toggleCodigoVerificacion() {
             const rolSelect = document.getElementById('rolSelect');
             const codigoGrupo = document.getElementById('codigoGrupo');
             const labelCodigo = document.getElementById('labelCodigo');
-            if (rolSelect && codigoGrupo) {
-                if (rolSelect.value === 'Vendedor' || rolSelect.value === 'Dueno') {
-                    codigoGrupo.style.display = 'block';
-                    labelCodigo.innerText = rolSelect.value === 'Vendedor' ? 'Código de Vendedor' : 'Código de Dueño';
-                } else {
-                    codigoGrupo.style.display = 'none';
-                }
+            
+            if (rolSelect.value === 'Vendedor') {
+                codigoGrupo.style.display = 'block';
+                labelCodigo.innerText = 'Código de Verificación de Vendedor';
+            } else if (rolSelect.value === 'Dueno') {
+                codigoGrupo.style.display = 'block';
+                labelCodigo.innerText = 'Código Secreto de Dueño / Administrador';
+            } else {
+                codigoGrupo.style.display = 'none';
             }
         }
 
-        function abrirModalPerfil(e) {
-            if (e) e.preventDefault();
-            const m = document.getElementById('modalPerfil');
-            if (m) m.style.display = 'flex';
+        function abrirModalPerfil(event) {
+            event.preventDefault();
+            const modal = document.getElementById('modalPerfil');
+            if (modal) modal.style.display = 'flex';
         }
+
         function cerrarModalPerfil() {
-            const m = document.getElementById('modalPerfil');
-            if (m) m.style.display = 'none';
+            const modal = document.getElementById('modalPerfil');
+            if (modal) modal.style.display = 'none';
         }
 
         function verPerfilCompleto(nombre, rol, telefono, whatsapp, facebook, instagram, biografia) {
             document.getElementById('modalAsesorNombre').innerText = nombre;
             document.getElementById('modalAsesorRol').innerText = rol;
-            document.getElementById('modalAsesorBio').innerText = biografia ? biografia : 'Asesor autorizado listo para brindarte la mejor atención y asesoría con nuestros tanques.';
+            document.getElementById('modalAsesorBio').innerText = biografia || 'Asesor autorizado listo para brindarte la mejor atención.';
             
-            let redesHTML = '';
-            if (telefono && telefono !== 'None') {
-                redesHTML += `<a href="tel:${telefono}" class="btn-consultar" style="background-color: #17a2b8;"><i class="fa-solid fa-phone"></i> Llamar: ${telefono}</a>`;
+            let htmlRedes = '';
+            if (telefono) {
+                htmlRedes += `<a href="tel:${telefono}" class="btn-consultar btn-platform" style="padding: 10px;"><i class="fa-solid fa-phone"></i> Llamar: ${telefono}</a>`;
             }
-            if (whatsapp && whatsapp !== 'None') {
-                redesHTML += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Chat de WhatsApp</a>`;
+            if (whatsapp) {
+                htmlRedes += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp" style="padding: 10px;"><i class="fa-brands fa-whatsapp"></i> Escribir al WhatsApp</a>`;
             }
-            if (facebook && facebook !== 'None') {
-                redesHTML += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Facebook</a>`;
+            if (facebook) {
+                htmlRedes += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998; padding: 10px;"><i class="fa-brands fa-facebook"></i> Visitar Facebook</a>`;
             }
-            if (instagram && instagram !== 'None') {
-                redesHTML += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Instagram</a>`;
+            if (instagram) {
+                htmlRedes += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c; padding: 10px;"><i class="fa-brands fa-instagram"></i> Visitar Instagram</a>`;
             }
-            document.getElementById('modalAsesorRedes').innerHTML = redesHTML;
+
+            if (!htmlRedes) {
+                htmlRedes = '<p style="font-size: 0.8rem; color: #6c757d;">Este asesor no ha configurado métodos de contacto adicionales.</p>';
+            }
+
+            document.getElementById('modalAsesorRedes').innerHTML = htmlRedes;
             document.getElementById('modalAsesor').style.display = 'flex';
         }
+
         function cerrarModalAsesor() {
             document.getElementById('modalAsesor').style.display = 'none';
         }
 
         function abrirModalConsultar(nombreProducto) {
+            productoActualSeleccionado = nombreProducto;
             document.getElementById('nombreProductoModal').innerText = nombreProducto;
-            document.getElementById('inputMensajeWhatsApp').value = `Hola, estoy interesado en el producto: ${nombreProducto} y quisiera recibir asesoría y disponibilidad.`;
             document.getElementById('modalConsultar').style.display = 'flex';
         }
+
         function cerrarModalConsultar() {
             document.getElementById('modalConsultar').style.display = 'none';
         }
 
+        function actualizarEnlaceWhatsApp(elemento, numeroWhatsapp) {
+            const mensaje = encodeURIComponent(`Hola, estoy interesado en consultar sobre el producto: ${productoActualSeleccionado}`);
+            elemento.href = `https://wa.me/${numeroWhatsapp}?text=${mensaje}`;
+        }
+
+        // Cerrar modales al hacer clic fuera del contenido
         window.onclick = function(event) {
             const modalPerfil = document.getElementById('modalPerfil');
             const modalAsesor = document.getElementById('modalAsesor');
             const modalConsultar = document.getElementById('modalConsultar');
-            if (event.target === modalPerfil) cerrarModalPerfil();
-            if (event.target === modalAsesor) cerrarModalAsesor();
-            if (event.target === modalConsultar) cerrarModalConsultar();
+            
+            if (event.target === modalPerfil) modalPerfil.style.display = 'none';
+            if (event.target === modalAsesor) modalAsesor.style.display = 'none';
+            if (event.target === modalConsultar) modalConsultar.style.display = 'none';
         }
     </script>
 </body>
