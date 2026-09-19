@@ -158,6 +158,13 @@ def index():
             "imagen": "tanque1050.png", 
             "desc": "Mayor capacidad estructural con capa antibacteriana interna. Máxima seguridad y calidad."
         }
+        # Nota: Aquí puedes cambiar los datos del nuevo producto (nombre, precio, imagen y descripción) cuando lo desees
+        ,{
+            "nombre": "Tanque Cilindro 540 Litros", 
+            "precio_usd": 90.0, 
+            "imagen": "tanque540.png", 
+            "desc": "Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada."
+        }
     ]
     
     return render_template(
