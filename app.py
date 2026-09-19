@@ -1,5 +1,5 @@
 import os
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from flask import Flask, render_template, request, redirect, url_for, flash, session, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, timedelta
 from werkzeug.utils import secure_filename
@@ -158,7 +158,6 @@ def index():
             "imagen": "tanque1050.png", 
             "desc": "Mayor capacidad estructural con capa antibacteriana interna. Máxima seguridad y calidad."
         }
-        # Nota: Aquí puedes cambiar los datos del nuevo producto (nombre, precio, imagen y descripción) cuando lo desees
         ,{
             "nombre": "Tanque Cilindro 540 Litros", 
             "precio_usd": 90.0, 
@@ -411,6 +410,11 @@ def eliminar_comentario(id):
         flash('No tienes permisos para eliminar este comentario.', 'danger')
         
     return redirect(url_for('index') + '#seccion-comentarios')
+
+# --- RUTA PARA DESCARGAR EL APK DE FORMA SEGURA ---
+@app.route('/static/rotoblessing.apk')
+def descargar_apk():
+    return send_from_directory('static', 'rotoblessing.apk', as_attachment=True)
 
 if __name__ == '__main__':
     app.run(debug=True)
