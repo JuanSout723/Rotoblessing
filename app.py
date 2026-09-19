@@ -31,7 +31,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# --- VARIABLES Y SISTEMA DE OBTENCIÓN DE TASA BCV ---
+# --- VARIABLES Y SISTEMA DE OBTENCIÓN DE TASA BCV AUTOMÁTICA ---
 _tasa_cache = 0.0
 _ultima_actualizacion_tasa = datetime.min
 
@@ -68,7 +68,7 @@ def obtener_tasa_bcv_en_linea():
                 if tasa_detectada > 0:
                     _tasa_cache = round(tasa_detectada, 2)
                     _ultima_actualizacion_tasa = datetime.utcnow()
-                    print(f" Tasa BCV actualizada desde {url}: {_tasa_cache} Bs.")
+                    print(f"Tasa BCV actualizada desde {url}: {_tasa_cache} Bs.")
                     return _tasa_cache
         except Exception as e:
             print(f"Intento fallido en {url}: {e}")
@@ -77,7 +77,7 @@ def obtener_tasa_bcv_en_linea():
     if _tasa_cache > 0:
         return _tasa_cache
 
-    return 0.0
+    return 36.00  # Valor de respaldo predeterminado si todo falla
 
 # --- MODELOS DE LA BASE DE DATOS ---
 
@@ -157,8 +157,8 @@ def index():
             "precio_usd": 105.0, 
             "imagen": "tanque1050.jpeg", 
             "desc": "Mayor capacidad estructural con capa antibacteriana interna. Máxima seguridad y calidad."
-        }
-        ,{
+        },
+        {
             "nombre": "Tanque Cilindro 540 Litros", 
             "precio_usd": 90.0, 
             "imagen": "tanque540.jpeg", 
