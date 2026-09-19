@@ -25,6 +25,10 @@
         .nav-links a { color: white; text-decoration: none; font-weight: 600; font-size: 0.88rem; transition: opacity 0.2s; display: inline-flex; align-items: center; gap: 5px; }
         .nav-links a:hover { opacity: 0.8; }
 
+        /* Botón especial para Descargar APK en el header */
+        .btn-apk-header { background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.4); padding: 7px 12px; border-radius: 6px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; transition: background 0.2s; text-decoration: none; }
+        .btn-apk-header:hover { background: rgba(255, 255, 255, 0.35); color: white; }
+
         /* Estilos del Menú Desplegable (Dropdown) */
         .dropdown { position: relative; display: inline-block; }
         .dropdown-toggle { background: rgba(255, 255, 255, 0.15); padding: 7px 12px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-size: 0.85rem; font-weight: 600; color: white; }
@@ -149,6 +153,13 @@
             <a href="#seccion-comentarios"><i class="fa-solid fa-comments"></i> Opiniones</a>
             
             {% if usuario %}
+                <!-- Botón visible SOLO para Dueños y Vendedores para Descargar el APK -->
+                {% if usuario.rol == 'Vendedor' or usuario.rol == 'Dueno' %}
+                    <button type="button" class="btn-apk-header" onclick="abrirModalDescarga(event)">
+                        <i class="fa-solid fa-cloud-arrow-down"></i> Descargar APK
+                    </button>
+                {% endif %}
+
                 <div class="dropdown">
                     <div class="dropdown-toggle">
                         <i class="fa-solid fa-circle-user"></i> {{ usuario.nombre }} <i class="fa-solid fa-caret-down"></i>
@@ -242,7 +253,7 @@
             </div>
         {% endif %}
 
-        <!-- SECCIÓN: CONÓCENOS (MISIÓN Y VISIÓN) -->
+        <!-- SECCIÓN: CONÓCENOS -->
         <h2 class="section-title" id="conocenos">Conócenos</h2>
         <div class="card" style="margin-bottom: 30px; line-height: 1.6;">
             <p style="margin-bottom: 20px; font-size: 0.95rem; color: #495057; text-align: center; max-width: 900px; margin-left: auto; margin-right: auto;">
@@ -327,7 +338,6 @@
                 <h3>{{ p.nombre }}</h3>
                 <p>{{ p.desc }}</p>
                 
-                <!-- Precios dinámicos en Dólares y calculados al BCV -->
                 <div style="margin: 12px 0; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef;">
                     <div style="font-size: 1.25rem; font-weight: 700; color: #28a745;">${{ "%.2f"|format(p.precio_usd) }} USD</div>
                     <div style="font-size: 0.95rem; font-weight: 600; color: #0077b6; margin-top: 2px;">
@@ -445,151 +455,82 @@
     </div>
     {% endif %}
 
-    <!-- MODAL PARA VER DETALLES DE UN ASESOR -->
-    <div class="modal-overlay" id="modalAsesor">
-        <div class="modal-content" style="text-align: center;">
-            <button class="modal-close" onclick="cerrarModalAsesor()">&times;</button>
-            <div style="width: 85px; height: 85px; border-radius: 50%; border: 3px solid #0077b6; margin: 0 auto 12px auto; background: #e9ecef; display: flex; align-items: center; justify-content: center; color: #0077b6; font-size: 2.2rem;">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <h2 id="modalAsesorNombre" style="color: #0077b6; margin-bottom: 4px;"></h2>
-            <span id="modalAsesorRol" class="badge" style="margin-bottom: 12px;"></span>
-            <p id="modalAsesorBio" style="font-size: 0.85rem; color: #6c757d; margin-bottom: 15px; line-height: 1.4;"></p>
-            
-            <div id="modalAsesorRedes" style="display: flex; flex-direction: column; gap: 8px;"></div>
-        </div>
-    </div>
-
-    <!-- MODAL: CONSULTAR PRODUCTO A ASESOR -->
-    <div class="modal-overlay" id="modalConsultar">
+    <!-- MODAL DE DESCARGA DE APK CON PASOS Y MENSAJE -->
+    <div class="modal-overlay" id="modalDescargaApk">
         <div class="modal-content">
-            <button class="modal-close" onclick="cerrarModalConsultar()">&times;</button>
-            <h2 style="color: #0077b6; margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-comments"></i> Consultar sobre <span id="nombreProductoModal" style="color: #28a745;"></span>
+            <button class="modal-close" onclick="cerrarModalDescarga()">&times;</button>
+            <h2 style="color: #0077b6; margin-bottom: 10px; font-size: 1.2rem; text-align: center;">
+                <i class="fa-solid fa-mobile-screen-button"></i> Descargar Aplicación Rotoblessing
             </h2>
-            <p style="font-size: 0.85rem; color: #6c757d; margin-bottom: 18px;">
-                Selecciona a uno de nuestros asesores de venta autorizados para enviar tu consulta directamente por WhatsApp:
+            <p style="text-align: center; color: #6c757d; font-size: 0.85rem; margin-bottom: 15px;">
+                Lleva el control de tus consultas y herramientas de venta directamente en tu dispositivo Android.
             </p>
-            <div id="listaAsesoresModal" style="display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto;">
-                {% if vendedores %}
-                    {% for v in vendedores %}
-                        <div style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                            <div>
-                                <strong style="font-size: 0.9rem; color: #333; display: block;"><i class="fa-solid fa-user-tie" style="color: #0077b6;"></i> {{ v.nombre }}</strong>
-                                <span style="font-size: 0.75rem; color: #6c757d;">{{ v.rol }}</span>
-                            </div>
-                            {% if v.whatsapp %}
-                                <a href="https://wa.me/{{ v.whatsapp }}?text=Hola%20{{ v.nombre }},%20estoy%20interesado%20en%20consultar%20sobre%20el%20producto:%20" target="_blank" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;" onclick="actualizarEnlaceWhatsApp(this, '{{ v.whatsapp }}')">
-                                    <i class="fa-brands fa-whatsapp"></i> Contactar
-                                </a>
-                            {% else %}
-                                <span style="font-size: 0.75rem; color: #dc3545;">Sin WhatsApp</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p style="text-align: center; color: #6c757d; font-size: 0.88rem;">No hay asesores disponibles en este momento.</p>
-                {% endif %}
+
+            <div style="text-align: center; margin-bottom: 20px;">
+                <!-- Enlace de descarga del APK -->
+                <a href="{{ url_for('static', filename='rotoblessing.apk') }}" id="enlaceDescargaApk" class="btn btn-success" download style="padding: 12px 20px; font-size: 1rem; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-solid fa-download"></i> Descargar Rotoblessing.apk
+                </a>
+
+                <!-- Mensaje de agradecimiento (Oculto inicialmente) -->
+                <div id="mensajeAgradecimiento" class="alert alert-success" style="display: none; margin-top: 15px; font-size: 0.88rem; text-align: center;">
+                    <i class="fa-solid fa-circle-check"></i> Gracias por instalar Rotoblessing en tu dispositivo
+                </div>
             </div>
+
+            <hr style="margin: 15px 0; border: none; border-top: 1px solid #e9ecef;">
+
+            <h3 style="color: #333; font-size: 0.95rem; margin-bottom: 8px;">
+                <i class="fa-solid fa-list-check"></i> Pasos para instalar en Android:
+            </h3>
+            <ol style="font-size: 0.82rem; color: #495057; padding-left: 20px; line-height: 1.5;">
+                <li style="margin-bottom: 5px;">Toca el botón verde de arriba para descargar el archivo APK a tu teléfono.</li>
+                <li style="margin-bottom: 5px;">Una vez descargado, abre el archivo (es posible que el teléfono te muestre una advertencia de seguridad).</li>
+                <li style="margin-bottom: 5px;">Si te lo solicita, ve a <strong>Ajustes / Configuración</strong> y permite la opción <em>"Instalar aplicaciones de fuentes desconocidas"</em>.</li>
+                <li>Presiona <strong>Instalar</strong> y espera a que finalice el proceso. ¡Listo para usar!</li>
+            </ol>
         </div>
     </div>
 
-    <!-- FOOTER -->
-    <footer>
-        <div class="social-icons">
-            <a href="https://www.facebook.com/profile.php?id=61594421341463" target="_blank" title="Facebook"><i class="fa-brands fa-facebook"></i></a>
-            <a href="https://www.instagram.com/rotoblessing_c.a_oficial/" target="_blank" title="Instagram"><i class="fa-brands fa-instagram"></i></a>
-            <a href="https://api.whatsapp.com/send/?phone=584223400033&text&type=phone_number&app_absent=0" target="_blank" title="WhatsApp"><i class="fa-brands fa-whatsapp"></i></a>
-        </div>
-        <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
-    </footer>
-
-    <!-- SCRIPTS JAVASCRIPT PARA MODALES Y ACCIONES -->
+    <!-- SCRIPT PARA CONTROLAR MODALES Y EL MENSAJE DE AGRADECIMIENTO -->
     <script>
-        let productoActualSeleccionado = '';
-
-        function toggleCodigoVerificacion() {
-            const rolSelect = document.getElementById('rolSelect');
-            const codigoGrupo = document.getElementById('codigoGrupo');
-            const labelCodigo = document.getElementById('labelCodigo');
-            
-            if (rolSelect.value === 'Vendedor') {
-                codigoGrupo.style.display = 'block';
-                labelCodigo.innerText = 'Código de Verificación de Vendedor';
-            } else if (rolSelect.value === 'Dueno') {
-                codigoGrupo.style.display = 'block';
-                labelCodigo.innerText = 'Código Secreto de Dueño / Administrador';
-            } else {
-                codigoGrupo.style.display = 'none';
-            }
-        }
-
         function abrirModalPerfil(event) {
             event.preventDefault();
-            const modal = document.getElementById('modalPerfil');
-            if (modal) modal.style.display = 'flex';
+            document.getElementById('modalPerfil').style.display = 'flex';
         }
 
         function cerrarModalPerfil() {
-            const modal = document.getElementById('modalPerfil');
-            if (modal) modal.style.display = 'none';
+            document.getElementById('modalPerfil').style.display = 'none';
         }
 
-        function verPerfilCompleto(nombre, rol, telefono, whatsapp, facebook, instagram, biografia) {
-            document.getElementById('modalAsesorNombre').innerText = nombre;
-            document.getElementById('modalAsesorRol').innerText = rol;
-            document.getElementById('modalAsesorBio').innerText = biografia || 'Asesor autorizado listo para brindarte la mejor atención.';
-            
-            let htmlRedes = '';
-            if (telefono) {
-                htmlRedes += `<a href="tel:${telefono}" class="btn-consultar btn-platform" style="padding: 10px;"><i class="fa-solid fa-phone"></i> Llamar: ${telefono}</a>`;
+        function abrirModalDescarga(event) {
+            event.preventDefault();
+            document.getElementById('modalDescargaApk').style.display = 'flex';
+        }
+
+        function cerrarModalDescarga() {
+            document.getElementById('modalDescargaApk').style.display = 'none';
+        }
+
+        // Detectar el clic en el botón de descarga del APK para mostrar el mensaje
+        document.addEventListener("DOMContentLoaded", function() {
+            const enlaceApk = document.getElementById("enlaceDescargaApk");
+            const mensajeAgradecimiento = document.getElementById("mensajeAgradecimiento");
+
+            if (enlaceApk) {
+                enlaceApk.addEventListener("click", function() {
+                    // Muestra el mensaje de agradecimiento
+                    mensajeAgradecimiento.style.display = "flex";
+                });
             }
-            if (whatsapp) {
-                htmlRedes += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp" style="padding: 10px;"><i class="fa-brands fa-whatsapp"></i> Escribir al WhatsApp</a>`;
-            }
-            if (facebook) {
-                htmlRedes += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998; padding: 10px;"><i class="fa-brands fa-facebook"></i> Visitar Facebook</a>`;
-            }
-            if (instagram) {
-                htmlRedes += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c; padding: 10px;"><i class="fa-brands fa-instagram"></i> Visitar Instagram</a>`;
-            }
+        });
 
-            if (!htmlRedes) {
-                htmlRedes = '<p style="font-size: 0.8rem; color: #6c757d;">Este asesor no ha configurado métodos de contacto adicionales.</p>';
-            }
-
-            document.getElementById('modalAsesorRedes').innerHTML = htmlRedes;
-            document.getElementById('modalAsesor').style.display = 'flex';
-        }
-
-        function cerrarModalAsesor() {
-            document.getElementById('modalAsesor').style.display = 'none';
-        }
-
-        function abrirModalConsultar(nombreProducto) {
-            productoActualSeleccionado = nombreProducto;
-            document.getElementById('nombreProductoModal').innerText = nombreProducto;
-            document.getElementById('modalConsultar').style.display = 'flex';
-        }
-
-        function cerrarModalConsultar() {
-            document.getElementById('modalConsultar').style.display = 'none';
-        }
-
-        function actualizarEnlaceWhatsApp(elemento, numeroWhatsapp) {
-            const mensaje = encodeURIComponent(`Hola, estoy interesado en consultar sobre el producto: ${productoActualSeleccionado}`);
-            elemento.href = `https://wa.me/${numeroWhatsapp}?text=${mensaje}`;
-        }
-
-        // Cerrar modales al hacer clic fuera del contenido
+        // Cerrar modales al hacer clic fuera del recuadro
         window.onclick = function(event) {
             const modalPerfil = document.getElementById('modalPerfil');
-            const modalAsesor = document.getElementById('modalAsesor');
-            const modalConsultar = document.getElementById('modalConsultar');
-            
+            const modalDescarga = document.getElementById('modalDescargaApk');
             if (event.target === modalPerfil) modalPerfil.style.display = 'none';
-            if (event.target === modalAsesor) modalAsesor.style.display = 'none';
-            if (event.target === modalConsultar) modalConsultar.style.display = 'none';
+            if (event.target === modalDescarga) modalDescarga.style.display = 'none';
         }
     </script>
 </body>
