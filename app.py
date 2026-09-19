@@ -143,25 +143,25 @@ def index():
         {
             "nombre": "Tanque Cónico 1100 litros", 
             "precio_usd": 105.0, 
-            "imagen": "tanque1100.jpg", 
+            "imagen": "tanque1100.jpeg", 
             "desc": "Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada."
         },
         {
             "nombre": "Tanque Cónico 900 Litros", 
             "precio_usd": 90.0, 
-            "imagen": "tanque900.png", 
+            "imagen": "tanque900.jpeg", 
             "desc": "El estándar más buscado por las familias para garantizar reserva óptima de agua potable."
         },
         {
             "nombre": "Tanque Cilindro 1050 Litros", 
             "precio_usd": 105.0, 
-            "imagen": "tanque1050.png", 
+            "imagen": "tanque1050.jpeg", 
             "desc": "Mayor capacidad estructural con capa antibacteriana interna. Máxima seguridad y calidad."
         }
         ,{
             "nombre": "Tanque Cilindro 540 Litros", 
             "precio_usd": 90.0, 
-            "imagen": "tanque540.png", 
+            "imagen": "tanque540.jpeg", 
             "desc": "Ideal para espacios reducidos, hogares pequeños y negocios. Protección UV integrada."
         }
     ]
