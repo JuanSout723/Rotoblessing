@@ -412,9 +412,14 @@ def eliminar_comentario(id):
     return redirect(url_for('index') + '#seccion-comentarios')
 
 # --- RUTA PARA DESCARGAR EL APK DE FORMA SEGURA ---
-@app.route('/static/rotoblessing.apk')
+@app.route('/descargar-apk')
 def descargar_apk():
+    # Busca cualquier archivo .apk en la carpeta static de forma automática
+    for archivo in os.listdir(UPLOAD_FOLDER):
+        if archivo.endswith('.apk'):
+            return send_from_directory('static', archivo, as_attachment=True)
+    
+    # Si por alguna razón no encuentra ninguno, busca el nombre clásico
     return send_from_directory('static', 'rotoblessing.apk', as_attachment=True)
-
 if __name__ == '__main__':
     app.run(debug=True)
