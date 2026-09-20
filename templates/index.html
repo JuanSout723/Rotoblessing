@@ -346,7 +346,7 @@
                 </div>
 
                 <div class="product-actions">
-                    <button class="btn-consultar btn-platform" onclick="abrirSelectorAsesores('{{ p.nombre }}')">
+                    <button class="btn-consultar btn-platform" onclick="abrirModalConsultar('{{ p.nombre }}')">
                         <i class="fa-solid fa-comments"></i> Consultar a...
                     </button>
                 </div>
@@ -465,23 +465,59 @@
             <h2 id="modalAsesorNombre" style="color: #0077b6; margin-bottom: 4px;"></h2>
             <span id="modalAsesorRol" class="badge" style="margin-bottom: 12px;"></span>
             <p id="modalAsesorBio" style="font-size: 0.85rem; color: #6c757d; margin-bottom: 15px; line-height: 1.4;"></p>
+            
             <div id="modalAsesorRedes" style="display: flex; flex-direction: column; gap: 8px;"></div>
         </div>
     </div>
 
-    <!-- MODAL SELECTOR DE ASESORES PARA PRODUCTOS -->
-    <div class="modal-overlay" id="modalSelectorAsesores">
+    <!-- MODAL: CONSULTAR PRODUCTO A ASESOR -->
+    <div class="modal-overlay" id="modalConsultar">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModalConsultar()">&times;</button>
+            <h2 style="color: #0077b6; margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-comments"></i> Consultar sobre <span id="nombreProductoModal" style="color: #28a745;"></span>
+            </h2>
+            <p style="font-size: 0.85rem; color: #6c757d; margin-bottom: 18px;">
+                Selecciona a uno de nuestros asesores de venta autorizados para enviar tu consulta directamente por WhatsApp:
+            </p>
+            <div id="listaAsesoresModal" style="display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto;">
+                {% if vendedores %}
+                    {% for v in vendedores %}
+                        <div style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
+                            <div>
+                                <strong style="font-size: 0.9rem; color: #333; display: block;"><i class="fa-solid fa-user-tie" style="color: #0077b6;"></i> {{ v.nombre }}</strong>
+                                <span style="font-size: 0.75rem; color: #6c757d;">{{ v.rol }}</span>
+                            </div>
+                            {% if v.whatsapp %}
+                                <a href="#" onclick="enviarConsultaWhatsApp('{{ v.whatsapp }}', document.getElementById('nombreProductoModal').innerText)" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;">
+                                    <i class="fa-brands fa-whatsapp"></i> Contactar
+                                </a>
+                            {% else %}
+                                <span style="font-size: 0.75rem; color: #dc3545; font-weight: 600;">Sin WhatsApp</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="text-align: center; color: #6c757d; font-size: 0.85rem;">No hay asesores disponibles en este momento.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- NUEVO MODAL: DESCARGAR APK -->
+    <div class="modal-overlay" id="modalDescargaAPK">
         <div class="modal-content" style="text-align: center;">
-            <button class="modal-close" onclick="cerrarSelectorAsesores()">&times;</button>
-            <div style="font-size: 2.2rem; color: #0077b6; margin-bottom: 10px;">
-                <i class="fa-solid fa-comments"></i>
+            <button class="modal-close" onclick="cerrarModalDescarga()">&times;</button>
+            <div style="color: #0077b6; font-size: 3rem; margin-bottom: 10px;">
+                <i class="fa-solid fa-mobile-screen-button"></i>
             </div>
-            <h2 style="color: #0077b6; margin-bottom: 6px; font-size: 1.15rem;">Elige un Asesor</h2>
-            <p id="tituloProductoModal" style="font-size: 0.82rem; color: #6c757d; margin-bottom: 15px;"></p>
-            
-            <div id="listaAsesoresConsulta" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto; text-align: left;">
-                <!-- Se inyecta dinámicamente -->
-            </div>
+            <h2 style="color: #0077b6; margin-bottom: 10px; font-size: 1.25rem;">Descargar Aplicación Móvil</h2>
+            <p style="font-size: 0.88rem; color: #6c757d; margin-bottom: 20px; line-height: 1.5;">
+                Haz clic en el botón de abajo para descargar la aplicación oficial de Rotoblessing directamente en tu dispositivo Android.
+            </p>
+            <a href="/static/rotoblessing.apk" class="btn btn-success" style="padding: 12px; font-size: 0.95rem; text-decoration: none;" download>
+                <i class="fa-solid fa-download"></i> Descargar APK Ahora
+            </a>
         </div>
     </div>
 
@@ -494,127 +530,90 @@
         <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- SCRIPTS DE CONTROL -->
+    <!-- Scripts de Control -->
     <script>
-        // Lista de asesores disponibles en el sistema para las consultas de catálogo
-        const listaVendedoresGlobal = [
-            {% for v in vendedores %}
-            {
-                nombre: "{{ v.nombre }}",
-                whatsapp: "{{ v.whatsapp or '' }}",
-                telefono: "{{ v.telefono or '' }}"
-            },
-            {% endfor %}
-        ];
-
-        // FUNCIÓN CLAVE PARA MOSTRAR EL CÓDIGO DE VERIFICACIÓN
         function toggleCodigoVerificacion() {
             const rolSelect = document.getElementById('rolSelect');
             const codigoGrupo = document.getElementById('codigoGrupo');
             const labelCodigo = document.getElementById('labelCodigo');
-            
-            if (rolSelect.value === 'Vendedor') {
-                codigoGrupo.style.display = 'block';
-                labelCodigo.innerText = 'Código de Verificación de Vendedor';
-            } else if (rolSelect.value === 'Dueno') {
-                codigoGrupo.style.display = 'block';
-                labelCodigo.innerText = 'Código de Verificación de Dueño';
-            } else {
-                codigoGrupo.style.display = 'none';
+            if (rolSelect && codigoGrupo) {
+                if (rolSelect.value === 'Vendedor' || rolSelect.value === 'Dueno') {
+                    codigoGrupo.style.display = 'block';
+                    labelCodigo.innerText = rolSelect.value === 'Vendedor' ? 'Código de Vendedor' : 'Código de Dueño';
+                } else {
+                    codigoGrupo.style.display = 'none';
+                }
             }
         }
 
-        function abrirModalPerfil(event) {
-            if (event) event.preventDefault();
-            document.getElementById('modalPerfil').style.display = 'flex';
+        function abrirModalPerfil(e) {
+            if (e) e.preventDefault();
+            const m = document.getElementById('modalPerfil');
+            if (m) m.style.display = 'flex';
         }
-
         function cerrarModalPerfil() {
-            document.getElementById('modalPerfil').style.display = 'none';
+            const m = document.getElementById('modalPerfil');
+            if (m) m.style.display = 'none';
         }
 
         function verPerfilCompleto(nombre, rol, telefono, whatsapp, facebook, instagram, biografia) {
             document.getElementById('modalAsesorNombre').innerText = nombre;
             document.getElementById('modalAsesorRol').innerText = rol;
-            document.getElementById('modalAsesorBio').innerText = (biografia && biografia !== 'None' && biografia.trim() !== '') ? biografia : 'Asesor autorizado listo para brindarte la mejor atención.';
+            document.getElementById('modalAsesorBio').innerText = biografia ? biografia : 'Asesor autorizado listo para brindarte la mejor atención y asesoría con nuestros tanques.';
             
-            let htmlRedes = '';
-            if (telefono && telefono !== 'None' && telefono.trim() !== '') {
-                htmlRedes += `<a href="tel:${telefono}" class="btn-consultar" style="background-color: #17a2b8;"><i class="fa-solid fa-phone"></i> Llamar: ${telefono}</a>`;
+            let redesHTML = '';
+            if (telefono && telefono !== 'None') {
+                redesHTML += `<a href="tel:${telefono}" class="btn-consultar" style="background-color: #17a2b8;"><i class="fa-solid fa-phone"></i> Llamar: ${telefono}</a>`;
             }
-            if (whatsapp && whatsapp !== 'None' && whatsapp.trim() !== '') {
-                htmlRedes += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Escribir al WhatsApp</a>`;
+            if (whatsapp && whatsapp !== 'None') {
+                redesHTML += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Chat de WhatsApp</a>`;
             }
-            if (facebook && facebook !== 'None' && facebook.trim() !== '') {
-                htmlRedes += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Perfil de Facebook</a>`;
+            if (facebook && facebook !== 'None') {
+                redesHTML += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Facebook</a>`;
             }
-            if (instagram && instagram !== 'None' && instagram.trim() !== '') {
-                htmlRedes += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Perfil de Instagram</a>`;
+            if (instagram && instagram !== 'None') {
+                redesHTML += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Instagram</a>`;
             }
-
-            if (htmlRedes === '') {
-                htmlRedes = '<p style="font-size: 0.8rem; color: #adb5bd;">Este asesor aún no ha configurado sus métodos de contacto adicionales.</p>';
-            }
-
-            document.getElementById('modalAsesorRedes').innerHTML = htmlRedes;
+            document.getElementById('modalAsesorRedes').innerHTML = redesHTML;
             document.getElementById('modalAsesor').style.display = 'flex';
         }
-
         function cerrarModalAsesor() {
             document.getElementById('modalAsesor').style.display = 'none';
         }
 
-        function abrirSelectorAsesores(nombreProducto) {
-            document.getElementById('tituloProductoModal').innerText = `Estás consultando sobre: ${nombreProducto}`;
-            const contenedor = document.getElementById('listaAsesoresConsulta');
-            
-            let html = '';
-            if (listaVendedoresGlobal.length > 0) {
-                listaVendedoresGlobal.forEach(v => {
-                    let contactoHtml = '';
-                    let mensajeWp = encodeURIComponent(`Hola ${v.nombre}, estoy interesado en el producto: ${nombreProducto}. ¿Me podrías dar más información?`);
-                    
-                    if (v.whatsapp && v.whatsapp.trim() !== '' && v.whatsapp !== 'None') {
-                        contactoHtml += `<a href="https://wa.me/${v.whatsapp}?text=${mensajeWp}" target="_blank" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>`;
-                    }
-                    if (v.telefono && v.telefono.trim() !== '' && v.telefono !== 'None') {
-                        contactoHtml += `<a href="tel:${v.telefono}" class="btn-consultar" style="background-color: #17a2b8; padding: 8px 12px; font-size: 0.8rem;"><i class="fa-solid fa-phone"></i> Llamar</a>`;
-                    }
-
-                    if (contactoHtml === '') {
-                        contactoHtml = `<span style="font-size: 0.78rem; color: #adb5bd;">Sin número configurado</span>`;
-                    }
-
-                    html += `
-                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #e9ecef;">
-                            <div>
-                                <strong style="font-size: 0.88rem; color: #333; display: block;"><i class="fa-solid fa-user-tie" style="color: #0077b6;"></i> ${v.nombre}</strong>
-                            </div>
-                            <div style="display: flex; gap: 6px;">
-                                ${contactoHtml}
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                html = '<p style="text-align: center; color: #6c757d; font-size: 0.85rem;">No hay asesores disponibles en este momento.</p>';
-            }
-
-            contenedor.innerHTML = html;
-            document.getElementById('modalSelectorAsesores').style.display = 'flex';
+        function abrirModalConsultar(nombreProducto) {
+            document.getElementById('nombreProductoModal').innerText = nombreProducto;
+            document.getElementById('modalConsultar').style.display = 'flex';
+        }
+        function cerrarModalConsultar() {
+            document.getElementById('modalConsultar').style.display = 'none';
+        }
+        function enviarConsultaWhatsApp(whatsappNum, producto) {
+            const mensaje = encodeURIComponent(`Hola, estoy interesado en el producto: ${producto} y quisiera recibir asesoría.`);
+            window.open(`https://wa.me/${whatsappNum}?text=${mensaje}`, '_blank');
+            cerrarModalConsultar();
         }
 
-        function cerrarSelectorAsesores() {
-            document.getElementById('modalSelectorAsesores').style.display = 'none';
+        // Control del Modal de Descarga de APK
+        function abrirModalDescarga(e) {
+            if (e) e.preventDefault();
+            const m = document.getElementById('modalDescargaAPK');
+            if (m) m.style.display = 'flex';
+        }
+        function cerrarModalDescarga() {
+            const m = document.getElementById('modalDescargaAPK');
+            if (m) m.style.display = 'none';
         }
 
         window.onclick = function(event) {
-            const modalP = document.getElementById('modalPerfil');
-            const modalA = document.getElementById('modalAsesor');
-            const modalS = document.getElementById('modalSelectorAsesores');
-            if (modalP && event.target === modalP) modalP.style.display = 'none';
-            if (modalA && event.target === modalA) modalA.style.display = 'none';
-            if (modalS && event.target === modalS) modalS.style.display = 'none';
+            const modalPerfil = document.getElementById('modalPerfil');
+            const modalAsesor = document.getElementById('modalAsesor');
+            const modalConsultar = document.getElementById('modalConsultar');
+            const modalDescarga = document.getElementById('modalDescargaAPK');
+            if (event.target === modalPerfil) cerrarModalPerfil();
+            if (event.target === modalAsesor) cerrarModalAsesor();
+            if (event.target === modalConsultar) cerrarModalConsultar();
+            if (event.target === modalDescarga) cerrarModalDescarga();
         }
     </script>
 </body>
