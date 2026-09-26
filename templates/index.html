@@ -411,6 +411,36 @@
 
     </div>
 
+    <!-- MODAL DE CONSULTAR A... (NUEVA FUNCIÓN) -->
+    <div class="modal-overlay" id="modalConsultar">
+        <div class="modal-content">
+            <button class="modal-close" onclick="cerrarModalConsultar()">&times;</button>
+            <h2 style="color: #0077b6; margin-bottom: 15px; font-size: 1.15rem;"><i class="fa-solid fa-comments"></i> Consultar sobre: <span id="productoConsultarTitulo" style="color: #333;"></span></h2>
+            <p style="font-size: 0.85rem; color: #6c757d; margin-bottom: 15px;">Selecciona a uno de nuestros asesores disponibles para realizar tu consulta de forma directa:</p>
+            
+            <div id="listaAsesoresConsulta" style="display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto;">
+                <!-- Dinámicamente inyectado mediante JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE PERFIL DE ASESOR / CONTACTO -->
+    <div class="modal-overlay" id="modalPerfilAsesor">
+        <div class="modal-content" style="text-align: center;">
+            <button class="modal-close" onclick="cerrarModalPerfilAsesor()">&times;</button>
+            <div class="team-avatar-icon" style="margin: 0 auto 12px auto;">
+                <i class="fa-solid fa-user"></i>
+            </div>
+            <h2 id="modalAsesorNombre" style="color: #0077b6; margin-bottom: 4px; font-size: 1.2rem;"></h2>
+            <span class="badge" id="modalAsesorRol" style="font-size: 0.7rem; padding: 3px 8px; margin-bottom: 12px;"></span>
+            <p id="modalAsesorBio" style="font-size: 0.88rem; color: #6c757d; margin-bottom: 20px; line-height: 1.5;"></p>
+            
+            <div style="display: flex; flex-direction: column; gap: 10px;" id="modalAsesorBotones">
+                <!-- Botones sociales inyectados por JS -->
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE PERSONALIZACIÓN DE PERFIL -->
     {% if usuario %}
     <div class="modal-overlay" id="modalPerfil">
@@ -441,181 +471,124 @@
                 </div>
                 <button type="submit" class="btn"><i class="fa-solid fa-floppy-disk"></i> Guardar Cambios</button>
             </form>
-
-            <hr style="margin: 20px 0; border: none; border-top: 1px solid #e9ecef;">
-
-            <div style="background: #fff5f5; padding: 15px; border-radius: 8px; border: 1px solid #fed7d7;">
-                <h3 style="color: #c53030; font-size: 0.95rem; margin-bottom: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> Zona de Peligro</h3>
-                <p style="font-size: 0.8rem; color: #718096; margin-bottom: 12px;">Una vez que elimines tu cuenta, todos tus datos y comentarios asociados se borrarán permanentemente del sistema.</p>
-                <form action="/perfil/eliminar" method="POST" onsubmit="return confirm('¿Estás COMPLETAMENTE seguro de eliminar tu cuenta de forma permanente? Esta acción no se puede deshacer.');">
-                    <button type="submit" class="btn btn-danger" style="font-size: 0.85rem; padding: 8px;"><i class="fa-solid fa-user-xmark"></i> Eliminar mi cuenta permanentemente</button>
-                </form>
-            </div>
         </div>
     </div>
     {% endif %}
 
-    <!-- MODAL PARA VER DETALLES DE UN ASESOR -->
-    <div class="modal-overlay" id="modalAsesor">
-        <div class="modal-content" style="text-align: center;">
-            <button class="modal-close" onclick="cerrarModalAsesor()">&times;</button>
-            <div style="width: 85px; height: 85px; border-radius: 50%; border: 3px solid #0077b6; margin: 0 auto 12px auto; background: #e9ecef; display: flex; align-items: center; justify-content: center; color: #0077b6; font-size: 2.2rem;">
-                <i class="fa-solid fa-user"></i>
-            </div>
-            <h2 id="modalAsesorNombre" style="color: #0077b6; margin-bottom: 4px;"></h2>
-            <span id="modalAsesorRol" class="badge" style="margin-bottom: 12px;"></span>
-            <p id="modalAsesorBio" style="font-size: 0.85rem; color: #6c757d; margin-bottom: 15px; line-height: 1.4;"></p>
-            
-            <div id="modalAsesorRedes" style="display: flex; flex-direction: column; gap: 8px;"></div>
-        </div>
-    </div>
-
-    <!-- MODAL: CONSULTAR PRODUCTO A ASESOR -->
-    <div class="modal-overlay" id="modalConsultar">
-        <div class="modal-content">
-            <button class="modal-close" onclick="cerrarModalConsultar()">&times;</button>
-            <h2 style="color: #0077b6; margin-bottom: 10px; font-size: 1.15rem; display: flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-comments"></i> Consultar sobre <span id="nombreProductoModal" style="color: #28a745;"></span>
-            </h2>
-            <p style="font-size: 0.85rem; color: #6c757d; margin-bottom: 18px;">
-                Selecciona a uno de nuestros asesores de venta autorizados para enviar tu consulta directamente por WhatsApp:
-            </p>
-            <div id="listaAsesoresModal" style="display: flex; flex-direction: column; gap: 10px; max-height: 350px; overflow-y: auto;">
-                {% if vendedores %}
-                    {% for v in vendedores %}
-                        <div style="background: #f8f9fa; border: 1px solid #e9ecef; padding: 12px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; gap: 10px;">
-                            <div>
-                                <strong style="font-size: 0.9rem; color: #333; display: block;"><i class="fa-solid fa-user-tie" style="color: #0077b6;"></i> {{ v.nombre }}</strong>
-                                <span style="font-size: 0.75rem; color: #6c757d;">{{ v.rol }}</span>
-                            </div>
-                            {% if v.whatsapp %}
-                                <a href="#" onclick="enviarConsultaWhatsApp('{{ v.whatsapp }}', document.getElementById('nombreProductoModal').innerText)" class="btn-consultar btn-whatsapp" style="padding: 8px 12px; font-size: 0.8rem; width: auto;">
-                                    <i class="fa-brands fa-whatsapp"></i> Contactar
-                                </a>
-                            {% else %}
-                                <span style="font-size: 0.75rem; color: #dc3545; font-weight: 600;">Sin WhatsApp</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                {% else %}
-                    <p style="text-align: center; color: #6c757d; font-size: 0.85rem;">No hay asesores disponibles en este momento.</p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <!-- NUEVO MODAL: DESCARGAR APK -->
-    <div class="modal-overlay" id="modalDescargaAPK">
-        <div class="modal-content" style="text-align: center;">
-            <button class="modal-close" onclick="cerrarModalDescarga()">&times;</button>
-            <div style="color: #0077b6; font-size: 3rem; margin-bottom: 10px;">
-                <i class="fa-solid fa-mobile-screen-button"></i>
-            </div>
-            <h2 style="color: #0077b6; margin-bottom: 10px; font-size: 1.25rem;">Descargar Aplicación Móvil</h2>
-            <p style="font-size: 0.88rem; color: #6c757d; margin-bottom: 20px; line-height: 1.5;">
-                Haz clic en el botón de abajo para descargar la aplicación oficial de Rotoblessing directamente en tu dispositivo Android.
-            </p>
-            <a href="/static/rotoblessing.apk" class="btn btn-success" style="padding: 12px; font-size: 0.95rem; text-decoration: none;" download>
-                <i class="fa-solid fa-download"></i> Descargar APK Ahora
-            </a>
-        </div>
-    </div>
-
+    <!-- Footer -->
     <footer>
         <div class="social-icons">
-            <a href="https://www.facebook.com/profile.php?id=61594421341463" target="_blank"><i class="fa-brands fa-facebook"></i></a>
-            <a href="https://www.instagram.com/rotoblessing_c.a_oficial/" target="_blank"><i class="fa-brands fa-instagram"></i></a>
-            <a href="https://api.whatsapp.com/send/?phone=584223400033&text&type=phone_number&app_absent=0" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
+            <a href="#" target="_blank"><i class="fa-brands fa-facebook"></i></a>
+            <a href="#" target="_blank"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" target="_blank"><i class="fa-brands fa-whatsapp"></i></a>
         </div>
         <p>&copy; 2026 Rotoblessing. Todos los derechos reservados.</p>
     </footer>
 
-    <!-- Scripts de Control -->
+    <!-- SCRIPT DE FUNCIONALIDAD Y MODALES -->
     <script>
-        function toggleCodigoVerificacion() {
-            const rolSelect = document.getElementById('rolSelect');
-            const codigoGrupo = document.getElementById('codigoGrupo');
-            const labelCodigo = document.getElementById('labelCodigo');
-            if (rolSelect && codigoGrupo) {
-                if (rolSelect.value === 'Vendedor' || rolSelect.value === 'Dueno') {
-                    codigoGrupo.style.display = 'block';
-                    labelCodigo.innerText = rolSelect.value === 'Vendedor' ? 'Código de Vendedor' : 'Código de Dueño';
-                } else {
-                    codigoGrupo.style.display = 'none';
-                }
+        // Lista de vendedores pasada desde backend para uso en el modal de consulta
+        const listaVendedores = [
+            {% if vendedores %}
+                {% for v in vendedores %}
+                {
+                    nombre: "{{ v.nombre }}",
+                    rol: "{{ v.rol }}",
+                    telefono: "{{ v.telefono or '' }}",
+                    whatsapp: "{{ v.whatsapp or '' }}"
+                },
+                {% endfor %}
+            {% endif %}
+        ];
+
+        function abrirModalConsultar(nombreProducto) {
+            document.getElementById('productoConsultarTitulo').innerText = nombreProducto;
+            const contenedor = document.getElementById('listaAsesoresConsulta');
+            contenedor.innerHTML = '';
+
+            if (listaVendedores.length === 0) {
+                contenedor.innerHTML = '<p style="text-align: center; color: #6c757d; font-size: 0.85rem;">No hay asesores disponibles en este momento.</p>';
+            } else {
+                listaVendedores.forEach(v => {
+                    let div = document.createElement('div');
+                    div.style.cssText = "background: #f8f9fa; padding: 12px; border-radius: 8px; border: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; gap: 10px;";
+                    
+                    let infoHtml = `<div style="font-size: 0.88rem; font-weight: 600; color: #333;"><i class="fa-solid fa-user-tie" style="color: #0077b6;"></i> ${v.nombre}</div>`;
+                    
+                    let botonesHtml = '<div style="display: flex; gap: 6px;">';
+                    let mensajeWp = encodeURIComponent(`Hola ${v.nombre}, estoy interesado en consultar sobre el producto: ${nombreProducto}. ¿Me podrías dar más información?`);
+                    
+                    if (v.whatsapp) {
+                        botonesHtml += `<a href="https://wa.me/${v.whatsapp}?text=${mensajeWp}" target="_blank" class="btn-consultar btn-whatsapp" style="padding: 6px 12px; font-size: 0.78rem;"><i class="fa-brands fa-whatsapp"></i> WhatsApp</a>`;
+                    }
+                    if (v.telefono) {
+                        botonesHtml += `<a href="tel:${v.telefono}" class="btn-consultar btn-platform" style="padding: 6px 12px; font-size: 0.78rem;"><i class="fa-solid fa-phone"></i> Llamar</a>`;
+                    }
+                    if (!v.whatsapp && !v.telefono) {
+                        botonesHtml += `<span style="font-size: 0.75rem; color: #6c757d;">Sin contacto directo</span>`;
+                    }
+                    botonesHtml += '</div>';
+
+                    div.innerHTML = infoHtml + botonesHtml;
+                    contenedor.appendChild(div);
+                });
             }
+
+            document.getElementById('modalConsultar').style.display = 'flex';
         }
 
-        function abrirModalPerfil(e) {
-            if (e) e.preventDefault();
-            const m = document.getElementById('modalPerfil');
-            if (m) m.style.display = 'flex';
-        }
-        function cerrarModalPerfil() {
-            const m = document.getElementById('modalPerfil');
-            if (m) m.style.display = 'none';
+        function cerrarModalConsultar() {
+            document.getElementById('modalConsultar').style.display = 'none';
         }
 
         function verPerfilCompleto(nombre, rol, telefono, whatsapp, facebook, instagram, biografia) {
             document.getElementById('modalAsesorNombre').innerText = nombre;
             document.getElementById('modalAsesorRol').innerText = rol;
-            document.getElementById('modalAsesorBio').innerText = biografia ? biografia : 'Asesor autorizado listo para brindarte la mejor atención y asesoría con nuestros tanques.';
+            document.getElementById('modalAsesorBio').innerText = biografia ? biografia : 'Asesor autorizado de Rotoblessing.';
             
-            let redesHTML = '';
-            if (telefono && telefono !== 'None') {
-                redesHTML += `<a href="tel:${telefono}" class="btn-consultar" style="background-color: #17a2b8;"><i class="fa-solid fa-phone"></i> Llamar: ${telefono}</a>`;
+            let botonesContenedor = document.getElementById('modalAsesorBotones');
+            botonesContenedor.innerHTML = '';
+
+            if (whatsapp) {
+                botonesContenedor.innerHTML += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Chatear por WhatsApp</a>`;
             }
-            if (whatsapp && whatsapp !== 'None') {
-                redesHTML += `<a href="https://wa.me/${whatsapp}" target="_blank" class="btn-consultar btn-whatsapp"><i class="fa-brands fa-whatsapp"></i> Chat de WhatsApp</a>`;
+            if (telefono) {
+                botonesContenedor.innerHTML += `<a href="tel:${telefono}" class="btn-consultar btn-platform"><i class="fa-solid fa-phone"></i> Llamar al Teléfono</a>`;
             }
-            if (facebook && facebook !== 'None') {
-                redesHTML += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Facebook</a>`;
+            if (facebook) {
+                botonesContenedor.innerHTML += `<a href="${facebook}" target="_blank" class="btn-consultar" style="background-color: #3b5998;"><i class="fa-brands fa-facebook"></i> Visitar Facebook</a>`;
             }
-            if (instagram && instagram !== 'None') {
-                redesHTML += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Instagram</a>`;
+            if (instagram) {
+                botonesContenedor.innerHTML += `<a href="${instagram}" target="_blank" class="btn-consultar" style="background-color: #e1306c;"><i class="fa-brands fa-instagram"></i> Visitar Instagram</a>`;
             }
-            document.getElementById('modalAsesorRedes').innerHTML = redesHTML;
-            document.getElementById('modalAsesor').style.display = 'flex';
-        }
-        function cerrarModalAsesor() {
-            document.getElementById('modalAsesor').style.display = 'none';
+
+            document.getElementById('modalPerfilAsesor').style.display = 'flex';
         }
 
-        function abrirModalConsultar(nombreProducto) {
-            document.getElementById('nombreProductoModal').innerText = nombreProducto;
-            document.getElementById('modalConsultar').style.display = 'flex';
-        }
-        function cerrarModalConsultar() {
-            document.getElementById('modalConsultar').style.display = 'none';
-        }
-        function enviarConsultaWhatsApp(whatsappNum, producto) {
-            const mensaje = encodeURIComponent(`Hola, estoy interesado en el producto: ${producto} y quisiera recibir asesoría.`);
-            window.open(`https://wa.me/${whatsappNum}?text=${mensaje}`, '_blank');
-            cerrarModalConsultar();
+        function cerrarModalPerfilAsesor() {
+            document.getElementById('modalPerfilAsesor').style.display = 'none';
         }
 
-        // Control del Modal de Descarga de APK
-        function abrirModalDescarga(e) {
-            if (e) e.preventDefault();
-            const m = document.getElementById('modalDescargaAPK');
-            if (m) m.style.display = 'flex';
-        }
-        function cerrarModalDescarga() {
-            const m = document.getElementById('modalDescargaAPK');
-            if (m) m.style.display = 'none';
+        function abrirModalPerfil(e) {
+            e.preventDefault();
+            const modal = document.getElementById('modalPerfil');
+            if (modal) modal.style.display = 'flex';
         }
 
-        window.onclick = function(event) {
-            const modalPerfil = document.getElementById('modalPerfil');
-            const modalAsesor = document.getElementById('modalAsesor');
-            const modalConsultar = document.getElementById('modalConsultar');
-            const modalDescarga = document.getElementById('modalDescargaAPK');
-            if (event.target === modalPerfil) cerrarModalPerfil();
-            if (event.target === modalAsesor) cerrarModalAsesor();
-            if (event.target === modalConsultar) cerrarModalConsultar();
-            if (event.target === modalDescarga) cerrarModalDescarga();
+        function cerrarModalPerfil() {
+            const modal = document.getElementById('modalPerfil');
+            if (modal) modal.style.display = 'none';
+        }
+
+        function toggleCodigoVerificacion() {
+            const rol = document.getElementById('rolSelect').value;
+            const codigoGrupo = document.getElementById('codigoGrupo');
+            if (rol === 'Vendedor' || rol === 'Dueno') {
+                codigoGrupo.style.display = 'block';
+            } else {
+                codigoGrupo.style.display = 'none';
+            }
         }
     </script>
 </body>
 </html>
-
