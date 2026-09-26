@@ -42,7 +42,6 @@ def obtener_tasa_bcv_en_linea():
     """
     global _tasa_cache, _ultima_actualizacion_tasa
     
-    # Si ya tenemos una tasa válida obtenida hace menos de 2 horas, la reutilizamos
     if _tasa_cache > 0 and (datetime.utcnow() - _ultima_actualizacion_tasa < timedelta(hours=2)):
         return _tasa_cache
 
@@ -50,13 +49,9 @@ def obtener_tasa_bcv_en_linea():
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     }
 
-    # Lista de fuentes públicas en orden de prioridad
     fuentes_api = [
-        # Fuente 1: DolarApi Venezuela (Muy rápida y estable)
         ("https://ve.dolarapi.com/v1/dolares/oficial", lambda d: float(d.get("promedio", 0))),
-        # Fuente 2: PyDolarVenezuela
         ("https://pydolarvenezuela-api.vercel.app/api/v1/dollar/bcv", lambda d: float(d.get("monitors", {}).get("usd", {}).get("price", 0))),
-        # Fuente 3: Rates DolarVzla
         ("https://rates.dolarvzla.com/bcv/current.json", lambda d: float(d.get("current", {}).get("usd", 0)))
     ]
 
@@ -73,7 +68,6 @@ def obtener_tasa_bcv_en_linea():
         except Exception as e:
             print(f"Intento fallido en {url}: {e}")
 
-    # Si todas las APIs fallan pero teníamos un valor previo en memoria, lo usamos
     if _tasa_cache > 0:
         return _tasa_cache
 
@@ -103,17 +97,27 @@ class Comentario(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='CASCADE'), nullable=False)
     contenido = db.Column(db.Text, nullable=False)
-    
-    # Almacena el nombre del archivo de la foto del comentario
     foto = db.Column(db.String(200), nullable=True)
     fecha = db.Column(db.DateTime, default=datetime.utcnow)
     
     autor = db.relationship('Usuario', foreign_keys=[usuario_id])
 
+class Consulta(db.Model):
+    __tablename__ = 'consulta'
+    id = db.Column(db.Integer, primary_key=True)
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='CASCADE'), nullable=False)
+    vendedor_id = db.Column(db.Integer, db.ForeignKey('usuario.id', ondelete='CASCADE'), nullable=False)
+    producto_nombre = db.Column(db.String(150), nullable=True)
+    mensaje = db.Column(db.Text, nullable=True)
+    estado = db.Column(db.String(50), default='Pendiente')  # Pendiente, En seguimiento, Cerrado
+    fecha = db.Column(db.DateTime, default=datetime.utcnow)
+
+    cliente = db.relationship('Usuario', foreign_keys=[usuario_id], backref='consultas_realizadas')
+    vendedor = db.relationship('Usuario', foreign_keys=[vendedor_id], backref='consultas_recibidas')
+
 with app.app_context():
     try:
         db.create_all()
-        # Sincronizar columnas por si la base de datos ya existía
         with db.engine.connect() as connection:
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS telefono VARCHAR(30);"))
             connection.execute(db.text("ALTER TABLE usuario ADD COLUMN IF NOT EXISTS whatsapp VARCHAR(30);"))
@@ -135,10 +139,8 @@ def index():
     comentarios = Comentario.query.order_by(Comentario.fecha.desc()).all()
     vendedores = Usuario.query.filter(Usuario.rol.in_(['Vendedor', 'Dueno'])).all()
     
-    # Obtener la tasa oficial del BCV actualizada automáticamente
     tasa_bcv = obtener_tasa_bcv_en_linea()
 
-    # Catálogo de productos con sus precios base en dólares
     productos = [
         {
             "nombre": "Tanque Cónico 1100 litros", 
@@ -227,7 +229,7 @@ def logout():
     flash('Has cerrado sesión correctamente.', 'info')
     return redirect(url_for('index'))
 
-# --- CONSULTAR A UN ASESOR ESPECÍFICO ---
+# --- CONSULTAR A UN ASESOR ESPECÍFICO E HISTORIAL DE CONSULTAS ---
 
 @app.route('/consultar/<int:vendedor_id>', methods=['POST'])
 def consultar_a(vendedor_id):
@@ -246,18 +248,63 @@ def consultar_a(vendedor_id):
         return redirect(url_for('index'))
 
     mensaje_usuario = request.form.get('mensaje', '').strip()
+    producto_nombre = request.form.get('producto_nombre', 'Consulta General del Catálogo')
     usuario_actual = Usuario.query.get(session['usuario_id'])
 
+    # Guardar la consulta en la base de datos (Historial de consultas / Leads)
+    nueva_consulta = Consulta(
+        usuario_id=usuario_actual.id,
+        vendedor_id=vendedor.id,
+        producto_nombre=producto_nombre,
+        mensaje=mensaje_usuario if mensaje_usuario else "Consulta rápida general",
+        estado='Pendiente'
+    )
+    db.session.add(nueva_consulta)
+    db.session.commit()
+
     if not mensaje_usuario:
-        mensaje_usuario = f"Hola {vendedor.nombre}, soy {usuario_actual.nombre}. Me gustaría consultar sobre sus productos y disponibilidad."
+        texto_ws = f"Hola {vendedor.nombre}, soy {usuario_actual.nombre}. Me gustaría consultar sobre: {producto_nombre}."
     else:
-        mensaje_usuario = f"Hola {vendedor.nombre}, soy {usuario_actual.nombre}. Consulta: {mensaje_usuario}"
+        texto_ws = f"Hola {vendedor.nombre}, soy {usuario_actual.nombre}. Consulta sobre {producto_nombre}: {mensaje_usuario}"
 
     whatsapp_num = ''.join(filter(str.isdigit, vendedor.whatsapp))
-    mensaje_codificado = urllib.parse.quote(mensaje_usuario)
+    mensaje_codificado = urllib.parse.quote(texto_ws)
     link_whatsapp = f"https://wa.me/{whatsapp_num}?text={mensaje_codificado}"
 
     return redirect(link_whatsapp)
+
+@app.route('/mis-consultas')
+def mis_consultas():
+    if 'usuario_id' not in session:
+        flash('Debes iniciar sesión.', 'danger')
+        return redirect(url_for('index'))
+        
+    usuario_actual = Usuario.query.get(session['usuario_id'])
+    
+    if usuario_actual.rol not in ['Vendedor', 'Dueno']:
+        flash('No tienes permisos para ver esta sección.', 'danger')
+        return redirect(url_for('index'))
+        
+    # Consultas recibidas por este vendedor
+    consultas = Consulta.query.filter_by(vendedor_id=usuario_actual.id).order_by(Consulta.fecha.desc()).all()
+    
+    return render_template('mis_consultas.html', usuario=usuario_actual, consultas=consultas)
+
+@app.route('/consulta/actualizar_estado/<int:id>', methods=['POST'])
+def actualizar_estado_consulta(id):
+    if 'usuario_id' not in session:
+        return redirect(url_for('index'))
+        
+    consulta = Consulta.query.get_or_404(id)
+    usuario_actual = Usuario.query.get(session['usuario_id'])
+    
+    if consulta.vendedor_id == usuario_actual.id:
+        nuevo_estado = request.form.get('estado', 'Pendiente')
+        consulta.estado = nuevo_estado
+        db.session.commit()
+        flash('Estado de la consulta actualizado.', 'success')
+        
+    return redirect(url_for('mis_consultas'))
 
 # --- GESTIÓN DE PERFIL Y ELIMINACIÓN DE CUENTA ---
 
@@ -414,12 +461,11 @@ def eliminar_comentario(id):
 # --- RUTA PARA DESCARGAR EL APK DE FORMA SEGURA ---
 @app.route('/descargar-apk')
 def descargar_apk():
-    # Busca cualquier archivo .apk en la carpeta static de forma automática
     for archivo in os.listdir(UPLOAD_FOLDER):
         if archivo.endswith('.apk'):
             return send_from_directory('static', archivo, as_attachment=True)
     
-    # Si por alguna razón no encuentra ninguno, busca el nombre clásico
     return send_from_directory('static', 'rotoblessing.apk', as_attachment=True)
+
 if __name__ == '__main__':
     app.run(debug=True)
