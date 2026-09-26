@@ -5,3 +5,4 @@ gunicorn
 pywebpush
 requests
 beautifulsoup4
+psycopg[binary]
